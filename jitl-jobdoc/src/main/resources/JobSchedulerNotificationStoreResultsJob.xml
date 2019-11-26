@@ -46,7 +46,7 @@
                <div xmlns="http://www.w3.org/1999/xhtml">
                This table contains the configured order parameters with values.
                 <br />
-               Parameter values ​​are used in the measurement of performance (Timer).
+               Parameter values are used in the measurement of performance (Timer).
                </div>
             </note>
          </resource>
@@ -56,7 +56,7 @@
       <params id="job_parameter">
          <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
                 name="scheduler_notification_hibernate_configuration_file"
-                default_value="config/hibernate.cfg.xml"
+                default_value="config/reporting.hibernate.cfg.xml"
                 required="false">
             <note language="de">
                <div xmlns="http://www.w3.org/1999/xhtml">Speicherort der hibernate configuration Konfigurationsdatei.</div>

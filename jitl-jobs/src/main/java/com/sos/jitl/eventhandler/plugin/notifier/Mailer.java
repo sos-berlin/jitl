@@ -16,7 +16,7 @@ public class Mailer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Mailer.class);
 
-    private static final String NEW_LINE = "\r\n";
+    public static final String NEW_LINE = "\r\n";
     private SOSSmtpMailOptions options = null;
     private Map<String, String> settings = null;
     private String pluginName;
@@ -102,6 +102,13 @@ public class Mailer {
     public void sendOnWarning(String callerClass, String callerMethod, Throwable t) {
         if (sendOnWarning) {
             send("WARNING", String.format("[warn] Plugin %s, %s.%s processed with warnings", pluginName, callerClass, callerMethod), null,
+                    getStackTrace(t));
+        }
+    }
+
+    public void sendOnWarning(String callerClass, String callerMethod, String bodyPart, Throwable t) {
+        if (sendOnWarning) {
+            send("WARNING", String.format("[warn] Plugin %s, %s.%s processed with warnings", pluginName, callerClass, callerMethod), bodyPart,
                     getStackTrace(t));
         }
     }

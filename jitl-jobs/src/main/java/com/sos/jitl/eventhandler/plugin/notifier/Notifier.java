@@ -6,100 +6,165 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import sos.util.SOSDate;
+import sos.util.SOSString;
 
 public class Notifier {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Notifier.class);
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
-    private Mailer mailer;
-    private String caller;
-    private Long lastNotifier;
-    private Throwable lastException;
-    private boolean notifyFirstIntervalErrorAsWarning;
-    private long counter;
 
-    public Notifier(Mailer pluginMailer, String className) {
+    private final Mailer mailer;
+    private final String caller;
+    private boolean notifyFirstErrorAsWarning;
+    private ErrorNotifier errorNotifier = new ErrorNotifier();
+    private int notifyInterval = 5; // in minutes for the reoccurred exceptions
+
+    public Notifier(Mailer pluginMailer, Class<?> clazz) {
         mailer = pluginMailer;
-        caller = className;
+        caller = clazz.getSimpleName();
     }
 
-    public boolean sendOnError(int notifyInterval, String msg, Throwable e) {
-        if (lastException != null && e != null) {
-            if (!lastException.getClass().equals(e.getClass())) {
+    private Notifier(Mailer pluginMailer, String clazzName) {
+        mailer = pluginMailer;
+        caller = clazzName;
+    }
+
+    public Notifier newInstance() {
+        return new Notifier(mailer, caller);
+    }
+
+    public boolean smartNotifyOnError(Class<?> clazz, Throwable e) {
+        return smartNotifyOnError(clazz, null, e);
+    }
+
+    public boolean smartNotifyOnError(Class<?> clazz, String bodyPart, Throwable e) {
+        return smartNotifyOnError(clazz, bodyPart, e, notifyInterval);
+    }
+
+    public boolean smartNotifyOnError(Class<?> clazz, String bodyPart, Throwable e, int notifyInterval) {
+        if (errorNotifier.getException() != null && e != null) {
+            if (!errorNotifier.getException().getClass().equals(e.getClass())) {
                 reset();
             }
         }
-        counter++;
-        if (lastNotifier == null) {
-            lastNotifier = new Long(0);
-        }
-        Long current = SOSDate.getMinutes(new Date());
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("[%s][notifyInterval=%sm]current=%sm, lastNotifier=%sm", caller, notifyInterval, current, lastNotifier));
-        }
-        if ((current - lastNotifier) >= notifyInterval) {
-            if (notifyFirstIntervalErrorAsWarning && counter == 1) {
+
+        errorNotifier.addCounter();
+
+        if (errorNotifier.calculate()) {
+            if (notifyFirstErrorAsWarning && errorNotifier.getCounter() == 1) {
                 if (isDebugEnabled) {
                     LOGGER.debug(String.format("[%s][sendOnWarning]%s", caller, e.toString()));
                 }
-                mailer.sendOnWarning(caller, msg, e);
+                mailer.sendOnWarning(caller, clazz.getSimpleName(), bodyPart, e);
             } else {
                 if (isDebugEnabled) {
                     LOGGER.debug(String.format("[%s][sendOnError]%s", caller, e.toString()));
                 }
-                mailer.sendOnError(caller, msg, e);
+                if (errorNotifier.getCounter() > 1) {
+                    String msg = "This error has now occurs " + errorNotifier.getCounter() + " times.";
+                    if (SOSString.isEmpty(bodyPart)) {
+                        bodyPart = msg;
+                    } else {
+                        StringBuilder sb = new StringBuilder(msg);
+                        sb.append(String.format("%s", Mailer.NEW_LINE));
+                        sb.append(bodyPart);
+                        bodyPart = sb.toString();
+                    }
+                }
+                mailer.sendOnError(caller, clazz.getSimpleName(), bodyPart, e);
             }
-            lastNotifier = current;
-            lastException = e;
+            errorNotifier.setException(e);
+            errorNotifier.setCaller(clazz);
             return true;
+        } else {
+            LOGGER.error(String.format("[%s][reoccurred][%s]%s", clazz.getSimpleName(), errorNotifier.getCounter(), e.toString()));
         }
         return false;
     }
 
-    public boolean sendOnError(String callerMethod, Throwable e) {
-        return sendOnError(callerMethod, null, e);
-    }
-
-    public boolean sendOnError(String callerMethod, String bodyPart, Throwable e) {
-        counter++;
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("[%s][%s][%s][sendOnError]%s", caller, callerMethod, bodyPart, e.toString()));
-        }
-        mailer.sendOnError(caller, callerMethod, bodyPart, e);
-
-        lastNotifier = SOSDate.getMinutes(new Date());
-        lastException = e;
-        return true;
-    }
-
-    public boolean sendOnRecovery(String msg) {
-        if (lastNotifier != null) {
+    public boolean smartNotifyOnRecovery() {
+        if (errorNotifier.getCounter() > 0) {
             if (isDebugEnabled) {
-                LOGGER.debug(String.format("[%s][sendOnRecovery]%s", caller, lastException == null ? "lastException is null" : lastException
-                        .toString()));
+                LOGGER.debug(String.format("[%s][smartNotifyOnRecovery]%s", caller, errorNotifier.getException() == null ? "lastException is null"
+                        : errorNotifier.getException().toString()));
             }
-            mailer.sendOnRecovery(caller, msg, lastException);
+            mailer.sendOnRecovery(caller, errorNotifier.getCaller().getSimpleName(), errorNotifier.getException());
             reset();
             return true;
         }
         return false;
     }
 
-    public void setNotifyFirstIntervalErrorAsWarning(boolean val) {
-        notifyFirstIntervalErrorAsWarning = val;
+    public void notifyOnError(String callerMethod, Throwable e) {
+        notifyOnError(callerMethod, null, e);
     }
 
-    public boolean setNotifyFirstIntervalErrorAsWarning() {
-        return notifyFirstIntervalErrorAsWarning;
+    public void notifyOnError(String callerMethod, String bodyPart, Throwable e) {
+        mailer.sendOnError(caller, callerMethod, bodyPart, e);
     }
 
-    public long getCounter() {
-        return counter;
+    public void setNotifyFirstErrorAsWarning(boolean val) {
+        notifyFirstErrorAsWarning = val;
+    }
+
+    public boolean geNotifyFirstErrorAsWarning() {
+        return notifyFirstErrorAsWarning;
+    }
+
+    public void setNotifyInterval(int val) {
+        notifyInterval = val;
+    }
+
+    public int getNotifyInterval() {
+        return notifyInterval;
     }
 
     private void reset() {
-        counter = 0;
-        lastNotifier = null;
-        lastException = null;
+        errorNotifier = new ErrorNotifier();
+    }
+
+    private class ErrorNotifier {
+
+        private long counter = 0;
+        private Long last = new Long(0);
+        private Throwable exception;
+        private Class<?> caller;
+
+        public void addCounter() {
+            counter++;
+        }
+
+        public long getCounter() {
+            return counter;
+        }
+
+        public boolean calculate() {
+            Long current = SOSDate.getMinutes(new Date());
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][notifyInterval=%sm][diff=%sm][current=%sm, last=%sm]", caller, notifyInterval, (current - last),
+                        current, last));
+            }
+            if ((current - last) >= notifyInterval) {
+                last = current;
+                return true;
+            }
+            return false;
+        }
+
+        public Throwable getException() {
+            return exception;
+        }
+
+        public void setException(Throwable val) {
+            exception = val;
+        }
+
+        public void setCaller(Class<?> val) {
+            caller = val;
+        }
+
+        public Class<?> getCaller() {
+            return caller;
+        }
     }
 }

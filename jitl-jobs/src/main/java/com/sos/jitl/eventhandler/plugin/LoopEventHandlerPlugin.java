@@ -20,6 +20,7 @@ import com.sos.exception.SOSNoResponseException;
 import com.sos.jitl.eventhandler.handler.EventHandlerSettings;
 import com.sos.jitl.eventhandler.handler.ILoopEventHandler;
 import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
+import com.sos.jitl.eventhandler.plugin.notifier.Notifier;
 import com.sos.scheduler.engine.kernel.Scheduler;
 import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
@@ -102,6 +103,7 @@ public class LoopEventHandlerPlugin extends AbstractPlugin {
         }
 
         Mailer mailer = getMailer();
+        Class<?> clazz = this.getClass();
         Runnable thread = new Runnable() {
 
             @Override
@@ -116,7 +118,7 @@ public class LoopEventHandlerPlugin extends AbstractPlugin {
                     if (eventHandler.getSettings() == null) {
                         eventHandler.setSettings(getSettings());
                     }
-                    eventHandler.onActivate(mailer);
+                    eventHandler.onActivate(new Notifier(mailer, clazz));
                 } catch (Throwable e) {
                     LOGGER.error(String.format("%s[exception]%s", method, e.toString()), e);
                     mailer.sendOnError(CLASS_NAME, "onActivate", e);

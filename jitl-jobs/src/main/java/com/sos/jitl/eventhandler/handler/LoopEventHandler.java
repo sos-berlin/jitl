@@ -13,7 +13,6 @@ import com.sos.jitl.eventhandler.EventMeta.EventOverview;
 import com.sos.jitl.eventhandler.EventMeta.EventPath;
 import com.sos.jitl.eventhandler.EventMeta.EventSeq;
 import com.sos.jitl.eventhandler.EventMeta.EventType;
-import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
 import com.sos.jitl.eventhandler.plugin.notifier.Notifier;
 import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
 import com.sos.scheduler.engine.eventbus.EventPublisher;
@@ -28,7 +27,6 @@ public abstract class LoopEventHandler extends EventHandler implements ILoopEven
     private final SchedulerXmlCommandExecutor xmlCommandExecutor;
     private final EventPublisher publisher;
     private EventHandlerSettings settings;
-    private Mailer mailer;
     private Notifier notifier;
 
     private boolean closed = false;
@@ -58,10 +56,9 @@ public abstract class LoopEventHandler extends EventHandler implements ILoopEven
     }
 
     @Override
-    public void onActivate(Mailer eventMailer) {
+    public void onActivate(Notifier pluginNotifier) {
         closed = false;
-        mailer = eventMailer;
-        notifier = new Notifier(mailer, this.getClass().getSimpleName());
+        notifier = pluginNotifier;
     }
 
     @Override
@@ -95,7 +92,7 @@ public abstract class LoopEventHandler extends EventHandler implements ILoopEven
         } catch (Exception e) {
             LOGGER.error(String.format("%s[processing stopped]%s", method, e.toString()), e);
             if (notifier != null) {
-                notifier.sendOnError("start", String.format("%s processing stopped", method), e);
+                notifier.notifyOnError("start", String.format("%s processing stopped", method), e);
             }
             closed = true;
         }
@@ -146,7 +143,7 @@ public abstract class LoopEventHandler extends EventHandler implements ILoopEven
                 } else {
                     LOGGER.error(String.format("%s[%s]%s", getMethodName(method), count, e.toString()), e);
                     if (notifier != null) {
-                        notifier.sendOnError(method, String.format("%s[%s]", getMethodName(method), count), e);
+                        notifier.smartNotifyOnError(this.getClass(), String.format("%s[%s]", getMethodName(method), count), e);
                     }
                     wait(waitIntervalOnError);
                 }
@@ -420,10 +417,6 @@ public abstract class LoopEventHandler extends EventHandler implements ILoopEven
 
     public EventType[] getEventTypes() {
         return eventTypes;
-    }
-
-    public Mailer getMailer() {
-        return mailer;
     }
 
     public boolean isClosed() {

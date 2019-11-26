@@ -14,12 +14,12 @@ import org.slf4j.LoggerFactory;
 import com.sos.hibernate.classes.SOSHibernate;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.jitl.dailyplan.db.DailyPlanAdjustment;
+import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.eventhandler.EventMeta.EventKey;
 import com.sos.jitl.eventhandler.EventMeta.EventType;
 import com.sos.jitl.eventhandler.handler.LoopEventHandler;
-import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
-import com.sos.jitl.dailyplan.db.DailyPlanAdjustment;
-import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
+import com.sos.jitl.eventhandler.plugin.notifier.Notifier;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.exceptions.SOSReportingConcurrencyException;
 import com.sos.jitl.reporting.exceptions.SOSReportingInvalidSessionException;
@@ -51,16 +51,15 @@ public class FactEventHandler extends LoopEventHandler {
     private boolean useNotificationPlugin = false;
     // wait interval after db executions in seconds
     private int waitInterval = 2;
-    // in minutes
-    private int notifyIntervalOnHibernateInvalidSession = 5;
+    private Notifier pluginNotifier;
 
     public FactEventHandler(SchedulerXmlCommandExecutor xmlExecutor, EventPublisher eventBus) {
         super(xmlExecutor, eventBus);
     }
 
     @Override
-    public void onActivate(Mailer mailer) {
-        super.onActivate(mailer);
+    public void onActivate(Notifier notifier) {
+        super.onActivate(notifier);
 
         String method = "onActivate";
         try {
@@ -70,6 +69,10 @@ public class FactEventHandler extends LoopEventHandler {
             createReportingFactory(getSettings().getHibernateConfigurationReporting());
             createSchedulerFactory(getSettings().getHibernateConfigurationScheduler());
 
+            if (useNotificationPlugin) {
+                pluginNotifier = getNotifier().newInstance();
+            }
+
             EventType[] observedEventTypes = new EventType[] { EventType.TaskStarted, EventType.TaskClosed, EventType.OrderStepStarted,
                     EventType.OrderStepEnded, EventType.OrderFinished, EventType.OrderRemoved, EventType.OrderResumed, EventType.OrderWaitingInTask };
 
@@ -77,7 +80,7 @@ public class FactEventHandler extends LoopEventHandler {
             start(observedEventTypes);
         } catch (Exception e) {
             LOGGER.error(String.format("[%s]%s", method, e.toString()), e);
-            getNotifier().sendOnError(method, e);
+            getNotifier().notifyOnError(method, e);
         }
     }
 
@@ -134,7 +137,7 @@ public class FactEventHandler extends LoopEventHandler {
                 executeDailyPlan(reportingSession, factModel.isChanged(), events);
                 rerun = false;
             }
-            if (getNotifier().sendOnRecovery(method)) {
+            if (getNotifier().smartNotifyOnRecovery()) {
                 LOGGER.info(String.format("[%s]recovered from previous error", method));
             }
         } catch (SOSReportingConcurrencyException e) {
@@ -146,15 +149,10 @@ public class FactEventHandler extends LoopEventHandler {
         } catch (SOSReportingInvalidSessionException e) {
             rerun = true;
             waitIntervalOnFinally = getWaitIntervalOnError();
-            if (getNotifier().sendOnError(notifyIntervalOnHibernateInvalidSession, method, e)) {
-                LOGGER.error(String.format("[%s]%s", method, e.toString()), e);
-            } else {
-                LOGGER.error(String.format("[%s][reoccurred][%s]%s", method, getNotifier().getCounter(), e.toString()));
-            }
+            getNotifier().smartNotifyOnError(getClass(), e);
         } catch (Throwable e) {
             rerun = true;
-            LOGGER.error(String.format("[%s]%s", method, e.toString()), e);
-            getNotifier().sendOnError(method, e);
+            getNotifier().smartNotifyOnError(getClass(), e);
         } finally {
             if (factModel != null) {
                 factModel.exit();
@@ -260,7 +258,7 @@ public class FactEventHandler extends LoopEventHandler {
         options.wait_interval.setValue(String.valueOf(waitInterval));
 
         factModel = new FactModel(reportingSession, schedulerSession, options, events);
-        factModel.init(getMailer(), getSettings().getConfigDirectory());
+        factModel.init(pluginNotifier, getSettings().getConfigDirectory());
         factModel.process();
 
         if (factModel.isChanged()) {
