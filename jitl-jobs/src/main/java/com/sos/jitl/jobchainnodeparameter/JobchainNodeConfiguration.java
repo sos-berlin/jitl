@@ -343,4 +343,12 @@ public class JobchainNodeConfiguration {
         this.listOfTaskParameters = listOfTaskParameters;
     }
 
+    
+    public ParameterSubstitutor getParameterSubstitutor() {
+        if (parameterSubstitutor == null) {
+            parameterSubstitutor = new ParameterSubstitutor();
+        }
+        return parameterSubstitutor;
+    }
+
 }
