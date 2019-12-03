@@ -1,7 +1,7 @@
 package com.sos.jitl.jobstreams.db;
 
 import com.sos.jitl.jobstreams.interfaces.IJSJobConditionKey;
-
+ 
 public class DBItemOutConditionWithEvent implements IJSJobConditionKey {
 
     private DBItemOutCondition dbItemOutCondition;

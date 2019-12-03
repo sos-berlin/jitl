@@ -53,7 +53,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
 
         try {
             HashMap<String, String> pobjHM = new HashMap<String, String>();
-            pobjHM.put("command_url", "http://ur_dell:44001/jobscheduler/master/api/command");
+            pobjHM.put("command_url", "http://localhost:4446/jobscheduler/master/api/command");
          //   pobjHM.put("dayOffset", 30);
 
             // pobjHM.put("configurationFile", "R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
@@ -61,7 +61,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             // pobjHM.put("configurationFile",
             // "D:/Arbeit/scheduler/jobscheduler/re-dell_4444_jobscheduler.1.11x64-snapshot/scheduler_data/config/hibernate.cfg.xml");
             objE.getOptions().setAllOptions(pobjHM);
-            assertEquals("", objOptions.commandUrl.getValue(), "http://ur_dell:44001/jobscheduler/master/api/command");
+            assertEquals("", objOptions.commandUrl.getValue(), "http://localhost:4446/jobscheduler/master/api/command");
             // objE.setSchedulerId("re-dell_4444_jobscheduler.1.11x64-snapshot");
 
             objE.setSchedulerId("scheduler_joc_cockpit");
@@ -102,6 +102,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(createDailyPlanOptions.configuration_file.getValue());
             sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
             sosHibernateFactory.addClassMapping(DBLayer.getInventoryClassMapping());
+            sosHibernateFactory.addClassMapping(DBLayer.getJobStreamClassMapping());
 
             sosHibernateFactory.build();
             SOSHibernateSession session = sosHibernateFactory.openStatelessSession();
