@@ -300,6 +300,74 @@
              </div>
                </note>
             </param>
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
+                   name="credential_store_filename"
+                   required="false">
+               <note language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               Der Parameter referenziert den Pfad zu einem KeePass Credential Store.
+               Wenn dieser Parameter gesetzt ist, können andere Parameter per Credential Store Referenz gesetzt werden.
+               Der Parameter hat dann das Format cs://Pfad/zum/Eintrag@Feldname .  
+             </div>
+               </note>
+               <note language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               This parameter references the path to a KeePass credential store.
+               If this parameter is set, other parameters can be set using a credential store reference.
+               The parameter format is cs://path/to/entry@fieldname .  
+             </div>
+               </note>
+            </param>
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
+                   name="credential_store_password"
+                   required="false">
+               <note language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               Der Parameter gibt das Passwort für den Zugriff auf den KeePass Credential Store.
+             </div>
+               </note>
+               <note language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               This parameter references the password to access the KeePass credential store.
+             </div>
+               </note>
+            </param>
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
+                   name="credential_store_key_filename"
+                   required="false">
+               <note language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               Der Parameter referenziert den Pfad zu einem Keyfile für den Zugriff auf den KeePass Credential Store.
+             </div>
+               </note>
+               <note language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               This parameter references the path to a key file to access the KeePass credential store.
+             </div>
+               </note>
+            </param>
+            <param xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                   xmlns:xi="http://www.w3.org/2001/XInclude"
+                   name="credential_store_entry_path"
+                   required="false">
+               <note language="de">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               Der Parameter referenziert einen Pfad zu einem Eintrag innerhalb des credential stores und stellt diesen für andere Referenzen global bereit.
+               Wenn dieser Parameter gesetzt ist, können andere Parameter per Credential Store Referenz gesetzt werden.
+               Diese anderen Parameter können dann den Pfad weglassen und nur die Feldreferenz angeben, z.B. cs://@Feldname .  
+             </div>
+               </note>
+               <note language="en">
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+               This parameter references a path to an entry in the credential store and provides the path to other references.
+               If this parameter is set, other parameters can be set using a credential store reference.
+               Those other parameters can leave out the path and use only the field reference, e.g. like cs://@fieldname .
+             </div>
+               </note>
+            </param>
         </params>
         <params id="return_parameter">
             <xi:include href="./params/param_exit_code.xml" parse="xml">
