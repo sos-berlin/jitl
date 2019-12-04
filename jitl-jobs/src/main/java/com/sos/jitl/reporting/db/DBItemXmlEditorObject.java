@@ -34,7 +34,9 @@ public class DBItemXmlEditorObject extends DbItem implements Serializable {
     private String name;
     private String schemaLocation;
     private String configurationDraft;
+    private String configurationDraftJson;
     private String configurationDeployed;
+    private String configurationDeployedJson;
     private Long auditLogId;
     private String account;
     private Date deployed;
@@ -102,6 +104,15 @@ public class DBItemXmlEditorObject extends DbItem implements Serializable {
         configurationDraft = val;
     }
 
+    @Column(name = "[CONFIGURATION_DRAFT_JSON]", nullable = true)
+    public String getConfigurationDraftJson() {
+        return configurationDraftJson;
+    }
+
+    public void setConfigurationDraftJson(String val) {
+        configurationDraftJson = val;
+    }
+
     @Column(name = "[CONFIGURATION_DEPLOYED]", nullable = true)
     public String getConfigurationDeployed() {
         return configurationDeployed;
@@ -109,6 +120,15 @@ public class DBItemXmlEditorObject extends DbItem implements Serializable {
 
     public void setConfigurationDeployed(String val) {
         configurationDeployed = val;
+    }
+
+    @Column(name = "[CONFIGURATION_DEPLOYED_JSON]", nullable = true)
+    public String getConfigurationDeployedJson() {
+        return configurationDeployedJson;
+    }
+
+    public void setConfigurationDeployedJson(String val) {
+        configurationDeployedJson = val;
     }
 
     @Column(name = "[AUDIT_LOG_ID]", nullable = false)
