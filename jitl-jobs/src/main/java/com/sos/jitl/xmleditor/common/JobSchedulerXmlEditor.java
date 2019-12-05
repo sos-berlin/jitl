@@ -11,8 +11,11 @@ public class JobSchedulerXmlEditor {
     public static final String SCHEMA_URI_YADE = "https://www.sos-berlin.com/schema/yade/YADE_configuration_v1.12.xsd";
     public static final String SCHEMA_URI_NOTIFICATION = "https://www.sos-berlin.com/schema/jobscheduler/SystemMonitorNotification_v1.0.xsd";
 
-    public static final String SCHEMA_YADE = "YADE_configuration_v1.12.xsd";
-    public static final String SCHEMA_NOTIFICATION = "SystemMonitorNotification_v1.0.xsd";
+    public static final String SCHEMA_FILENAME_YADE = "YADE_configuration_v1.12.xsd";
+    public static final String SCHEMA_FILENAME_NOTIFICATION = "SystemMonitorNotification_v1.0.xsd";
+
+    public static final String SCHEMA_ROOT_ELEMENT_NAME_YADE = "Configurations";
+    public static final String SCHEMA_ROOT_ELEMENT_NAME__NOTIFICATION = "SystemMonitorNotification";
 
     public static String getLivePathYadeXml() {
         return String.format("%s/%s/%s.xml", CONFIGURATION_LIVE_FOLDER, CONFIGURATION_BASENAME_YADE, CONFIGURATION_BASENAME_YADE);
@@ -23,7 +26,7 @@ public class JobSchedulerXmlEditor {
     }
 
     public static String getLivePathYadeXsd() {
-        return String.format("%s/%s/%s", CONFIGURATION_LIVE_FOLDER, CONFIGURATION_BASENAME_YADE, SCHEMA_YADE);
+        return String.format("%s/%s/%s", CONFIGURATION_LIVE_FOLDER, CONFIGURATION_BASENAME_YADE, SCHEMA_FILENAME_YADE);
     }
 
     public static String getLivePathNotificationXml() {
@@ -31,7 +34,7 @@ public class JobSchedulerXmlEditor {
     }
 
     public static String getLivePathNotificationXsd() {
-        return String.format("%s/%s/%s", CONFIGURATION_LIVE_FOLDER, CONFIGURATION_BASENAME_NOTIFICATION, SCHEMA_NOTIFICATION);
+        return String.format("%s/%s/%s", CONFIGURATION_LIVE_FOLDER, CONFIGURATION_BASENAME_NOTIFICATION, SCHEMA_FILENAME_NOTIFICATION);
     }
 
     public static String getNormalizedLiveFolder(ObjectType type) {
@@ -39,6 +42,15 @@ public class JobSchedulerXmlEditor {
             return String.format("/%s/%s", CONFIGURATION_LIVE_FOLDER, CONFIGURATION_BASENAME_YADE);
         } else if (type.equals(ObjectType.NOTIFICATION)) {
             return String.format("/%s/%s", CONFIGURATION_LIVE_FOLDER, CONFIGURATION_BASENAME_NOTIFICATION);
+        }
+        return null;
+    }
+
+    public static String getRootElementName(ObjectType type) {
+        if (type.equals(ObjectType.YADE)) {
+            return SCHEMA_ROOT_ELEMENT_NAME_YADE;
+        } else if (type.equals(ObjectType.NOTIFICATION)) {
+            return SCHEMA_ROOT_ELEMENT_NAME__NOTIFICATION;
         }
         return null;
     }

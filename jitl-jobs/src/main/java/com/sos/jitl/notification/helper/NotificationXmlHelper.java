@@ -7,58 +7,61 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sos.jitl.notification.helper.elements.timer.ElementTimerScript;
+import com.sos.jitl.xmleditor.common.JobSchedulerXmlEditor;
 
 import sos.util.SOSString;
 import sos.xml.SOSXMLXPath;
 
 public class NotificationXmlHelper {
 
-    public static final String ELEMENT_NAME_ROOT = "SystemMonitorNotification";
-
     public static String getSystemMonitorNotificationSystemId(SOSXMLXPath xpath) throws Exception {
         if (xpath.getRoot() == null) {
             throw new Exception("xpath.root is NULL");
         }
-        if (!xpath.getRoot().getNodeName().equalsIgnoreCase(ELEMENT_NAME_ROOT)) {
-            throw new Exception(String.format("root is %s and not the %s Element", xpath.getRoot().getNodeName(), ELEMENT_NAME_ROOT));
+        if (!xpath.getRoot().getNodeName().equalsIgnoreCase(JobSchedulerXmlEditor.SCHEMA_ROOT_ELEMENT_NAME__NOTIFICATION)) {
+            throw new Exception(String.format("root is %s and not the %s Element", xpath.getRoot().getNodeName(),
+                    JobSchedulerXmlEditor.SCHEMA_ROOT_ELEMENT_NAME__NOTIFICATION));
         }
         return xpath.getRoot().getAttribute("system_id");
     }
 
     public static NodeList selectNotificationJobChainDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/" + ELEMENT_NAME_ROOT + "/Notification/NotificationObjects/JobChain");
+        return xpath.selectNodeList("/" + JobSchedulerXmlEditor.SCHEMA_ROOT_ELEMENT_NAME__NOTIFICATION
+                + "/Notification/NotificationObjects/JobChain");
     }
 
     public static NodeList selectNotificationJobDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/" + ELEMENT_NAME_ROOT + "/Notification/NotificationObjects/Job");
+        return xpath.selectNodeList("/" + JobSchedulerXmlEditor.SCHEMA_ROOT_ELEMENT_NAME__NOTIFICATION + "/Notification/NotificationObjects/Job");
     }
 
     public static NodeList selectNotificationMonitorDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/" + ELEMENT_NAME_ROOT + "/Notification/NotificationMonitor");
+        return xpath.selectNodeList("/" + JobSchedulerXmlEditor.SCHEMA_ROOT_ELEMENT_NAME__NOTIFICATION + "/Notification/NotificationMonitor");
     }
 
     public static NodeList selectNotificationMonitorOnErrorDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/" + ELEMENT_NAME_ROOT + "/Notification/NotificationMonitor[@service_name_on_error]");
+        return xpath.selectNodeList("/" + JobSchedulerXmlEditor.SCHEMA_ROOT_ELEMENT_NAME__NOTIFICATION
+                + "/Notification/NotificationMonitor[@service_name_on_error]");
     }
 
     public static NodeList selectNotificationMonitorOnSuccessDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/" + ELEMENT_NAME_ROOT + "/Notification/NotificationMonitor[@service_name_on_success]");
+        return xpath.selectNodeList("/" + JobSchedulerXmlEditor.SCHEMA_ROOT_ELEMENT_NAME__NOTIFICATION
+                + "/Notification/NotificationMonitor[@service_name_on_success]");
     }
 
     public static NodeList selectTimerJobChainDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/" + ELEMENT_NAME_ROOT + "/Timer/TimerJobChain");
+        return xpath.selectNodeList("/" + JobSchedulerXmlEditor.SCHEMA_ROOT_ELEMENT_NAME__NOTIFICATION + "/Timer/TimerJobChain");
     }
 
     public static NodeList selectTimerJobDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/" + ELEMENT_NAME_ROOT + "/Timer/TimerJob");
+        return xpath.selectNodeList("/" + JobSchedulerXmlEditor.SCHEMA_ROOT_ELEMENT_NAME__NOTIFICATION + "/Timer/TimerJob");
     }
 
     public static NodeList selectTimerDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/" + ELEMENT_NAME_ROOT + "/Timer");
+        return xpath.selectNodeList("/" + JobSchedulerXmlEditor.SCHEMA_ROOT_ELEMENT_NAME__NOTIFICATION + "/Timer");
     }
 
     public static NodeList selectNotificationDefinitions(SOSXMLXPath xpath) throws Exception {
-        return xpath.selectNodeList("/" + ELEMENT_NAME_ROOT + "/Notification");
+        return xpath.selectNodeList("/" + JobSchedulerXmlEditor.SCHEMA_ROOT_ELEMENT_NAME__NOTIFICATION + "/Notification");
     }
 
     public static Node selectNotificationMonitor(SOSXMLXPath xpath, Node notification) throws Exception {
