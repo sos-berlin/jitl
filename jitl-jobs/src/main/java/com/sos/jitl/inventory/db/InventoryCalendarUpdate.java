@@ -31,6 +31,8 @@ public class InventoryCalendarUpdate {
                 factory.setAutoCommit(false);
                 //factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
                 factory.addClassMapping(DBLayer.getInventoryClassMapping());
+                factory.addClassMapping(DBLayer.getJobStreamClassMapping());
+                
                 factory.build();
                 connection = factory.openStatelessSession(InventoryCalendarUpdate.class.getName());
                 connection.beginTransaction();

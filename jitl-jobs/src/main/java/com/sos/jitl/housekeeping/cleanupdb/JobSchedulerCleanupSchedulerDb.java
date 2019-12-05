@@ -38,6 +38,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
         sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
         sosHibernateFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
         sosHibernateFactory.addClassMapping(DBLayer.getYadeClassMapping());
+        
         sosHibernateFactory.build();
         return sosHibernateFactory.openStatelessSession();
     }

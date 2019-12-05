@@ -117,6 +117,8 @@ public class InventoryCleanup {
         factory.setAutoCommit(autoCommit);
         factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         factory.addClassMapping(DBLayer.getInventoryClassMapping());
+        factory.addClassMapping(DBLayer.getJobStreamClassMapping());
+        
         factory.build();
         return factory.openSession();
     }

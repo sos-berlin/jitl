@@ -92,6 +92,9 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
         if (filter.getJobChain() != null && !"".equals(filter.getJobChain())) {
             query.setParameter("jobChain", filter.getJobChain());
         }
+        if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
+            query.setParameter("jobStream", filter.getJobStream());
+        }
         row = sosHibernateSession.executeUpdate(query);            
         return row;
     }
@@ -154,6 +157,10 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
             where += String.format(and + " p.jobChain %s :jobChain", SearchStringHelper.getSearchPathOperator(filter.getJobChain()));
             and = " and ";
         }
+        if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
+            where += and + " p.jobStream=:jobStream";
+            and = " and ";
+        }
         if (filter.getOrderId() != null && !"".equals(filter.getOrderId())) {
             where += String.format(and + " p.orderId %s :orderId", SearchStringHelper.getSearchOperator(filter.getOrderId()));
             and = " and ";
@@ -163,6 +170,13 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
                 where += and + " p.isLate = 1";
             } else {
                 where += and + " p.isLate = 0";
+            }
+            and = " and ";
+        }
+        if (filter.isJobStream() != null) {
+            if (filter.isJobStream()) {
+                where += and + " p.jobStream is not null and p.jobStream <> ''";
+               
             }
             and = " and ";
         }
@@ -213,6 +227,9 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
         }
         if (filter.getJobChain() != null && !"".equals(filter.getJobChain())) {
             query.setParameter("jobChain", SearchStringHelper.getSearchPathValue(filter.getJobChain()));
+        }
+        if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
+            query.setParameter("jobStream", filter.getJobChain());
         }
         if (filter.getOrderId() != null && !"".equals(filter.getOrderId())) {
             query.setParameter("orderId", filter.getOrderId());

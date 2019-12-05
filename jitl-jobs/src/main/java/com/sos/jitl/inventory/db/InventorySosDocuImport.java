@@ -131,7 +131,7 @@ public class InventorySosDocuImport {
                 String schedulerId = args[1];
                 Path docuPath = Paths.get(args[2]);
                 if (args.length > 3) {
-                    calledBySetup = true; 
+                    calledBySetup = true;
                 }
                 Set<DBItemDocumentation> newItems = createNewSosDocuDBItems(schedulerId, docuPath);
                 System.out.println("... " + newItems.size() + " documentation files found to import.");
@@ -143,9 +143,9 @@ public class InventorySosDocuImport {
                     connection = factory.openStatelessSession(InventorySosDocuImport.class.getName());
                     connection.beginTransaction();
                     List<DBItemDocumentation> alreadyExisting = getAlreadyExistingSosDocus(schedulerId);
-                    //connection.commit();
+                    // connection.commit();
                     System.out.println("... " + alreadyExisting.size() + " documentation files already exist in database.");
-                    //connection.beginTransaction();
+                    // connection.beginTransaction();
                     saveOrUpdate(schedulerId, alreadyExisting, newItems);
                     connection.commit();
                 }

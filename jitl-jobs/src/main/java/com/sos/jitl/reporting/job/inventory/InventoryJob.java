@@ -29,6 +29,7 @@ public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
             factory.setAutoCommit(getOptions().connection_autocommit.value());
             factory.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
+            factory.addClassMapping(DBLayer.getJobStreamClassMapping());
             factory.build();
             sosHibernateSession = factory.openSession();
         } catch (Exception ex) {

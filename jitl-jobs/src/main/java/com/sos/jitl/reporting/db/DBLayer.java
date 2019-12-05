@@ -253,6 +253,14 @@ public class DBLayer {
         cl.add(DailyPlanDBItem.class);
         cl.add(JocConfigurationDbItem.class);
         cl.add(SchedulerEventDBItem.class);
+        
+        cl.add(com.sos.jitl.jobstreams.db.DBItemOutCondition.class);
+        cl.add(com.sos.jitl.jobstreams.db.DBItemOutConditionEvent.class);
+        cl.add(com.sos.jitl.jobstreams.db.DBItemInCondition.class);
+        cl.add(com.sos.jitl.jobstreams.db.DBItemInConditionCommand.class);
+        cl.add(com.sos.jitl.jobstreams.db.DBItemConsumedInCondition.class);
+        cl.add(com.sos.jitl.jobstreams.db.DBItemEvent.class);
+
         return cl;
     }
 

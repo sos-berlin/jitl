@@ -84,6 +84,7 @@ public class InventoryTest {
             factory.setAutoCommit(false);
             factory.addClassMapping(DBLayer.getInventoryClassMapping());
             factory.addClassMapping(DBLayer.getReportingClassMapping());
+            
             factory.build();
             String answerXml = getResponse();
             String httpPort = new SOSXMLXPath(new StringBuffer(getResponse())).selectSingleNodeValue("/spooler/answer/state/@http_port");

@@ -37,6 +37,7 @@ public class InventoryModelTest {
         factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 //        connection.setSessionFlushMode(FlushMode.COMMIT);
         factory.addClassMapping(DBLayer.getInventoryClassMapping());
+        
         factory.build();
         StringBuilder connectTo = new StringBuilder();
 //        connectTo.append("http://sp:40119");
