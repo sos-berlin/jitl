@@ -129,7 +129,8 @@ public class DBLayerOutConditions {
         return row;
     }
 
-    public void deleteInsert(OutConditions outConditions) throws SOSHibernateException {
+    public String deleteInsert(OutConditions outConditions) throws SOSHibernateException {
+        String jobStream = "";
         DBLayerOutConditions dbLayerOutConditions = new DBLayerOutConditions(sosHibernateSession);
         DBLayerOutConditionEvents dbLayerOutConditionEvents = new DBLayerOutConditionEvents(sosHibernateSession);
         DBLayerEvents dbLayerEvents = new DBLayerEvents(sosHibernateSession);
@@ -153,6 +154,7 @@ public class DBLayerOutConditions {
                 dbItemOutCondition.setExpression(expression);
                 dbItemOutCondition.setJob(jobOutCondition.getJob());
                 dbItemOutCondition.setSchedulerId(outConditions.getJobschedulerId());
+                jobStream = outCondition.getJobStream();
                 dbItemOutCondition.setJobStream(outCondition.getJobStream());
                 dbItemOutCondition.setCreated(new Date());
                 sosHibernateSession.save(dbItemOutCondition);
@@ -172,6 +174,7 @@ public class DBLayerOutConditions {
                 dbLayerEvents.delete(filterEvents);
             }
         }
+        return jobStream;
 
     }
 
