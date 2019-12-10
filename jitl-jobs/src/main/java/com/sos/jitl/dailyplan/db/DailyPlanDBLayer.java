@@ -159,7 +159,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
             and = " and ";
         }
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
-            where += and + " p.jobStream=:jobStream";
+            where += String.format(and + " p.jobStream %s :jobStream", SearchStringHelper.getSearchPathOperator(filter.getJobStream()));
             and = " and ";
         }
         if (filter.getOrderId() != null && !"".equals(filter.getOrderId())) {
@@ -229,7 +229,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
             query.setParameter("jobChain", SearchStringHelper.getSearchPathValue(filter.getJobChain()));
         }
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
-            query.setParameter("jobStream", filter.getJobStream());
+            query.setParameter("jobStream",  SearchStringHelper.getSearchPathValue(filter.getJobStream()));
         }
         if (filter.getOrderId() != null && !"".equals(filter.getOrderId())) {
             query.setParameter("orderId", filter.getOrderId());
