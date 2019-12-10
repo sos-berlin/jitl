@@ -229,7 +229,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
             query.setParameter("jobChain", SearchStringHelper.getSearchPathValue(filter.getJobChain()));
         }
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
-            query.setParameter("jobStream", filter.getJobChain());
+            query.setParameter("jobStream", filter.getJobStream());
         }
         if (filter.getOrderId() != null && !"".equals(filter.getOrderId())) {
             query.setParameter("orderId", filter.getOrderId());
