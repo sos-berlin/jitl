@@ -188,7 +188,8 @@ public class DBItemXmlEditorObject extends DbItem implements Serializable {
     @Override
     public int hashCode() {
         // always build on unique constraint
-        return new HashCodeBuilder().append(schedulerId).append(objectType).append(name).toHashCode();
+        // return new HashCodeBuilder().append(schedulerId).append(objectType).append(name).toHashCode();
+        return new HashCodeBuilder().append(id).toHashCode();
     }
 
     @Override
@@ -201,7 +202,8 @@ public class DBItemXmlEditorObject extends DbItem implements Serializable {
             return false;
         }
         DBItemXmlEditorObject rhs = ((DBItemXmlEditorObject) other);
-        return new EqualsBuilder().append(schedulerId, rhs.schedulerId).append(objectType, rhs.objectType).append(name, rhs.name).isEquals();
+        // return new EqualsBuilder().append(schedulerId, rhs.schedulerId).append(objectType, rhs.objectType).append(name, rhs.name).isEquals();
+        return new EqualsBuilder().append(id, rhs.id).isEquals();
     }
 
 }
