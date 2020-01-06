@@ -46,7 +46,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "order")
 public class Order {
 
-    @XmlElement(required = true)
+    @XmlElement(required = false)
     protected Params params;
     @XmlElement(required = true)
     protected List<Process> process;
