@@ -76,7 +76,7 @@ public class InventoryTest {
     private String supervisorPort = null;
     
     @Test
-    @Ignore
+//    @Ignore
     public void testEventUpdateExecute() {
         InventoryEventUpdateUtil eventUpdates = null;
         try {

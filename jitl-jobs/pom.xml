@@ -110,11 +110,6 @@
 		</dependency>
 
 		<!-- 3rd party jar files -->
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-		</dependency>
-
 		<!-- this dependency is needed as long as tests in this artifact are located 
 			in the main/java folder and not in main/test -->
 		<dependency>

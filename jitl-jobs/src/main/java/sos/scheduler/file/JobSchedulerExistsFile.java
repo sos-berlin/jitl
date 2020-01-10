@@ -4,7 +4,8 @@ import static com.sos.scheduler.messages.JSMessages.JSJ_F_0010;
 
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.JSHelper.io.SOSFileSystemOperationsImpl;
@@ -13,7 +14,7 @@ import com.sos.i18n.annotation.I18NResourceBundle;
 @I18NResourceBundle(baseName = "com_sos_scheduler_messages", defaultLocale = "en")
 public class JobSchedulerExistsFile extends JobSchedulerFileOperationBase {
 
-	private static final Logger LOGGER = Logger.getLogger(JobSchedulerExistsFile.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerExistsFile.class);
 	private static final String CLASSNAME = "JobSchedulerExistsFile";
 
 	@Override
@@ -31,7 +32,7 @@ public class JobSchedulerExistsFile extends JobSchedulerFileOperationBase {
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage(), e);
 			String strM = JSJ_F_0010.params(CLASSNAME, e.getMessage());
-			logger.fatal(strM);
+			logger.error(strM);
 			throw new JobSchedulerException(strM, e);
 		}
 	}
