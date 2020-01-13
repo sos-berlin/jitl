@@ -15,7 +15,8 @@ public class ManagedDatabaseModelTest {
 
         ManagedDatabaseJobOptions opt = new ManagedDatabaseJobOptions();
         opt.hibernate_configuration_file.setValue(Config.HIBERNATE_CONFIGURATION_FILE);
-        opt.command.setValue("select * from REPORTING_EXECUTIONS;");
+        opt.command.setValue("select * from REPORTING_EXECUTIONS limit 0,1");
+        //opt.command.setValue("D://scheduler/config/test.sql");
         opt.resultset_as_parameters.setValue(ManagedDatabaseModel.PARAMETER_NAME_VALUE);
         opt.resultset_as_warning.setValue("false");
         SOSHibernateFactory factory = null;
