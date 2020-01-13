@@ -40,7 +40,7 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
             getOptions().checkMandatory();
              DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
             
-            SOSKeePassResolver r = new SOSKeePassResolver(objOptions.credential_store_file.getValue(), objOptions.credential_store_key_file.getValue(),null);
+            SOSKeePassResolver r = new SOSKeePassResolver(objOptions.credential_store_file.getValue(), objOptions.credential_store_key_file.getValue(),objOptions.credential_store_password.getValue());
             //objOptions.credential_store_password.getValue());
             r.setEntryPath(objOptions.credential_store_entry_path.getValue());
 
