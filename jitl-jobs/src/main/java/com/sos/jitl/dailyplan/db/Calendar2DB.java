@@ -50,6 +50,7 @@ public class Calendar2DB {
     private static final int DAYLOOP = 3;
     private static final int DEFAULT_LIMIT = 30;
     private static final Logger LOGGER = LoggerFactory.getLogger(Calendar2DB.class);
+    private static final int MAX_DAY_OFFSET = 2000;
     private static SchedulerObjectFactory schedulerObjectFactory = null;
     private Date from;
     private Date to;
@@ -281,6 +282,12 @@ public class Calendar2DB {
         } else {
             dayOffset = getDayOffsetFromPlan();
         }
+        
+        if (dayOffset > MAX_DAY_OFFSET) {
+            LOGGER.warn("Changing dayOffset from %s to %s. See: CVE-2020-6855", dayOffset,2000);
+            dayOffset = MAX_DAY_OFFSET;
+        }
+
 
         if (schedulerObjectFactory == null) {
             LOGGER.debug("schedulerObjectFactory is null");
