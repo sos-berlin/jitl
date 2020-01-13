@@ -2,7 +2,6 @@ package sos.scheduler.InstallationService;
 
 import java.io.File;
 
-import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -21,6 +20,8 @@ import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.scheduler.InstallationService.batchInstallationModel.JSInstallations;
 import sos.scheduler.InstallationService.batchInstallationModel.JSinstallation;
@@ -30,7 +31,7 @@ public class JSBatchInstallerConfigurationEditor extends Dialog {
 
     protected Object result;
     protected Shell shlJobSchedulerAgent;
-    private static final Logger LOGGER = Logger.getLogger(JSBatchInstallerConfigurationEditor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSBatchInstallerConfigurationEditor.class);
     private final Display display = Display.getCurrent();
     private Text edGlobalSchedulerId;
     private Text edGlobalPort;

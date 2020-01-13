@@ -3,10 +3,8 @@ package com.sos.jitl.eventing.checkevents;
 import java.util.HashMap;
 
 import com.sos.JSHelper.Annotations.JSOptionClass;
-
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
 import com.sos.JSHelper.Listener.JSListener;
-import org.apache.log4j.Logger;
 
 /** \class JobSchedulerCheckEventsOptions - Check if events exist
  *
@@ -23,10 +21,9 @@ import org.apache.log4j.Logger;
 @JSOptionClass(name = "JobSchedulerCheckEventsOptions", description = "Check if events exist")
 public class JobSchedulerCheckEventsOptions extends JobSchedulerCheckEventsOptionsSuperClass {
 
+    private static final long serialVersionUID = 1L;
     @SuppressWarnings("unused")
     private final String conClassName = "JobSchedulerCheckEventsOptions";
-    @SuppressWarnings("unused")
-    private static Logger logger = Logger.getLogger(JobSchedulerCheckEventsOptions.class);
 
     /** constructors */
 

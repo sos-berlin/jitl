@@ -2,16 +2,20 @@
 package com.sos.jitl.latecomers;
 
 import java.util.HashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Annotations.JSOptionClass;
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
 import com.sos.JSHelper.Listener.JSListener;
-import org.apache.log4j.Logger;
 
 @JSOptionClass(name = "JobSchedulerStartLatecomersOptions", description = "Starting late comers")
 public class JobSchedulerStartLatecomersOptions extends JobSchedulerStartLatecomersOptionsSuperClass {
 
-	private static final String CLASSNAME = "JobSchedulerStartLatecomersOptions";
-	private static final Logger LOGGER = Logger.getLogger(JobSchedulerStartLatecomersOptions.class);
+    private static final long serialVersionUID = 1L;
+    private static final String CLASSNAME = "JobSchedulerStartLatecomersOptions";
+	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerStartLatecomersOptions.class);
 
 	public JobSchedulerStartLatecomersOptions() {
 		// TODO: Implement Constructor here

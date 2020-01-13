@@ -8,14 +8,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-
 import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
 import com.sos.joc.model.common.Folder;
 
 public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
 
-    private static final Logger LOGGER = Logger.getLogger(ReportHistoryFilter.class);
     private Set<Long> historyIds;
     private ArrayList<String> listOfJobchains;
 

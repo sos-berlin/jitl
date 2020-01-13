@@ -1,18 +1,18 @@
 package com.sos.jitl.jobchainnodeparameter.monitor;
 
 import java.util.Map.Entry;
-import com.sos.jitl.jobchainnodeparameter.monitor.JobchainNodeSubstituteOptions;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.IMonitor_impl;
 import sos.spooler.Variable_set;
-import org.apache.log4j.Logger;
-
-import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter implements IMonitor_impl {
 
     private static final String CLASSNAME = "ConfigurationMonitorJSAdapterClass";
-    private static final Logger LOGGER = Logger.getLogger(JobchainNodeSubstituteMonitor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobchainNodeSubstituteMonitor.class);
     private JobchainNodeSubstitute jobchainNodeSubstitute;
 
     @Override

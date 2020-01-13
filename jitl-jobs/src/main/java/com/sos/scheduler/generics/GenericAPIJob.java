@@ -1,12 +1,14 @@
 package com.sos.scheduler.generics;
 
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 
 public class GenericAPIJob extends JSJobUtilitiesClass<GenericAPIJobOptions> {
 
-    private static final Logger LOGGER = Logger.getLogger(GenericAPIJob.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GenericAPIJob.class);
 
     public GenericAPIJob() {
         super(new GenericAPIJobOptions());

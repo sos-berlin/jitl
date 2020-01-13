@@ -1,14 +1,8 @@
 package com.sos.jitl.blacklist;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
-import org.apache.log4j.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.sos.JSHelper.Basics.JSToolBox;
@@ -18,34 +12,18 @@ import com.sos.jitl.checkblacklist.JobSchedulerCheckBlacklistOptions;
 public class JobSchedulerCheckBlacklistOptionsJUnitTest extends JSToolBox {
 
     private final String conClassName = "JobSchedulerCheckBlacklistOptionsJUnitTest"; //$NON-NLS-1$
-    @SuppressWarnings("unused")//$NON-NLS-1$
-    private static Logger logger = Logger.getLogger(JobSchedulerCheckBlacklistOptionsJUnitTest.class);
     protected JobSchedulerCheckBlacklistOptions objOptions = null;
 
     public JobSchedulerCheckBlacklistOptionsJUnitTest() {
         //
     }
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-    }
-
     @Before
     public void setUp() throws Exception {
-
         objOptions = new JobSchedulerCheckBlacklistOptions();
         objOptions.registerMessageListener(this);
-
         JSListenerClass.bolLogDebugInformation = true;
         JSListenerClass.intMaxDebugLevel = 9;
-    }
-
-    @After
-    public void tearDown() throws Exception {
     }
 
     /** \brief testgranuality :
@@ -57,7 +35,6 @@ public class JobSchedulerCheckBlacklistOptionsJUnitTest extends JSToolBox {
     public void testgranuality() {  // SOSOptionString
         objOptions.granuality.setValue("++blacklist++");
         assertEquals("", objOptions.granuality.getValue(), "++blacklist++");
-
     }
 
     /** \brief testjob :
@@ -70,7 +47,6 @@ public class JobSchedulerCheckBlacklistOptionsJUnitTest extends JSToolBox {
     public void testjob() {  // SOSOptionString
         objOptions.job.setValue("++----++");
         assertEquals("", objOptions.job.getValue(), "++----++");
-
     }
 
     /** \brief testjob_chain : The name of the job chain that should be startet
@@ -84,7 +60,6 @@ public class JobSchedulerCheckBlacklistOptionsJUnitTest extends JSToolBox {
     public void testjob_chain() {  // SOSOptionString
         objOptions.job_chain.setValue("++----++");
         assertEquals("The name of the job chain that should be startet Paramet", objOptions.job_chain.getValue(), "++----++");
-
     }
 
     /** \brief testlevel :
@@ -95,7 +70,6 @@ public class JobSchedulerCheckBlacklistOptionsJUnitTest extends JSToolBox {
     public void testlevel() {  // SOSOptionString
         objOptions.level.setValue("++info++");
         assertEquals("", objOptions.level.getValue(), "++info++");
-
     }
 
-} // public class JobSchedulerCheckBlacklistOptionsJUnitTest
+}

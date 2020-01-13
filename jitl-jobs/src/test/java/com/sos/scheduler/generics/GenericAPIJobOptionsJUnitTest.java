@@ -2,7 +2,6 @@ package com.sos.scheduler.generics;
 
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-import org.apache.log4j.Logger;
 import org.junit.*;
 
 import static org.junit.Assert.assertEquals;
@@ -36,22 +35,11 @@ import static org.junit.Assert.assertEquals;
 public class GenericAPIJobOptionsJUnitTest extends JSToolBox {
 
     private final String conClassName = "GenericAPIJobOptionsJUnitTest"; //$NON-NLS-1$
-    @SuppressWarnings("unused")//$NON-NLS-1$
-    private static Logger logger = Logger.getLogger(GenericAPIJobOptionsJUnitTest.class);
     private GenericAPIJob objE = null;
-
     protected GenericAPIJobOptions objOptions = null;
 
     public GenericAPIJobOptionsJUnitTest() {
         //
-    }
-
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
     }
 
     @Before
@@ -60,13 +48,8 @@ public class GenericAPIJobOptionsJUnitTest extends JSToolBox {
         objE.registerMessageListener(this);
         objOptions = objE.getOptions();
         objOptions.registerMessageListener(this);
-
         JSListenerClass.bolLogDebugInformation = true;
         JSListenerClass.intMaxDebugLevel = 9;
-    }
-
-    @After
-    public void tearDown() throws Exception {
     }
 
     /** \brief testjavaClassName : The Name of the Java Class (e.g. a JS Adapter
@@ -78,7 +61,6 @@ public class GenericAPIJobOptionsJUnitTest extends JSToolBox {
     public void testjavaClassName() {  // SOSOptionString
         objOptions.javaClassName.setValue("++----++");
         assertEquals("The Name of the Java Class (e.g. a JS Adapter Class) which has to be e", objOptions.javaClassName.getValue(), "++----++");
-
     }
 
     /** \brief testjavaClassPath :
@@ -88,7 +70,6 @@ public class GenericAPIJobOptionsJUnitTest extends JSToolBox {
     public void testjavaClassPath() {  // SOSOptionString
         objOptions.javaClassPath.setValue("++----++");
         assertEquals("", objOptions.javaClassPath.getValue(), "++----++");
-
     }
 
-} // public class GenericAPIJobOptionsJUnitTest
+}

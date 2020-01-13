@@ -3,15 +3,17 @@ package com.sos.jitl.checkrunhistory;
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.i18n.annotation.I18NResourceBundle;
 import com.sos.localization.Messages;
-import org.apache.log4j.Logger;
 
 import java.util.Locale;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @I18NResourceBundle(baseName = "com_sos_scheduler_messages", defaultLocale = "en")
 public class JobSchedulerCheckRunHistoryMain extends JSToolBox {
 
     protected JobSchedulerCheckRunHistoryOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerCheckRunHistoryMain.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCheckRunHistoryMain.class);
     private static Messages Messages = null;
 
     public final static void main(String[] pstrArgs) {

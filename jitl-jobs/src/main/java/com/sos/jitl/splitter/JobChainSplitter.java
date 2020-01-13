@@ -4,7 +4,8 @@ import static com.sos.scheduler.messages.JSMessages.JSJ_F_107;
 import static com.sos.scheduler.messages.JSMessages.JSJ_I_110;
 import static com.sos.scheduler.messages.JSMessages.JSJ_I_111;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
@@ -12,7 +13,7 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 public class JobChainSplitter extends JSJobUtilitiesClass<JobChainSplitterOptions> {
 
     private final String conClassName = "JobChainSplitter";
-    private static Logger logger = Logger.getLogger(JobChainSplitter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobChainSplitter.class);
 
     /** \brief JobChainSplitter
      *
@@ -39,7 +40,7 @@ public class JobChainSplitter extends JSJobUtilitiesClass<JobChainSplitterOption
 
         try {
             getOptions().checkMandatory();
-            logger.debug(getOptions().toString());
+            LOGGER.debug(getOptions().toString());
         } catch (Exception e) {
             throw new JobSchedulerException(JSJ_F_107.get(conMethodName) + ":" + e.getMessage(), e);
         } finally {

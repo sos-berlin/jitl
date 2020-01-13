@@ -5,10 +5,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
@@ -25,7 +26,7 @@ import sos.xml.SOSXMLXPath;
 public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
 
 	private static final String PARAM_SCHEDULER_DEL_EVENTS = "del_events";
-	private static final Logger LOGGER = Logger.getLogger(JobSchedulerSubmitEventJob.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerSubmitEventJob.class);
 	private static final String PARAM_SCHEDULER_EVENT_HANDLER_PORT = "scheduler_event_handler_port";
 	private static final String PARAM_SCHEDULER_EVENT_HANDLER_HOST = "scheduler_event_handler_host";
 	private static final String PARAM_SCHEDULER_EVENT_EXPIRATION_PERIOD = "scheduler_event_expiration_period";

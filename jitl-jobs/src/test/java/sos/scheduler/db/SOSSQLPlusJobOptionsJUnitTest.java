@@ -1,12 +1,15 @@
 package sos.scheduler.db;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-
-import org.apache.log4j.Logger;
-import org.junit.*;
-
-import static org.junit.Assert.assertEquals;
 
 /** \class SOSSQLPlusJobOptionsJUnitTest - Start SQL*Plus client and execute
  * sql*plus programs
@@ -36,10 +39,6 @@ import static org.junit.Assert.assertEquals;
  * SetJobSchedulerSSHJobOptions (HashMap <String, String> pobjHM) \endverbatim */
 public class SOSSQLPlusJobOptionsJUnitTest extends JSToolBox {
 
-    @SuppressWarnings("unused")
-    private final String conClassName = "SOSSQLPlusJobOptionsJUnitTest";							//$NON-NLS-1$
-    @SuppressWarnings("unused")
-    private static Logger logger = Logger.getLogger(SOSSQLPlusJobOptionsJUnitTest.class);
     private SOSSQLPlusJob objE = null;
 
     protected SOSSQLPlusJobOptions objOptions = null;

@@ -1,13 +1,15 @@
 package com.sos.jitl.eventing;
 
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSToolBox;
 
 public class JSEventsClientMain extends JSToolBox {
 
     protected JSEventsClientOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JSEventsClientMain.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSEventsClientMain.class);
 
     public final static void main(final String[] pstrArgs) {
         final String conMethodName = "JSEventsClientMain::Main";

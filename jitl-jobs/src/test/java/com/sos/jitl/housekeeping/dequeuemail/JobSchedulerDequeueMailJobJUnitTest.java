@@ -1,8 +1,5 @@
 package com.sos.jitl.housekeeping.dequeuemail;
 
-import static org.junit.Assert.assertEquals;
-
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -16,8 +13,6 @@ public class JobSchedulerDequeueMailJobJUnitTest extends JSToolBox {
 
     @SuppressWarnings("unused")//$NON-NLS-1$
     private final static String conClassName = "JobSchedulerDequeueMailJobJUnitTest"; //$NON-NLS-1$
-    @SuppressWarnings("unused")//$NON-NLS-1$
-    private static Logger logger = Logger.getLogger(JobSchedulerDequeueMailJobJUnitTest.class);
 
     protected JobSchedulerDequeueMailJobOptions objOptions = null;
     private JobSchedulerDequeueMailJob objE = null;

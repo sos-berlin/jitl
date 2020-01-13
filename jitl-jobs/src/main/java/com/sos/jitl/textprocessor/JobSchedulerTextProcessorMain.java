@@ -1,12 +1,14 @@
 package com.sos.jitl.textprocessor;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 
 public class JobSchedulerTextProcessorMain extends JSToolBox {
 
     protected JobSchedulerTextProcessorOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerTextProcessorMain.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerTextProcessorMain.class);
 
     public final static void main(String[] pstrArgs) {
         final String methodName = "JobSchedulerTextProcessorMain::Main";

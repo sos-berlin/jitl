@@ -6,8 +6,9 @@ import java.util.List;
 
 import javax.persistence.TemporalType;
 
-import org.apache.log4j.Logger;
 import org.hibernate.query.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SearchStringHelper;
@@ -22,7 +23,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemRepo
     private static final String DBItemReportTrigger = DBItemReportTrigger.class.getName();
 
     private ReportTriggerFilter filter = null;
-    private static final Logger LOGGER = Logger.getLogger(ReportTriggerDBLayer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReportTriggerDBLayer.class);
     private String lastQuery = "";
 
     public ReportTriggerDBLayer(String configurationFilename) throws SOSHibernateException {

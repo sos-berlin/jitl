@@ -6,7 +6,6 @@ import com.sos.JSHelper.Annotations.JSOptionClass;
 
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
 import com.sos.JSHelper.Listener.JSListener;
-import org.apache.log4j.Logger;
 
 /**
  * 
@@ -17,11 +16,7 @@ import org.apache.log4j.Logger;
 public class StoreResultsJobOptions extends StoreResultsJobOptionsSuperClass {
 	private static final long serialVersionUID = 1L;
 	@SuppressWarnings("unused")
-	private final String conClassName = StoreResultsJobOptions.class
-			.getSimpleName();
-	@SuppressWarnings("unused")
-	private static Logger logger = Logger
-			.getLogger(StoreResultsJobOptions.class);
+	private final String conClassName = StoreResultsJobOptions.class.getSimpleName();
 
 	/**
 	 * constructors

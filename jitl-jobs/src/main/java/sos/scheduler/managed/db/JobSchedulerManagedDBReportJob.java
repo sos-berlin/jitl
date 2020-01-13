@@ -1,6 +1,8 @@
 package sos.scheduler.managed.db;
 
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilities;
 import com.sos.JSHelper.Basics.JSToolBox;
@@ -9,7 +11,7 @@ import com.sos.JSHelper.Basics.JSToolBox;
 public class JobSchedulerManagedDBReportJob extends JSToolBox implements JSJobUtilities {
 
     protected JobSchedulerManagedDBReportJobOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerManagedDBReportJob.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerManagedDBReportJob.class);
     private JSJobUtilities objJSJobUtilities = this;
 
     public JobSchedulerManagedDBReportJob() {

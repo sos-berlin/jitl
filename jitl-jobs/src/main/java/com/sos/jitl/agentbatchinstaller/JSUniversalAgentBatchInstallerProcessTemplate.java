@@ -5,7 +5,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.spooler.Order;
 import sos.spooler.Variable_set;
@@ -13,7 +14,7 @@ import sos.util.ParameterSubstitutor;
 
 public class JSUniversalAgentBatchInstallerProcessTemplate {
 
-	private static final Logger LOGGER = Logger.getLogger(JSUniversalAgentBatchInstallerProcessTemplate.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JSUniversalAgentBatchInstallerProcessTemplate.class);
 	private HashMap<String, String> knownParameterNames;
 
 	public JSUniversalAgentBatchInstallerProcessTemplate() {

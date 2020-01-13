@@ -5,16 +5,18 @@ import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Basics.VersionInfo;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.i18n.annotation.I18NResourceBundle;
-import org.apache.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @I18NResourceBundle(baseName = "com.sos.scheduler.messages", defaultLocale = "en")
 public class JSReportAllParameters extends JSToolBox implements JSJobUtilities {
 
     protected JSReportAllParametersOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JSReportAllParameters.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSReportAllParameters.class);
     private final String conSVNVersion = "$Id$";
     private JSJobUtilities objJSJobUtilities = this;
 

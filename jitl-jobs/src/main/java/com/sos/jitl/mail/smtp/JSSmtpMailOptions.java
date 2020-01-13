@@ -2,7 +2,8 @@ package com.sos.jitl.mail.smtp;
 
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.net.mail.options.SOSSmtpMailOptions;
 
@@ -20,7 +21,7 @@ import com.sos.JSHelper.Options.SOSOptionPortNumber;
 public class JSSmtpMailOptions extends SOSSmtpMailOptions {
 
     private static final long serialVersionUID = 6441074884525254517L;
-    private static final Logger LOGGER = Logger.getLogger(JSSmtpMailOptions.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSSmtpMailOptions.class);
     private String strAlternativePrefix = "";
     public JSSmtpMailOptions objMailOnError = null;
     public JSSmtpMailOptions objMailOnSuccess = null;

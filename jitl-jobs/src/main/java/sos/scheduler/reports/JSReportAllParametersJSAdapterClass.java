@@ -1,8 +1,10 @@
 package sos.scheduler.reports;
 
-import org.apache.log4j.Logger;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.i18n.annotation.I18NResourceBundle;
 
@@ -26,7 +28,7 @@ import com.sos.i18n.annotation.I18NResourceBundle;
 public class JSReportAllParametersJSAdapterClass extends JobSchedulerJobAdapter {
 
     private final String conClassName = "JSReportAllParametersJSAdapterClass";						//$NON-NLS-1$
-    private static Logger logger = Logger.getLogger(JSReportAllParametersJSAdapterClass.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSReportAllParametersJSAdapterClass.class);
     private final String conSVNVersion = "$Id$";
 
     public void init() {

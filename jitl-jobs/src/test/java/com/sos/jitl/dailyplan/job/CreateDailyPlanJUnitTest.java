@@ -6,10 +6,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.apache.log4j.Logger;
 import org.hibernate.query.Query;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
@@ -24,7 +25,7 @@ import com.sos.jitl.reporting.db.DBLayer;
 public class CreateDailyPlanJUnitTest extends JSToolBox {
 
     protected CreateDailyPlanOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(CreateDailyPlanJUnitTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CreateDailyPlanJUnitTest.class);
     private CreateDailyPlan objE = null;
 
     public CreateDailyPlanJUnitTest() {

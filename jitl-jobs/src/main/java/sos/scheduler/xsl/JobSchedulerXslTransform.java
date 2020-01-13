@@ -7,7 +7,8 @@ import static com.sos.scheduler.messages.JSMessages.JSJ_I_111;
 import java.io.File;
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
@@ -18,7 +19,7 @@ import com.sos.JSHelper.io.Files.JSXMLFile;
 public class JobSchedulerXslTransform extends JSJobUtilitiesClass<JobSchedulerXslTransformOptions> {
 
     protected HashMap<String, String> hsmParameters = null;
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerXslTransform.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerXslTransform.class);
 
     public JobSchedulerXslTransform() {
         super(new JobSchedulerXslTransformOptions());

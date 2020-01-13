@@ -4,13 +4,15 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class SyncNodeContainer {
 
     private static final String JOBCHAIN_STATE_RUNNING = "running";
     private static final String ATTRIBUTE_SUSPENDED = "suspended";
-    private static final Logger LOGGER = Logger.getLogger(SyncNodeContainer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SyncNodeContainer.class);
     private static final String XPATH_CURRENT_JOB_CHAIN = "//order[@id = '%s'][@job_chain = '%s']/payload/params/param[@name='sync_session_id']";
     private static final String XPATH_CURRENT_JOB_CHAIN_CONTEXT =
             "//order[@id = '%s'][@job_chain = '%s']/payload/params/param[@name='job_chain_name2synchronize']";

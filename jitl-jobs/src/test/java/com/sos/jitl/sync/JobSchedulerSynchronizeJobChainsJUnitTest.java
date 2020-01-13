@@ -2,7 +2,6 @@ package com.sos.jitl.sync;
 
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-import org.apache.log4j.Logger;
 import org.junit.*;
 
 import java.util.HashMap;
@@ -24,8 +23,6 @@ public class JobSchedulerSynchronizeJobChainsJUnitTest extends JSToolBox {
 
     @SuppressWarnings("unused")//$NON-NLS-1$
     private final static String conClassName = "JobSchedulerSynchronizeJobChainsJUnitTest"; //$NON-NLS-1$
-    @SuppressWarnings("unused")//$NON-NLS-1$
-    private static Logger logger = Logger.getLogger(JobSchedulerSynchronizeJobChainsJUnitTest.class);
 
     protected JobSchedulerSynchronizeJobChainsOptions objO = null;
     private JobSchedulerSynchronizeJobChains objR = null;

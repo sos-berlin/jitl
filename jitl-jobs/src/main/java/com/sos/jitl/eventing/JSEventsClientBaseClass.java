@@ -10,7 +10,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -33,7 +34,7 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
     protected JSEventsClientOptions jsEventsClientOptions = null;
     protected JSEventsClient jsEventsClient = null;
     private static final String NODE_NAME_EVENTS = "events";
-    private static final Logger LOGGER = Logger.getLogger(JSEventsClientBaseClass.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSEventsClientBaseClass.class);
 
     public void setOptions(final JSEventsClientOptions pobjOptions) {
         jsEventsClientOptions = pobjOptions;

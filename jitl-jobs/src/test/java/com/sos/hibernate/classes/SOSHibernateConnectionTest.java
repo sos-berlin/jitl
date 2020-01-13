@@ -4,12 +4,13 @@ import java.sql.Connection;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.hibernate.StatelessSession;
 import org.hibernate.query.Query;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.layer.SOSHibernateDBLayer;
 import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
@@ -19,7 +20,7 @@ import com.sos.jitl.reporting.db.DBLayer;
  
 public class SOSHibernateConnectionTest {
     private static final String HIBERNATE_CONFIG_FILE = "src/test/resources/hibernate.cfg.xml";
-    private static final Logger LOGGER = Logger.getLogger(SOSHibernateConnectionTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SOSHibernateConnectionTest.class);
 
     SOSHibernateDBLayer sosHibernateDBLayer;
     SOSHibernateSession sosHibernateSession;

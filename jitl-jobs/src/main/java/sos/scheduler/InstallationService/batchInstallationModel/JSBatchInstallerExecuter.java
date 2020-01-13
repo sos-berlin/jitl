@@ -5,7 +5,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.scheduler.InstallationService.JSBatchInstaller;
 import sos.scheduler.InstallationService.batchInstallationModel.installations.Installation;
@@ -20,7 +21,7 @@ public class JSBatchInstallerExecuter {
     private File localDir;
     private File installationDefinitionFile;
     private String installationJobChain;
-    private static final Logger LOGGER = Logger.getLogger(JSBatchInstallerExecuter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSBatchInstallerExecuter.class);
     private boolean update;
     private String filterInstallHost = "";
     private String installationSetupFilename = "";

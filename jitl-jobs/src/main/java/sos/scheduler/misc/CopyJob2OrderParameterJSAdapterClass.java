@@ -1,12 +1,14 @@
 package sos.scheduler.misc;
 
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
 
 public class CopyJob2OrderParameterJSAdapterClass extends JobSchedulerJobAdapter {
 
-    private static final Logger LOGGER = Logger.getLogger(CopyJob2OrderParameterJSAdapterClass.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CopyJob2OrderParameterJSAdapterClass.class);
 
     @Override
     public boolean spooler_process() throws Exception {

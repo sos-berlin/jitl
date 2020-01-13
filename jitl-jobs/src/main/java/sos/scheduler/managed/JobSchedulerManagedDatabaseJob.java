@@ -7,7 +7,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
@@ -30,7 +31,7 @@ public class JobSchedulerManagedDatabaseJob extends JobSchedulerManagedJob {
     private static final String PARAMETER_RESULTSET_AS_PARAMETERS = "resultset_as_parameters";
     private static final String PARAMETER_RESULTSET_AS_WARNING = "resultset_as_warning";
     private static final String PARAMETER_SCHEDULER_ORDER_IS_USER_JOB = "scheduler_order_is_user_job";
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerManagedDatabaseJob.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerManagedDatabaseJob.class);
     private final Random rand = new Random();
     private boolean userJob = false;
     private String ip = null;

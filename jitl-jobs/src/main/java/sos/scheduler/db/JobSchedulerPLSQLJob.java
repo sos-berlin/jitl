@@ -10,7 +10,8 @@ import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
@@ -19,7 +20,7 @@ import com.sos.scheduler.messages.JSMessages;
 public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJobOptions> {
 
     protected static final String conSettingDBMS_OUTPUT = "dbmsOutput";
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerPLSQLJob.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerPLSQLJob.class);
     private static final String CLASSNAME = "JobSchedulerPLSQLJob";
     private CallableStatement cs = null;
     private Connection objConnection = null;

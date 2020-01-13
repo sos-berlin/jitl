@@ -1,9 +1,8 @@
 package com.sos.jitl.housekeeping.cleanupdb;
 
-import org.apache.log4j.Logger;
 
-//import sos.jadehistory.db.JadeFilesDBLayer;
-//import sos.jadehistory.db.JadeFilesHistoryDBLayer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
@@ -19,7 +18,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
 
     protected JobSchedulerCleanupSchedulerDbOptions objOptions = null;
     private final String conClassName = "JobSchedulerCleanupSchedulerDb";
-    private static Logger logger = Logger.getLogger(JobSchedulerCleanupSchedulerDb.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCleanupSchedulerDb.class);
 
     public JobSchedulerCleanupSchedulerDb() {
         super(new JobSchedulerCleanupSchedulerDbOptions());
@@ -45,11 +44,11 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
 
     public JobSchedulerCleanupSchedulerDb Execute() throws Exception {
         final String conMethodName = conClassName + "::Execute";
-        logger.debug(String.format(JSMessages.JSJ_I_110.get(), conMethodName));
+        LOGGER.debug(String.format(JSMessages.JSJ_I_110.get(), conMethodName));
         SOSHibernateSession session = null;
         try {
             getOptions().checkMandatory();
-            logger.debug(getOptions().dirtyString());
+            LOGGER.debug(getOptions().dirtyString());
             session = getSession(getOptions().hibernate_configuration_file_scheduler.getValue());
             
             if (getOptions().cleanup_job_scheduler_history_execute.isTrue()) {
@@ -58,12 +57,12 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
                     getOptions().delete_history_interval.setValue(getOptions().delete_interval.getValue());
                 }
                 long i = schedulerOrderHistoryDBLayer.deleteInterval(getOptions().delete_history_interval.value(), getOptions().cleanup_jobscheduler_history_limit.value());
-                logger.info(String.format("%s records deleted from SCHEDULER_ORDER_HISTORY that are older than %s days", i, getOptions().delete_history_interval.getValue()));
+                LOGGER.info(String.format("%s records deleted from SCHEDULER_ORDER_HISTORY that are older than %s days", i, getOptions().delete_history_interval.getValue()));
                 SchedulerTaskHistoryDBLayer schedulerTaskHistoryDBLayer = new SchedulerTaskHistoryDBLayer(session);
                 i = schedulerTaskHistoryDBLayer.deleteInterval(getOptions().delete_history_interval.value(), getOptions().cleanup_jobscheduler_history_limit.value());
-                logger.info(String.format("%s records deleted from SCHEDULER_HISTORY that are older than %s days", i, getOptions().delete_history_interval.getValue()));
+                LOGGER.info(String.format("%s records deleted from SCHEDULER_HISTORY that are older than %s days", i, getOptions().delete_history_interval.getValue()));
             } else {
-                logger.info("Records in SCHEDULER_ORDER_HISTORY and SCHEDULER_HISTORY will not be deleted");
+                LOGGER.info("Records in SCHEDULER_ORDER_HISTORY and SCHEDULER_HISTORY will not be deleted");
             }
           
             if (getOptions().cleanup_daily_plan_execute.isTrue()) {
@@ -73,10 +72,10 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
                     getOptions().delete_daily_plan_interval.setValue(getOptions().delete_interval.getValue());
                 }
                 long i = dailyPlanDBLayer.deleteInterval(getOptions().delete_daily_plan_interval.value(), getOptions().cleanup_daily_plan_limit.value());
-                logger.info(String.format("%s records deleted from DAILY_PLAN that are older than %s days", i, getOptions().delete_history_interval.getValue()));
+                LOGGER.info(String.format("%s records deleted from DAILY_PLAN that are older than %s days", i, getOptions().delete_history_interval.getValue()));
 
             } else {
-                logger.info("Records in DAILY_PLAN will not be deleted");
+                LOGGER.info("Records in DAILY_PLAN will not be deleted");
             }
 
 //            if (getOptions().cleanup_jade_history_execute.isTrue()) {
@@ -99,7 +98,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
             String strM = String.format(JSMessages.JSJ_F_107.get(), conMethodName);
             throw new JobSchedulerException(strM, e);
         } finally {
-            logger.debug(String.format(JSMessages.JSJ_I_111.get(), conMethodName));
+            LOGGER.debug(String.format(JSMessages.JSJ_I_111.get(), conMethodName));
             if (session != null) {
                 SOSHibernateFactory factory = session.getFactory();
                 session.close();

@@ -1,8 +1,5 @@
 package com.sos.jitl.md5;
 
-import static org.junit.Assert.assertEquals;
-
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -16,8 +13,6 @@ public class JobSchedulerMD5FileJUnitTest extends JSToolBox {
 
     @SuppressWarnings("unused")//$NON-NLS-1$
     private final static String conClassName = "JobSchedulerMD5FileJUnitTest"; //$NON-NLS-1$
-    @SuppressWarnings("unused")//$NON-NLS-1$
-    private static Logger logger = Logger.getLogger(JobSchedulerMD5FileJUnitTest.class);
 
     protected JobSchedulerMD5FileOptions objOptions = null;
     private JobSchedulerMD5File objE = null;

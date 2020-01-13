@@ -6,7 +6,8 @@ import java.time.Instant;
 import java.util.Date;
 
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SOSHibernateFactory;
@@ -19,7 +20,7 @@ import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 
 public class InventoryModelTest {
 
-    private final static Logger LOGGER = Logger.getLogger(InventoryModelTest.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(InventoryModelTest.class);
     private static final String FULL_COMMAND = "<show_state what=\"cluster source job_chains job_chain_orders schedules\" />";
 //    private static final String COMMAND = "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
 

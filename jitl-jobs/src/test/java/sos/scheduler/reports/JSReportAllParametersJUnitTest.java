@@ -1,9 +1,13 @@
 package sos.scheduler.reports;
 
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-import org.apache.log4j.Logger;
-import org.junit.*;
 
 /** \class JSReportAllParametersJUnitTest - JUnit-Test for
  * "Report all Parameters"
@@ -20,11 +24,6 @@ import org.junit.*;
  * C:\Users\KB\eclipse\sos.scheduler.xsl\JSJobDoc2JSJUnitClass.xsl from
  * http://www.sos-berlin.com at 20110516150429 \endverbatim */
 public class JSReportAllParametersJUnitTest extends JSToolBox {
-
-    @SuppressWarnings("unused")//$NON-NLS-1$
-    private final static String conClassName = "JSReportAllParametersJUnitTest"; //$NON-NLS-1$
-    @SuppressWarnings("unused")//$NON-NLS-1$
-    private static Logger logger = Logger.getLogger(JSReportAllParametersJUnitTest.class);
 
     protected JSReportAllParametersOptions objOptions = null;
     private JSReportAllParameters objE = null;

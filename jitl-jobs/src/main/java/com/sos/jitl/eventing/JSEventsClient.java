@@ -11,7 +11,8 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -26,7 +27,7 @@ import sos.xml.SOSXMLXPath;
 public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
 
     private final String conClassName = this.getClass().getSimpleName();
-    private final Logger logger = Logger.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(JSEventsClient.class);
     private final String conSVNVersion = "$Id: JSEventsClient.java 18220 2012-10-18 07:46:10Z kb $";
 
     private final HashMap<String, String> eventParameters = new HashMap<String, String>();

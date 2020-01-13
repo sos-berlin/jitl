@@ -2,7 +2,9 @@ package sos.scheduler.file;
 
 import java.io.File;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class FileDescriptor {
 
@@ -10,8 +12,7 @@ public class FileDescriptor {
     private final String conClassName = this.getClass().getSimpleName();
     @SuppressWarnings("unused")
     private static final String conSVNVersion = "$Id$";
-    @SuppressWarnings("unused")
-    private final Logger logger = Logger.getLogger(this.getClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileDescriptor.class);
     private long lastModificationDate;
     private long lastFileLength;
     private String FileName;
@@ -37,7 +38,7 @@ public class FileDescriptor {
 
     public File getFile() {
         File objActFile = new File(getFileName());
-        logger.debug("result is : " + objActFile.lastModified() + ", " + this.getLastModificationDate() + ", " + objActFile.length() + ", "
+        LOGGER.debug("result is : " + objActFile.lastModified() + ", " + this.getLastModificationDate() + ", " + objActFile.length() + ", "
                 + this.getLastFileLength());
 
         return objActFile;
@@ -51,7 +52,7 @@ public class FileDescriptor {
             setLastFileLength(objActFile.length());
             setFlgIsSteady(false);
             isSteady = false;
-            logger.info(String.format("File '%1$s' changed during checking steady state", objActFile.getAbsolutePath()));
+            LOGGER.info(String.format("File '%1$s' changed during checking steady state", objActFile.getAbsolutePath()));
         } else {
             setFlgIsSteady(true);
         }

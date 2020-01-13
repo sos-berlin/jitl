@@ -6,10 +6,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
 
@@ -18,7 +19,7 @@ import com.sos.JSHelper.io.Files.JSFile;
 /** @author KB */
 public class JobSchedulerFileOperationsBaseTest {
 
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerFileOperationsBaseTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerFileOperationsBaseTest.class);
     private static final String TEST_DATA_DIR = "R:/nobackup/junittests/testdata/JobSchedulerFileOperationsBase";
     private static JobSchedulerFileOperationBase objFOP = null;
     private static HashMap<String, String> params = new HashMap<String, String>();
@@ -137,7 +138,7 @@ public class JobSchedulerFileOperationsBaseTest {
         @Override
         public void run() {
             for (int i = 0; i < 15; i++) {
-                LOGGER.debug(i);
+                LOGGER.debug("" + i);
                 try {
                     objFile.write(i + ": This is a test");
                     objFile.writeLine(i + ": This is a test");

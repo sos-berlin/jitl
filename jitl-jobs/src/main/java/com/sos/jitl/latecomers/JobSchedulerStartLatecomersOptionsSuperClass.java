@@ -2,17 +2,20 @@
 package com.sos.jitl.latecomers;
 
 import java.util.HashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Options.*;
 import com.sos.JSHelper.Annotations.JSOptionClass;
 import com.sos.JSHelper.Annotations.JSOptionDefinition;
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
 import com.sos.JSHelper.Listener.JSListener;
-import org.apache.log4j.Logger;
 
 @JSOptionClass(name = "JobSchedulerStartLatecomersOptionsSuperClass", description = "JobSchedulerStartLatecomersOptionsSuperClass")
 public class JobSchedulerStartLatecomersOptionsSuperClass extends JSOptionsClass {
 	private static final String CLASSNAME = "JobSchedulerStartLatecomersOptionsSuperClass";
-	private static final Logger LOGGER = Logger.getLogger(JobSchedulerStartLatecomersOptionsSuperClass.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerStartLatecomersOptionsSuperClass.class);
 
 	public JobSchedulerStartLatecomersOptionsSuperClass() {
 		objParentClass = this.getClass();

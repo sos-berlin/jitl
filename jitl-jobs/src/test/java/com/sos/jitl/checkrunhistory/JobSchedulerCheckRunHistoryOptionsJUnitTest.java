@@ -2,7 +2,6 @@ package com.sos.jitl.checkrunhistory;
 
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-import org.apache.log4j.Logger;
 import org.junit.*;
 
 import static org.junit.Assert.assertEquals;
@@ -35,8 +34,6 @@ import static org.junit.Assert.assertEquals;
 public class JobSchedulerCheckRunHistoryOptionsJUnitTest extends JSToolBox {
 
     private final String conClassName = "JobSchedulerCheckRunHistoryOptionsJUnitTest"; //$NON-NLS-1$
-    @SuppressWarnings("unused")//$NON-NLS-1$
-    private static Logger logger = Logger.getLogger(JobSchedulerCheckRunHistoryOptionsJUnitTest.class);
     private JobSchedulerCheckRunHistory objE = null;
 
     protected JobSchedulerCheckRunHistoryOptions objOptions = null;

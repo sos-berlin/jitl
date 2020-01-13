@@ -4,10 +4,10 @@ import static com.sos.scheduler.messages.JSMessages.JSJ_F_107;
 import static com.sos.scheduler.messages.JSMessages.JSJ_I_110;
 import static com.sos.scheduler.messages.JSMessages.JSJ_I_111;
 
-import java.io.File;
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
@@ -15,7 +15,7 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSchedulerSynchronizeJobChainsOptions> {
 
     private final String conClassName = "JobSchedulerSynchronizeJobChains";
-    private static Logger logger = Logger.getLogger(JobSchedulerSynchronizeJobChains.class);
+    private static Logger logger = LoggerFactory.getLogger(JobSchedulerSynchronizeJobChains.class);
 
     protected SyncNodeContainer syncNodeContainer;
     protected HashMap<String, String> SchedulerParameters = new HashMap<String, String>();

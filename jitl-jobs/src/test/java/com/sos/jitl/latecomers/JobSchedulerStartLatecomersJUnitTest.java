@@ -1,9 +1,6 @@
-
-
 package com.sos.jitl.latecomers;
 
 import static org.junit.Assert.assertEquals;
-import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import com.sos.JSHelper.Basics.JSToolBox;
@@ -12,11 +9,9 @@ import com.sos.jitl.latecomers.classes.DailyPlanExecuter;
 import com.sos.jitl.restclient.WebserviceCredentials;
 import com.sos.jitl.restclient.WebserviceExecuter;
 
-
 public class JobSchedulerStartLatecomersJUnitTest extends JSToolBox {
 
 	protected JobSchedulerStartLatecomersOptions jobSchedulerStartLatecomersOptions = null;
-	private static final Logger	LOGGER = Logger.getLogger(JobSchedulerStartLatecomersJUnitTest.class);
 	private JobSchedulerStartLatecomers jobSchedulerStartLatecomers = null;
 	
 	public JobSchedulerStartLatecomersJUnitTest() {
