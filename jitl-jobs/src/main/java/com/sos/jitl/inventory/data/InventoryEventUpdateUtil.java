@@ -1057,9 +1057,11 @@ public class InventoryEventUpdateUtil {
                         job.setBaseName(Paths.get(path).getFileName().toString());
                         SOSXMLXPath xPath = new SOSXMLXPath(filePath.toString());
                         String title = ReportXmlHelper.getTitle(xPath);
+                        String criticality = ReportXmlHelper.getCriticality(xPath);
                         boolean isOrderJob = ReportXmlHelper.isOrderJob(xPath);
                         boolean isRuntimeDefined = ReportXmlHelper.isRuntimeDefined(xPath);
                         job.setTitle(title);
+                        job.setCriticality(criticality);
                         job.setIsOrderJob(isOrderJob);
                         job.setIsRuntimeDefined(isRuntimeDefined);
                         job.setRunTimeIsTemporary(false);

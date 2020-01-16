@@ -35,6 +35,10 @@ public class ReportXmlHelper {
         return xpath.getRoot().getAttribute("title");
     }
 
+    public static String getCriticality(SOSXMLXPath xpath) {
+        return xpath.getRoot().getAttribute("criticality");
+    }
+
     public static boolean isOrderJob(SOSXMLXPath xpath) {
         return xpath.getRoot().hasAttribute("order") && "yes,1,true".contains(xpath.getRoot().getAttribute("order").toLowerCase());
     }

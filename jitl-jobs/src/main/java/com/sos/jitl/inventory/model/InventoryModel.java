@@ -678,6 +678,10 @@ public class InventoryModel {
                 if (title != null && !title.isEmpty()) {
                     item.setTitle(title);
                 }
+                String criticality = jobSource.getAttribute("criticality");
+                if (criticality != null && !criticality.isEmpty()) {
+                    item.setCriticality(criticality);
+                }
                 boolean isOrderJob = jobSource.hasAttribute("order") && "yes,1,true".contains(jobSource.getAttribute("order")
                         .toLowerCase());
                 item.setIsOrderJob(isOrderJob);
