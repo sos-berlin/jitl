@@ -31,6 +31,7 @@ public class NotificationReportExecution implements Serializable {
     private Long returnCode;
     private String agentUrl;
     private String clusterMemberId;
+    private String criticality;
     private boolean error;
     private String errorCode;
     private String errorText;
@@ -204,6 +205,14 @@ public class NotificationReportExecution implements Serializable {
 
     public String getClusterMemberId() {
         return clusterMemberId;
+    }
+
+    public void setCriticality(String val) {
+        criticality = val;
+    }
+
+    public String getCriticality() {
+        return criticality;
     }
 
     public void setError(boolean val) {

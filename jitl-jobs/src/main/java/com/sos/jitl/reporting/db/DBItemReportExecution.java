@@ -17,6 +17,7 @@ import javax.persistence.Transient;
 import org.hibernate.annotations.Type;
 
 import com.sos.hibernate.classes.DbItem;
+import com.sos.scheduler.SOSJobSchedulerGlobal;
 
 import sos.util.SOSString;
 
@@ -57,6 +58,7 @@ public class DBItemReportExecution extends DbItem implements Serializable {
     private String errorCode;
     private String errorText;
     private String agentUrl;
+    private String criticality;
     private boolean isRuntimeDefined;
     private boolean syncCompleted;
     private boolean resultsCompleted;
@@ -315,6 +317,19 @@ public class DBItemReportExecution extends DbItem implements Serializable {
         return this.agentUrl;
     }
 
+    @Column(name = "[CRITICALITY]", nullable = false)
+    public void setCriticality(String val) {
+        if(SOSString.isEmpty(val)) {
+            val = SOSJobSchedulerGlobal.JOB_CRITICALITY.NORMAL.toString();
+        }
+        this.criticality = val;
+    }
+
+    @Column(name = "[CRITICALITY]", nullable = false)
+    public String getCriticality() {
+        return this.criticality;
+    }
+    
     @Column(name = "[IS_RUNTIME_DEFINED]", nullable = false)
     @Type(type = "numeric_boolean")
     public void setIsRuntimeDefined(boolean val) {

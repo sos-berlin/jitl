@@ -134,6 +134,7 @@ public class FactNotificationPlugin {
         item.setReturnCode(re.getExitCode() == null ? null : new Long(re.getExitCode().intValue()));
         item.setAgentUrl(re.getAgentUrl());
         item.setClusterMemberId(re.getClusterMemberId());
+        item.setCriticality(re.getCriticality());
         item.setError(re.getError());
         item.setErrorCode(re.getErrorCode());
         item.setErrorText(re.getErrorText());
@@ -165,6 +166,7 @@ public class FactNotificationPlugin {
         item.setReturnCode(task.getExitCode() == null ? null : new Long(task.getExitCode().intValue()));
         item.setAgentUrl(task.getAgentUrl());
         item.setClusterMemberId(task.getClusterMemberId());
+        item.setCriticality(task.getCriticality());
         item.setError(task.getError());
         item.setErrorCode(task.getErrorCode());
         item.setErrorText(task.getErrorText());
