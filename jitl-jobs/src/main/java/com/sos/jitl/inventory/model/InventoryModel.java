@@ -64,6 +64,7 @@ import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.EStartCauses;
 import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jitl.reporting.plugin.FactEventHandler.CustomEventType;
+import com.sos.scheduler.SOSJobSchedulerGlobal;
 import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
 import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
@@ -681,6 +682,8 @@ public class InventoryModel {
                 String criticality = jobSource.getAttribute("criticality");
                 if (criticality != null && !criticality.isEmpty()) {
                     item.setCriticality(criticality);
+                }else {
+                    item.setCriticality(SOSJobSchedulerGlobal.JOB_CRITICALITY.NORMAL.toString());
                 }
                 boolean isOrderJob = jobSource.hasAttribute("order") && "yes,1,true".contains(jobSource.getAttribute("order")
                         .toLowerCase());

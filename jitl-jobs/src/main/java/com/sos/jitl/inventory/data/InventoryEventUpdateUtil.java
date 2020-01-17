@@ -79,6 +79,7 @@ import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jitl.reporting.helper.ReportXmlHelper;
 import com.sos.jitl.reporting.plugin.FactEventHandler.CustomEventType;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
+import com.sos.scheduler.SOSJobSchedulerGlobal;
 import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
 import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
@@ -1061,7 +1062,11 @@ public class InventoryEventUpdateUtil {
                         boolean isOrderJob = ReportXmlHelper.isOrderJob(xPath);
                         boolean isRuntimeDefined = ReportXmlHelper.isRuntimeDefined(xPath);
                         job.setTitle(title);
-                        job.setCriticality(criticality);
+                        if (criticality != null && !criticality.isEmpty()) {
+                            job.setCriticality(criticality);
+                        }else {
+                            job.setCriticality(SOSJobSchedulerGlobal.JOB_CRITICALITY.NORMAL.toString());
+                        }
                         job.setIsOrderJob(isOrderJob);
                         job.setIsRuntimeDefined(isRuntimeDefined);
                         job.setRunTimeIsTemporary(false);

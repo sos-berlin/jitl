@@ -60,23 +60,23 @@ public class InventoryTest {
     private static final String APPLICATION_HEADER_VALUE = "application/xml";
     private static final String ACCEPT_HEADER = "Accept";
     private static final String MASTER_WEBSERVICE_URL_APPEND = "/jobscheduler/master/api/command";
-    private static final String HOST = "127.0.0.1";
-    private static final String HTTP_PORT = "sp.sos:40012";
-    private static final String PORT = "40012";
+    private static final String HOST = "LAPTOP-7RSACSCV";
+    private static final String HTTP_PORT = "localhost:40444";
+    private static final String PORT = "40444";
     private static final String SHOW_STATE_COMMAND =
             "<show_state what=\"cluster source job_chains job_chain_orders schedules operations\" />";
     private static final String SHOW_JOB_COMMAND = "<show_job job=\"/shell_worker/shell_worker\" />";
     private String hibernateCfgFile =
-            "C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT/sp_4012/config/reporting.hibernate.cfg.xml";
-    private Path liveDirectory = Paths.get("C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT/sp_4012/config/live");
-    private Path configDirectory = Paths.get("C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT/sp_4012/config");
+            "D:/documents/sos-berlin.com/scheduler_joc_cockpit/config/reporting.hibernate.cfg.xml";
+    private Path liveDirectory = Paths.get("D:/documents/sos-berlin.com/scheduler_joc_cockpit/config/live");
+    private Path configDirectory = Paths.get("D:/documents/sos-berlin.com/scheduler_joc_cockpit/config");
     private Path schedulerXmlPath = 
-            Paths.get("C:/sp/jobschedulers/approvals/jobscheduler_1.12-SNAPSHOT/sp_4012/config/scheduler.xml");
+            Paths.get("D:/documents/sos-berlin.com/scheduler_joc_cockpit/config/scheduler.xml");
     private String supervisorHost = null;
     private String supervisorPort = null;
     
     @Test
-    @Ignore
+    
     public void testEventUpdateExecute() {
         InventoryEventUpdateUtil eventUpdates = null;
         try {
@@ -89,7 +89,7 @@ public class InventoryTest {
             String answerXml = getResponse();
             String httpPort = new SOSXMLXPath(new StringBuffer(getResponse())).selectSingleNodeValue("/spooler/answer/state/@http_port");
             String httpHost = HttpHelper.getHttpHost(httpPort, "127.0.0.1");
-            eventUpdates = new InventoryEventUpdateUtil("SP", 40012, factory, schedulerXmlPath, "SP_4012", answerXml, httpPort);
+            eventUpdates = new InventoryEventUpdateUtil("LAPTOP-7RSACSCV", 40444, factory, schedulerXmlPath, "scheduler_joc_cockpit", answerXml, httpPort);
             eventUpdates.execute();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -116,7 +116,7 @@ public class InventoryTest {
     }
 
     @Test
-    @Ignore
+    
     public void testInventoryModelExecute() {
         try {
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
@@ -126,7 +126,7 @@ public class InventoryTest {
             factory.build();
             SOSHibernateSession session = factory.openStatelessSession();
             DBLayerInventory layer = new DBLayerInventory(session);
-            DBItemInventoryInstance instance = layer.getInventoryInstance("SP", 40012);
+            DBItemInventoryInstance instance = layer.getInventoryInstance("LAPTOP-7RSACSCV", 40444);
             InventoryModel inventoryModel = new InventoryModel(factory, instance, schedulerXmlPath);
             inventoryModel.setLiveDirectory(liveDirectory);
             inventoryModel.setAnswerXml(getResponse());

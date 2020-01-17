@@ -19,6 +19,8 @@ public class DBItemInCondition implements IJSJobConditionKey {
     private Boolean markExpression;
     private Boolean skipOutCondition;
     private String jobStream;
+    private Boolean notInPeriod;
+    private Date nextPeriod;
     private Date created;
 
     public DBItemInCondition() {
@@ -76,6 +78,16 @@ public class DBItemInCondition implements IJSJobConditionKey {
         this.markExpression = markExpression;
     }
 
+    @Column(name = "[NOT_IN_PERIOD]", nullable = false)
+    @Type(type = "numeric_boolean")
+    public Boolean getNotInPeriod() {
+        return this.notInPeriod;
+    }
+
+    public void setNotInPeriod(Boolean notInPeriod) {
+        this.notInPeriod = notInPeriod;
+    }
+
     @Column(name = "[EXPRESSION]", nullable = false)
     public String getExpression() {
         return expression;
@@ -92,6 +104,17 @@ public class DBItemInCondition implements IJSJobConditionKey {
 
     public void setJobStream(String jobStream) {
         this.jobStream = jobStream;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "[NEXT_PERIOD]", nullable = false)
+    public Date getNextPeriod() {
+        return nextPeriod;
+    }
+
+    @Column(name = "[NEXT_PERIOD]", nullable = false)
+    public void setNextPeriod(Date nextPeriod) {
+        this.nextPeriod = nextPeriod;
     }
 
     @Temporal(TemporalType.TIMESTAMP)
