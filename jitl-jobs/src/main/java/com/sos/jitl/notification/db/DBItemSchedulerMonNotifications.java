@@ -23,6 +23,7 @@ import org.hibernate.annotations.Type;
 import sos.util.SOSString;
 
 import com.sos.hibernate.classes.DbItem;
+import com.sos.scheduler.SOSJobSchedulerGlobal;
 
 @Entity
 @Table(name = DBLayer.TABLE_SCHEDULER_MON_NOTIFICATIONS)
@@ -56,6 +57,7 @@ public class DBItemSchedulerMonNotifications extends DbItem implements Serializa
     private Long returnCode;
     private String agentUrl;
     private String clusterMemberId;
+    private String criticality;
     private boolean error;
     private String errorCode;
     private String errorText;
@@ -328,6 +330,19 @@ public class DBItemSchedulerMonNotifications extends DbItem implements Serializa
     @Column(name = "[CLUSTER_MEMBER_ID]", nullable = true)
     public String getClusterMemberId() {
         return clusterMemberId;
+    }
+
+    @Column(name = "[CRITICALITY]", nullable = false)
+    public void setCriticality(String val) {
+        if (SOSString.isEmpty(val)) {
+            val = SOSJobSchedulerGlobal.JOB_CRITICALITY.NORMAL.toString();
+        }
+        this.criticality = val;
+    }
+
+    @Column(name = "[CRITICALITY]", nullable = false)
+    public String getCriticality() {
+        return this.criticality;
     }
 
     @Column(name = "[ERROR]", nullable = false)

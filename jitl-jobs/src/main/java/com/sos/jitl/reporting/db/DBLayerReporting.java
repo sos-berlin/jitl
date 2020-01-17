@@ -20,6 +20,7 @@ import com.sos.jitl.reporting.helper.InventoryInfo;
 import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderStepHistoryDBItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerTaskHistoryDBItem;
+import com.sos.scheduler.SOSJobSchedulerGlobal;
 
 import sos.util.SOSDuration;
 import sos.util.SOSDurations;
@@ -80,6 +81,7 @@ public class DBLayerReporting extends DBLayer {
         item.setErrorCode(task.getErrorCode());
         item.setErrorText(task.getErrorText());
         item.setAgentUrl(task.getAgentUrl());
+        item.setCriticality(inventoryInfo.getCriticality());
         item.setIsRuntimeDefined(inventoryInfo.getIsRuntimeDefined());
         item.setSyncCompleted(syncCompleted);
         item.setResultsCompleted(false);
@@ -149,6 +151,7 @@ public class DBLayerReporting extends DBLayer {
         item.setErrorCode(errorCode);
         item.setErrorText(errorText);
         item.setAgentUrl(agentUrl);
+        item.setCriticality(inventoryInfo.getCriticality());
         item.setIsRuntimeDefined(inventoryInfo.getIsRuntimeDefined());
         item.setSyncCompleted(syncCompleted);
         item.setResultsCompleted(false);
@@ -243,6 +246,7 @@ public class DBLayerReporting extends DBLayer {
         item.setErrorCode(step.getStepErrorCode());
         item.setErrorText(step.getStepErrorText());
         item.setAgentUrl(task.getAgentUrl());
+        item.setCriticality(task.getCriticality());
         item.setIsRuntimeDefined(task.getIsRuntimeDefined());
         item.setSyncCompleted(syncCompleted);
         item.setResultsCompleted(false);
@@ -470,7 +474,8 @@ public class DBLayerReporting extends DBLayer {
         sql.append(quote("ij.NAME"));
         sql.append(" ," + quote("ij.TITLE"));
         sql.append(" ," + quote("ij.IS_RUNTIME_DEFINED"));
-        sql.append(" , " + quote("ij.IS_ORDER_JOB"));
+        sql.append(" ," + quote("ij.IS_ORDER_JOB"));
+        sql.append(" ," + quote("ij.CRITICALITY"));
         sql.append(" from " + TABLE_INVENTORY_JOBS + " ij");
         sql.append(" ," + TABLE_INVENTORY_INSTANCES + " ii ");
         sql.append(" where ");
@@ -496,6 +501,7 @@ public class DBLayerReporting extends DBLayer {
         sql.append(quote("ij.NAME"));
         sql.append(" ," + quote("ij.TITLE"));
         sql.append(" ," + quote("ij.IS_RUNTIME_DEFINED"));
+        sql.append(" ," + quote("ij.CRITICALITY"));
         sql.append(" ," + quote("ij.IS_ORDER_JOB"));
         sql.append(" ," + quote("ii.CLUSTER_TYPE"));
         sql.append(" ," + quote("iacm.URL"));
@@ -540,6 +546,7 @@ public class DBLayerReporting extends DBLayer {
         sql.append(quote("ijc.NAME"));
         sql.append(" ," + quote("ijc.TITLE"));
         sql.append(" ," + quote("io.IS_RUNTIME_DEFINED"));
+        sql.append(" ,'").append(SOSJobSchedulerGlobal.JOB_CRITICALITY.NORMAL.toString()).append("' as CRITICALITY ");
         sql.append(" from " + TABLE_INVENTORY_ORDERS + " io");
         sql.append(" ," + TABLE_INVENTORY_JOB_CHAINS + " ijc");
         sql.append(" ," + TABLE_INVENTORY_INSTANCES + " ii ");

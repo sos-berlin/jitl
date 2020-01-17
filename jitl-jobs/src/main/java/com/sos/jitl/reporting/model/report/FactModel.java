@@ -1019,6 +1019,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                     reportTask.setName(taskInventoryInfo.getName());
                                     reportTask.setBasename(ReportUtil.getBasenameFromName(taskInventoryInfo.getName()));
                                     reportTask.setTitle(taskInventoryInfo.getTitle());
+                                    reportTask.setCriticality(taskInventoryInfo.getCriticality());
                                     reportTask.setModified(ReportUtil.getCurrentDateTime());
                                     getDbLayer().getSession().update(reportTask);
                                     if (isDebugEnabled) {
@@ -1391,6 +1392,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                         reportTask.setName(taskInventoryInfo.getName());
                                         reportTask.setBasename(ReportUtil.getBasenameFromName(taskInventoryInfo.getName()));
                                         reportTask.setTitle(taskInventoryInfo.getTitle());
+                                        reportTask.setCriticality(taskInventoryInfo.getCriticality());
                                         doUpdate = true;
                                     }
                                 }
@@ -1599,6 +1601,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
         item.setClusterType(null);
         item.setUrl(null);
+        item.setCriticality(null);
         item.setOrdering(new Integer(0));
 
         if (infos != null && infos.size() > 0) {
@@ -1611,11 +1614,12 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     item.setName(SOSString.isEmpty(row.get("name")) ? null : row.get("name"));
                     item.setTitle(SOSString.isEmpty(row.get("title")) ? null : row.get("title"));
                     item.setIsRuntimeDefined(row.get("is_runtime_defined").equals("1"));
-                    if (row.size() > 3) {
+                    item.setCriticality(row.get("criticality"));
+                    if (row.size() > 4) {
                         if (row.containsKey("is_order_job")) {
                             item.setIsOrderJob(row.get("is_order_job").equals("1"));
                         }
-                        if (row.size() > 4) {
+                        if (row.size() > 5) {
                             if (row.containsKey("cluster_type")) {
                                 item.setClusterType(SOSString.isEmpty(row.get("cluster_type")) ? null : row.get("cluster_type"));
                             }

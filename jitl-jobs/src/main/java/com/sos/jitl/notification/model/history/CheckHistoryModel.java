@@ -363,8 +363,8 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                         .getOrderHistoryId(), item.getJobChainName(), item.getJobChainTitle(), item.getOrderId(), item.getOrderTitle(), item
                                 .getOrderStartTime(), item.getOrderEndTime(), item.getOrderStepState(), item.getOrderStepStartTime(), item
                                         .getOrderStepEndTime(), item.getJobName(), item.getJobTitle(), item.getTaskStartTime(), item.getTaskEndTime(),
-                        false, new Long(item.getReturnCode() == null ? 0 : item.getReturnCode()), item.getAgentUrl(), item.getClusterMemberId(),
-                        hasStepError, item.getErrorCode(), item.getErrorText());
+                        false, new Long(item.getReturnCode() == null ? 0 : item.getReturnCode()), item.getAgentUrl(), item.getClusterMemberId(), item
+                                .getCriticality(), hasStepError, item.getErrorCode(), item.getErrorText());
 
                 getDbLayer().getSession().save(dbItem);
                 if (isDebugEnabled) {
@@ -439,6 +439,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                 dbItem.setReturnCode(new Long(item.getReturnCode() == null ? 0 : item.getReturnCode()));
                 dbItem.setAgentUrl(item.getAgentUrl());
                 dbItem.setClusterMemberId(item.getClusterMemberId());
+                dbItem.setCriticality(item.getCriticality());
                 // hatte error und wird auf nicht error gesetzt
                 dbItem.setRecovered(dbItem.getError() && !hasStepError);
                 dbItem.setError(hasStepError);

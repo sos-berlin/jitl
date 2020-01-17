@@ -19,6 +19,9 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.Type;
 
 import com.sos.hibernate.classes.DbItem;
+import com.sos.scheduler.SOSJobSchedulerGlobal;
+
+import sos.util.SOSString;
 
 @Entity
 @Table(name = DBLayer.TABLE_REPORT_TASKS)
@@ -49,6 +52,7 @@ public class DBItemReportTask extends DbItem implements Serializable {
     private String errorCode;
     private String errorText;
     private String agentUrl;
+    private String criticality;
     private boolean isRuntimeDefined;
     private boolean syncCompleted;
     private boolean resultsCompleted;
@@ -273,6 +277,19 @@ public class DBItemReportTask extends DbItem implements Serializable {
         return this.agentUrl;
     }
 
+    @Column(name = "[CRITICALITY]", nullable = false)
+    public void setCriticality(String val) {
+        if(SOSString.isEmpty(val)) {
+            val = SOSJobSchedulerGlobal.JOB_CRITICALITY.NORMAL.toString();
+        }
+        this.criticality = val;
+    }
+
+    @Column(name = "[CRITICALITY]", nullable = false)
+    public String getCriticality() {
+        return this.criticality;
+    }
+
     @Column(name = "[IS_RUNTIME_DEFINED]", nullable = false)
     @Type(type = "numeric_boolean")
     public void setIsRuntimeDefined(boolean val) {
@@ -357,7 +374,7 @@ public class DBItemReportTask extends DbItem implements Serializable {
     public boolean isFailed() {
         return (getEndTime() != null && getError());
     }
-    
+
     @Override
     public int hashCode() {
         // always build on unique constraint

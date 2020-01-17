@@ -2,6 +2,10 @@ package com.sos.jitl.reporting.helper;
 
 import java.io.Serializable;
 
+import com.sos.scheduler.SOSJobSchedulerGlobal;
+
+import sos.util.SOSString;
+
 public class InventoryInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -13,6 +17,7 @@ public class InventoryInfo implements Serializable {
     private String name;
     private String title;
     private String url;
+    private String criticality;
     private boolean isOrderJob;
     private boolean isRuntimeDefined;
     private Integer ordering;
@@ -21,86 +26,97 @@ public class InventoryInfo implements Serializable {
     }
 
     public void setSchedulerId(String val) {
-        this.schedulerId = val;
+        schedulerId = val;
     }
 
     public String getSchedulerId() {
-        return this.schedulerId;
+        return schedulerId;
     }
 
     public void setHostname(String val) {
-        this.hostname = val;
+        hostname = val;
     }
 
     public String getHostname() {
-        return this.hostname;
+        return hostname;
     }
 
     public void setPort(int val) {
-        this.port = val;
+        port = val;
     }
 
     public int getPort() {
-        return this.port;
+        return port;
     }
 
     public void setClusterType(String val) {
-        this.clusterType = val;
+        clusterType = val;
     }
 
     public String getClusterType() {
-        return this.clusterType;
+        return clusterType;
     }
 
     public void setName(String val) {
-        this.name = val;
+        name = val;
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
     public void setUrl(String val) {
-        this.url = val;
+        url = val;
     }
 
     public String getUrl() {
-        return this.url;
+        return url;
+    }
+
+    public void setCriticality(String val) {
+        if(SOSString.isEmpty(val)) {
+            val = SOSJobSchedulerGlobal.JOB_CRITICALITY.NORMAL.toString();
+        }
+        criticality = val;
+    }
+
+    public String getCriticality() {
+        return criticality;
     }
 
     public void setTitle(String val) {
         if (val != null && val.trim().length() == 0) {
             val = null;
         }
-        this.title = val;
+        title = val;
     }
 
     public String getTitle() {
-        return this.title;
+        return title;
     }
 
     public void setIsOrderJob(boolean val) {
-        this.isOrderJob = val;
+        isOrderJob = val;
     }
 
     public boolean getIsOrderJob() {
-        return this.isOrderJob;
+        return isOrderJob;
     }
 
     public void setIsRuntimeDefined(boolean val) {
-        this.isRuntimeDefined = val;
+        isRuntimeDefined = val;
     }
 
     public boolean getIsRuntimeDefined() {
-        return this.isRuntimeDefined;
+        return isRuntimeDefined;
     }
 
     public void setOrdering(Integer val) {
-        this.ordering = val;
+        ordering = val;
     }
 
     public Integer getOrdering() {
-        return this.ordering;
+        return ordering;
     }
 
     public String getClusterMemberIdFromInstance() {
