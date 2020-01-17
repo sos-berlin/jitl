@@ -76,7 +76,7 @@ public class InventoryTest {
     private String supervisorPort = null;
     
     @Test
-    
+    @Ignore
     public void testEventUpdateExecute() {
         InventoryEventUpdateUtil eventUpdates = null;
         try {
@@ -116,7 +116,7 @@ public class InventoryTest {
     }
 
     @Test
-    
+    @Ignore
     public void testInventoryModelExecute() {
         try {
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
