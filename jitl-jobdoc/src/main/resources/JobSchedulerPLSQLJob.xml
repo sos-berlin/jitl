@@ -61,6 +61,8 @@
 </p>
         </note>
         <note language="en">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+        
         <title>Database Commands for the Job</title>
           <p>
             It is possible to define more than one instruction in the COMMAND field.
@@ -138,6 +140,8 @@
 </p>
         </note>
         <note language="en">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+        
         <title>Location of the Credential Store file</title>
           <p>
             The name of the keepass file that contains the credentials for the access to the database.
@@ -159,6 +163,8 @@
 </p>
         </note>
         <note language="en">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+        
         <title>Location of the Credential Store file</title>
           <p>
             The name of the keepass key file that contains the key for the credentials for the access to the database (if a key file is assigned to the keepass file). When no keepass key file is given, the file name is build with the name of the keepass file with changing the extension to .key.
@@ -180,6 +186,7 @@
 </p>
         </note>
         <note language="en">
+        <div xmlns="http://www.w3.org/1999/xhtml">        
         <title>Path for the entries in the keepass file</title>
           <p>
            To speciy a path for all entries. This makes the values for e.g. the password shorter.
