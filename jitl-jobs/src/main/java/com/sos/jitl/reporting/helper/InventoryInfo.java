@@ -74,7 +74,7 @@ public class InventoryInfo implements Serializable {
     }
 
     public void setCriticality(String val) {
-        if(SOSString.isEmpty(val)) {
+        if (SOSString.isEmpty(val)) {
             val = SOSJobSchedulerGlobal.JOB_CRITICALITY.NORMAL.toString();
         }
         criticality = val;
