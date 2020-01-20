@@ -1,7 +1,5 @@
 package com.sos.jitl.reporting.db;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -39,8 +37,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 		this.filter = new ReportExecutionFilter();
 		this.filter.setDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
 		this.filter.setOrderCriteria("startTime");
-		this.filter.setSortMode("desc");
-	}
+		this.filter.setSortMode("desc");	}
 
 	public ReportExecutionFilter getFilter() {
 		return filter;
@@ -81,10 +78,14 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 			where += and + " startTime>= :startTime";
 			and = " and ";
 		}
-		if (filter.getEndTime() != null) {
-			where += and + " endTime < :endTime ";
-			and = " and ";
-		}
+        if (filter.getEndTime() != null) {
+            where += and + " endTime < :endTime ";
+            and = " and ";
+        }
+        if (filter.getCriticality() != null && !filter.getCriticality().isEmpty()) {
+            where += and + " criticality < :criticality ";
+            and = " and ";
+        }
 		if (filter.getListOfJobs() != null && filter.getListOfJobs().size() > 0) {
 			where += and + SearchStringHelper.getStringListPathSql(filter.getListOfJobs(), "name");
 			and = " and ";
@@ -139,6 +140,11 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 			where += and + fieldname_date_field + " < :startTimeTo ";
 			and = " and ";
 		}
+
+		if (filter.getCriticality() != null && !filter.getCriticality().isEmpty()) {
+            where += and + " criticality < :criticality ";
+            and = " and ";
+        }
 
 		if (filter.getStates() != null && filter.getStates().size() > 0) {
 			where += and + "(";
@@ -218,9 +224,9 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 
 	private List<DBItemReportTask> executeQuery(Query<DBItemReportTask> query) throws SOSHibernateException {
 		lastQuery = query.getQueryString();
-		if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
-			query.setParameter("schedulerId", filter.getSchedulerId());
-		}
+        if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
+            query.setParameter("schedulerId", filter.getSchedulerId());
+        }
 		if (filter.getTaskIds() != null && !filter.getTaskIds().isEmpty()) {
 			query.setParameterList("taskIds", filter.getTaskIds());
 		}
@@ -230,6 +236,9 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
 		if (filter.getExecutedTo() != null) {
 			query.setParameter("startTimeTo", filter.getExecutedTo(), TemporalType.TIMESTAMP);
 		}
+        if (filter.getCriticality() != null && !"".equals(filter.getCriticality())) {
+            query.setParameter("criticality", filter.getCriticality());
+        }
 		if (filter.getLimit() > 0) {
 			query.setMaxResults(filter.getLimit());
 		}
