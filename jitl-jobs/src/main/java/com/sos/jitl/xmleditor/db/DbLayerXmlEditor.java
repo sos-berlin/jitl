@@ -10,6 +10,8 @@ import com.sos.jitl.reporting.db.DBItemXmlEditorObject;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.joc.model.xmleditor.common.ObjectType;
 
+import sos.util.SOSString;
+
 public class DbLayerXmlEditor extends DBLayer {
 
     public DbLayerXmlEditor(SOSHibernateSession session) {
@@ -55,11 +57,13 @@ public class DbLayerXmlEditor extends DBLayer {
         return getSession().getSingleResult(query);
     }
 
-    public List<Map<String, Object>> getObjectProperties(String schedulerId, String objectType, String properties) throws Exception {
+    public List<Map<String, Object>> getObjectProperties(String schedulerId, String objectType, String properties, String orderBy) throws Exception {
         StringBuilder hql = new StringBuilder("select new map(").append(properties).append(") from ").append(DBITEM_XML_EDITOR_OBJECTS).append(" ");
         hql.append("where schedulerId=:schedulerId ");
         hql.append("and objectType=:objectType ");
-        hql.append("order by name");
+        if (!SOSString.isEmpty(orderBy)) {
+            hql.append(orderBy);
+        }
 
         Query<Map<String, Object>> query = getSession().createQuery(hql.toString());
         query.setParameter("schedulerId", schedulerId);
