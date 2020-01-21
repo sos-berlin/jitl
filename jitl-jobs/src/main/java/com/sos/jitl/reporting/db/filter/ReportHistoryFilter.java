@@ -27,7 +27,6 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
     private String schedulerId = "";
     private String orderId;
     private String jobChain;
-    private String criticality;
     private Set<Folder> listOfFolders;
 
     public ReportHistoryFilter() {
@@ -197,14 +196,6 @@ public class ReportHistoryFilter extends SOSHibernateIntervalFilter {
 
     }
 
-    
-    public String getCriticality() {
-        return criticality;
-    }
-
-    
-    public void setCriticality(String criticality) {
-        this.criticality = criticality;
-    }
+ 
 
 }
