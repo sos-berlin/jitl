@@ -18,7 +18,7 @@ public class DbLayerXmlEditor extends DBLayer {
         super(session);
     }
 
-    public boolean deleteOtherObject(Long id) throws Exception {
+    public int deleteOtherObject(Long id) throws Exception {
         // JOC uses autoCommit=true, executeUpdate is not supported
         StringBuilder hql = new StringBuilder("from ").append(DBITEM_XML_EDITOR_OBJECTS).append(" ");
         hql.append("where id=:id ");
@@ -30,9 +30,29 @@ public class DbLayerXmlEditor extends DBLayer {
         DBItemXmlEditorObject item = getSession().getSingleResult(query);
         if (item != null) {
             getSession().delete(item);
-            return true;
+            return 1;
         }
-        return false;
+        return 0;
+    }
+
+    public int deleteOtherObjects(String schedulerId) throws Exception {
+        // JOC uses autoCommit=true, executeUpdate is not supported
+        StringBuilder hql = new StringBuilder("from ").append(DBITEM_XML_EDITOR_OBJECTS).append(" ");
+        hql.append("where schedulerId=:schedulerId ");
+        hql.append("and objectType=:objectType");
+        Query<DBItemXmlEditorObject> query = getSession().createQuery(hql.toString());
+        query.setParameter("schedulerId", schedulerId);
+        query.setParameter("objectType", ObjectType.OTHER.name());
+
+        List<DBItemXmlEditorObject> items = getSession().getResultList(query);
+        if (items != null) {
+            int size = items.size();
+            for (int i = 0; i < size; i++) {
+                getSession().delete(items.get(i));
+            }
+            return size;
+        }
+        return 0;
     }
 
     public DBItemXmlEditorObject getObject(Long id) throws Exception {
