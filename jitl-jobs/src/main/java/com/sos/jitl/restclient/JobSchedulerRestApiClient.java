@@ -38,6 +38,7 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 
@@ -144,6 +145,8 @@ public class JobSchedulerRestApiClient {
             HttpClientBuilder builder = HttpClientBuilder.create();
             if (httpRequestRetryHandler != null) {
                 builder.setRetryHandler(httpRequestRetryHandler);
+            } else {
+                builder.setRetryHandler(new DefaultHttpRequestRetryHandler(0, false));
             }
             if (credentialsProvider != null) {
                 builder.setDefaultCredentialsProvider(credentialsProvider);
