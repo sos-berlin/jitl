@@ -40,7 +40,7 @@ public class SystemNotifierJobJSAdapterClass extends JobSchedulerJobAdapter {
             options.scheduler_mail_settings.setValue(NotificationMail.getSchedulerMailOptions(mailSettings));
             job.init(spooler);
         } catch (Exception e) {
-            throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
+            throw new JobSchedulerException("Fatal Error:" + e.toString(), e);
         }
         return super.spooler_init();
     }
@@ -58,7 +58,7 @@ public class SystemNotifierJobJSAdapterClass extends JobSchedulerJobAdapter {
             job.openSession();
             job.execute();
         } catch (Exception e) {
-            throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
+            throw new JobSchedulerException("Fatal Error:" + e.toString(), e);
         } finally {
             job.closeSession();
         }
