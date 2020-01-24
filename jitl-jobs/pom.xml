@@ -110,11 +110,6 @@
 		</dependency>
 
 		<!-- 3rd party jar files -->
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-		</dependency>
-
 		<!-- this dependency is needed as long as tests in this artifact are located 
 			in the main/java folder and not in main/test -->
 		<dependency>
@@ -161,11 +156,11 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
-
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <scope>test</scope>
+        </dependency>
 
 		<dependency>
 			<groupId>com.googlecode.jsendnsca</groupId>

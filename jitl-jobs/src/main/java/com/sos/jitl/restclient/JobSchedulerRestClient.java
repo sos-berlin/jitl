@@ -19,11 +19,12 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JobSchedulerRestClient {
 
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerRestClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerRestClient.class);
     public static String accept = "application/json";
     public static HashMap<String, String> headers = new HashMap<String, String>();
     private static HashMap<String, String> responseHeaders = new HashMap<String, String>();

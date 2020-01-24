@@ -15,7 +15,8 @@ import org.apache.commons.httpclient.HttpConnectionManager;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.util.SOSFile;
 
@@ -29,7 +30,7 @@ public class JobSchedulerHttpPostJob extends JSJobUtilitiesClass<JobSchedulerHtt
     protected Vector<File> inputFileList = null;
     protected Iterator<File> inputFileListIterator = null;
     protected int timeout = 0;
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerHttpPostJob.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerHttpPostJob.class);
     private JSJobUtilities objJSJobUtilities = this;
 
     public JobSchedulerHttpPostJob() {

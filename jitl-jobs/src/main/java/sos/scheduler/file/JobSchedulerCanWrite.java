@@ -2,7 +2,8 @@ package sos.scheduler.file;
 
 import static com.sos.scheduler.messages.JSMessages.JSJ_F_0010;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.JSHelper.io.SOSFileSystemOperationsImpl;
@@ -12,7 +13,7 @@ import com.sos.i18n.annotation.I18NResourceBundle;
 @I18NResourceBundle(baseName = "com.sos.scheduler.messages", defaultLocale = "en")
 public class JobSchedulerCanWrite extends JobSchedulerFileOperationBase {
 
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerCanWrite.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCanWrite.class);
 	private static final String CLASSNAME = "JobSchedulerCanWrite";
 
     @Override

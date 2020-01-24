@@ -1,12 +1,14 @@
 package com.sos.jitl.sync;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Basics.JSToolBox;
-import org.apache.log4j.Logger;
 
 public class JobSchedulerSynchronizeJobChainsMain extends JSToolBox {
 
     protected JobSchedulerSynchronizeJobChainsOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerSynchronizeJobChainsMain.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerSynchronizeJobChainsMain.class);
 
     public final static void main(String[] pstrArgs) {
         final String methodName = "JobSchedulerSynchronizeJobChainsMain::Main";

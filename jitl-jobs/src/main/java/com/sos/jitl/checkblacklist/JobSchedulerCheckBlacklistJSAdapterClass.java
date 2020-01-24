@@ -5,7 +5,8 @@ import java.io.ByteArrayInputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -21,7 +22,7 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 public class JobSchedulerCheckBlacklistJSAdapterClass extends JobSchedulerJobAdapter {
 
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerCheckBlacklistJSAdapterClass.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCheckBlacklistJSAdapterClass.class);
     private DocumentBuilder docBuilder;
     private JobSchedulerCheckBlacklistOptions jobSchedulerCheckBlacklistOptions;
     private int counter;

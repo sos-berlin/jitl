@@ -1,13 +1,15 @@
 package com.sos.jitl.housekeeping.cleanupdb;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 
 /** @author Uwe Risse */
 public class JobSchedulerCleanupSchedulerDbMain extends JSToolBox {
 
     protected JobSchedulerCleanupSchedulerDbOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerCleanupSchedulerDbMain.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCleanupSchedulerDbMain.class);
 
     public final static void main(String[] pstrArgs) {
         final String methodName = "JobSchedulerCleanupSchedulerDbMain::Main";

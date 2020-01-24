@@ -2,15 +2,16 @@ package sos.scheduler.db;
 
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-import org.apache.log4j.Logger;
 import org.junit.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 
 public class JobSchedulerPLSQLJobJUnitTest extends JSToolBox {
 
     protected JobSchedulerPLSQLJobOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerPLSQLJobJUnitTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerPLSQLJobJUnitTest.class);
     private JobSchedulerPLSQLJob objE = null;
 
     public JobSchedulerPLSQLJobJUnitTest() {

@@ -1,12 +1,18 @@
 package sos.scheduler.managed.db;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-
-import org.apache.log4j.Logger;
-import org.junit.*;
-
-import static org.junit.Assert.*;
 
 /** \class JobSchedulerManagedDBReportJobOptionsJUnitTest - Launch Database
  * Report
@@ -38,8 +44,6 @@ import static org.junit.Assert.*;
 public class JobSchedulerManagedDBReportJobOptionsJUnitTest extends JSToolBox {
 
     private final String conClassName = "JobSchedulerManagedDBReportJobOptionsJUnitTest"; //$NON-NLS-1$
-    @SuppressWarnings("unused")
-    private static Logger logger = Logger.getLogger(JobSchedulerManagedDBReportJobOptionsJUnitTest.class);
     private JobSchedulerManagedDBReportJob objE = null;
 
     protected JobSchedulerManagedDBReportJobOptions objOptions = null;

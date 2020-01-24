@@ -1,6 +1,8 @@
 package sos.scheduler.managed;
 
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.connection.SOSConnection;
 import sos.util.SOSArguments;
@@ -10,7 +12,7 @@ import sos.util.SOSStandardLogger;
 /** @author Andreas Liebert */
 public class ManagedJobChainExport {
 
-    private static final Logger LOGGER = Logger.getLogger(ManagedJobChainExport.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManagedJobChainExport.class);
     private static SOSConnection conn;
     private static SOSStandardLogger sosLogger = null;
 

@@ -1,12 +1,14 @@
 package com.sos.jitl.housekeeping.dequeuemail;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 
 public class JobSchedulerDequeueMailJobMain extends JSToolBox {
 
     protected JobSchedulerDequeueMailJobOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerDequeueMailJobMain.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerDequeueMailJobMain.class);
 
     public final static void main(String[] pstrArgs) {
         final String methodName = "JobSchedulerDequeueMailJobMain::Main";

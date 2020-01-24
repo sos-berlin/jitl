@@ -1,17 +1,14 @@
 package com.sos.jitl.sync;
 
-import org.apache.log4j.Logger;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 public class SyncNodeListJUnitTest {
 
     private static final String SYNCID = "1";
     @SuppressWarnings("unused")
     private final static String conClassName = "JobSchedulerSynchronizeJobChainsJUnitTest";
-    @SuppressWarnings("unused")
-    private static Logger logger = Logger.getLogger(JobSchedulerSynchronizeJobChainsJUnitTest.class);
 
     protected JobSchedulerSynchronizeJobChainsOptions objOptions = null;
 

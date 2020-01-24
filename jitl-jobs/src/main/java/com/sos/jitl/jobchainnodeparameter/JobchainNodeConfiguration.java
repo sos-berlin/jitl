@@ -12,7 +12,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.io.Files.JSFile;
 import com.sos.jitl.jobchainnodeparameter.model.JobChain;
@@ -25,7 +26,7 @@ import sos.util.ParameterSubstitutor;
 
 public class JobchainNodeConfiguration {
 
-    private static final Logger LOGGER = Logger.getLogger(JobchainNodeConfiguration.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobchainNodeConfiguration.class);
 
     private static final String FILENAMEEXTENSIONCONFIG_XML = ".config.xml";
     private static final String DEFAULTFILENAME4CACHE = "cache";

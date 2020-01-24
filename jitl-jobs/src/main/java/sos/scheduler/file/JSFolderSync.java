@@ -4,7 +4,8 @@ import java.io.File;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.JSHelper.io.Files.JSFile;
@@ -14,7 +15,7 @@ import com.sos.i18n.annotation.I18NResourceBundle;
 @I18NResourceBundle(baseName = "com_sos_scheduler_messages", defaultLocale = "en")
 public class JSFolderSync extends JSFileOperationBase {
 
-    private static final Logger LOGGER = Logger.getLogger(JSFolderSync.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSFolderSync.class);
     private String JFO_I_0010 = "JFO_I_0010";
     private String JFO_I_0011 = "JFO_I_0011";
     private String JFO_I_0012 = "JFO_I_0012";
@@ -82,7 +83,7 @@ public class JSFolderSync extends JSFileOperationBase {
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             String strM = Messages.getMsg("JSJ-F-107", methodName);
-            LOGGER.fatal(strM);
+            LOGGER.error(strM);
             throw new JobSchedulerException(strM);
         }
         LOGGER.debug(Messages.getMsg("JSJ-I-111", methodName));

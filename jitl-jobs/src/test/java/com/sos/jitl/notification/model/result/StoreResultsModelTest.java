@@ -1,6 +1,8 @@
 package com.sos.jitl.notification.model.result;
 
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.jitl.notification.jobs.result.StoreResultsJobOptions;
 import com.sos.jitl.notification.model.ConfigTest;
@@ -8,7 +10,7 @@ import com.sos.jitl.notification.model.ModelTest;
 
 public class StoreResultsModelTest extends ModelTest {
 
-    private static Logger LOGGER = Logger.getLogger(StoreResultsModelTest.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(StoreResultsModelTest.class);
 
     public static void main(String[] args) throws Exception {
         StoreResultsModelTest t = new StoreResultsModelTest();

@@ -9,11 +9,13 @@ import sos.spooler.Variable_set;
 import java.io.*;
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 class SOSSchedulerTextProcessor {
 
-    private static final Logger LOGGER = Logger.getLogger(SOSSchedulerTextProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SOSSchedulerTextProcessor.class);
     private String command;
     private HashMap commands;
     private File file;
@@ -212,7 +214,7 @@ class SOSSchedulerTextProcessor {
 @Deprecated
 public class JobSchedulerTextProcessor extends Job_impl {
 
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerTextProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerTextProcessor.class);
     private static final String RETURN_PARAMETER_SCHEDULER_TEXTPROCESSOR_PARAM = "scheduler_textprocessor_param";
     private static final String RETURN_PARAMETER_SCHEDULER_TEXTPROCESSOR_COMMAND = "scheduler_textprocessor_command";
     private static final String RETURN_PARAMETER_SCHEDULER_TEXTPROCESSOR_RESULT = "scheduler_textprocessor_result";

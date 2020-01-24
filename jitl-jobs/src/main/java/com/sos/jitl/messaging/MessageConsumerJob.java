@@ -5,7 +5,8 @@ import java.util.Map;
 
 import javax.jms.Connection;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.jitl.messaging.options.MessageConsumerOptions;
 
@@ -18,7 +19,7 @@ import com.sos.VirtualFileSystem.Options.SOSConnection2OptionsAlternate;
 
 public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptions> {
 
-    private static final Logger LOGGER = Logger.getLogger(MessageConsumerJob.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MessageConsumerJob.class);
     private static final String DEFAULT_QUEUE_NAME = "JobChainQueue";
     private static final String DEFAULT_PROTOCOL = "tcp";
     private String messageXml;

@@ -2,7 +2,10 @@ package com.sos.jitl.schedulerhistory.db;
 
 import java.lang.reflect.Method;
 import javax.persistence.Lob;
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -13,7 +16,7 @@ import javassist.bytecode.annotation.Annotation;
 
 public class AddAnnotation {
 
-    private static final Logger LOGGER = Logger.getLogger(AddAnnotation.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AddAnnotation.class);
 
     public static void addPersonneNameAnnotationToMethod(String className, String methodName) throws Exception {
         ClassPool pool = ClassPool.getDefault();

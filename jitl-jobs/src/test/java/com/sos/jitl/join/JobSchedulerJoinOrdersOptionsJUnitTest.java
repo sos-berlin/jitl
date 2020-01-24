@@ -3,10 +3,7 @@
 package com.sos.jitl.join;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -23,7 +20,6 @@ public class JobSchedulerJoinOrdersOptionsJUnitTest extends  JSToolBox {
 	protected JobSchedulerJoinOrdersOptions	objOptions = null;
 	private static final int DEBUG9 = 9;
 	private static final String CLASSNAME = "JobSchedulerJoinOrdersOptionsJUnitTest"; 
-	private static final Logger LOGGER = Logger.getLogger(JobSchedulerJoinOrdersOptionsJUnitTest.class);
 	private JobSchedulerJoinOrders objE = null;
 
 	@BeforeClass

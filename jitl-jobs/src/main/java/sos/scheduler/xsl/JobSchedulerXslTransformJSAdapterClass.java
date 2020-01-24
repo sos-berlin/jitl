@@ -1,15 +1,17 @@
 package sos.scheduler.xsl;
 
-import org.apache.log4j.Logger;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 public class JobSchedulerXslTransformJSAdapterClass extends JobSchedulerJobAdapter {
 
     private final String conClassName = "JobSchedulerXslTransformationJSAdapterClass";					//$NON-NLS-1$
-    private static Logger logger = Logger.getLogger(JobSchedulerXslTransformJSAdapterClass.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerXslTransformJSAdapterClass.class);
 
     public void init() {
         @SuppressWarnings("unused")
@@ -36,7 +38,7 @@ public class JobSchedulerXslTransformJSAdapterClass extends JobSchedulerJobAdapt
             super.spooler_process();
             doProcessing();
         } catch (Exception e) {
-            logger.fatal(stackTrace2String(e));
+            LOGGER.error(stackTrace2String(e));
             throw new JobSchedulerException(e);
         } finally {
         } // finally

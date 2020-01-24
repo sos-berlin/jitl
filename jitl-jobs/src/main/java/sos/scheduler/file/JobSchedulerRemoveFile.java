@@ -28,7 +28,7 @@ public class JobSchedulerRemoveFile extends JobSchedulerFileOperationBase {
             return setReturnResult(flgOperationWasSuccessful);
         } catch (Exception e) {
 			String strM = JSJ_F_0010.params(CLASSNAME, e.getMessage());
-			logger.fatal(strM + e);
+			logger.error(strM + e);
 			throw new JobSchedulerException(strM, e);
         }
     }

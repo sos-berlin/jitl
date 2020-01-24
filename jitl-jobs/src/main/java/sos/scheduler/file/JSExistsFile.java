@@ -2,7 +2,8 @@ package sos.scheduler.file;
 
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.i18n.annotation.I18NResourceBundle;
 
@@ -10,7 +11,7 @@ import com.sos.i18n.annotation.I18NResourceBundle;
 @I18NResourceBundle(baseName = "com_sos_scheduler_messages", defaultLocale = "en")
 public class JSExistsFile extends JSFileOperationBase {
 
-    private static final Logger LOGGER = Logger.getLogger(JSExistsFile.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSExistsFile.class);
 
     public JSExistsFile() {
         super();

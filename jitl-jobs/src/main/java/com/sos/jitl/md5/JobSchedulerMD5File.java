@@ -8,7 +8,8 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.util.SOSCrypt;
 
@@ -19,7 +20,7 @@ import com.sos.scheduler.messages.JSMessages;
 public class JobSchedulerMD5File extends JSJobUtilitiesClass<JobSchedulerMD5FileOptions> {
 
     protected JobSchedulerMD5FileOptions jobSchedulerMD5FileOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerMD5File.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerMD5File.class);
     private static final String JOB_PARAMETER_FILE = "file";
     private static final String JOB_PARAM_MD5_SUFFIX = "md5_suffix";
     private static final String MODE_CREATE = "create";

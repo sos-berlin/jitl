@@ -2,7 +2,8 @@ package sos.scheduler.file;
 
 import static com.sos.scheduler.messages.JSMessages.JSJ_F_0010;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.JSHelper.io.SOSFileSystemOperationsRename;
@@ -13,7 +14,7 @@ import com.sos.i18n.annotation.I18NResourceBundle;
 public class JobSchedulerRenameFile extends JobSchedulerFileOperationBase {
 
 	private static final String CLASSNAME = "JobSchedulerRenameFile";
-	private static final Logger LOGGER = Logger.getLogger(JobSchedulerRenameFile.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerRenameFile.class);
 
 	@Override
 	public boolean spooler_process() {
@@ -34,7 +35,7 @@ public class JobSchedulerRenameFile extends JobSchedulerFileOperationBase {
 			LOGGER.error(e.getMessage(), e);
 			processResult(flgOperationWasSuccessful, source);
 			String strM = JSJ_F_0010.params(CLASSNAME, e.getMessage());
-			logger.fatal(strM);
+			logger.error(strM);
 			throw new JobSchedulerException(strM, e);
 		}
 	}
