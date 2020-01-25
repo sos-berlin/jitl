@@ -69,7 +69,7 @@ public class JobChainHistoryTest {
             LOGGER.info("Start:" + reportItem.start);
             LOGGER.info(reportItem.end.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
             LOGGER.info("End:" + reportItem.end);
-            LOGGER.info(java.time.temporal.ChronoUnit.SECONDS.between(reportItem.start, reportItem.end));
+            LOGGER.info(""+java.time.temporal.ChronoUnit.SECONDS.between(reportItem.start, reportItem.end));
             LOGGER.info("Duration:" + reportItem.duration);
             LOGGER.info("State:" + reportItem.state);
             LOGGER.info("Error:" + reportItem.error);
