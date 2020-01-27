@@ -39,6 +39,7 @@ public class DBItemJoeObject extends DbItem implements Serializable {
     private String account;
     private String operation;
     private Long auditLogId;
+    private Long docId;
     private Date modified;
     private Date created;
 
@@ -119,6 +120,15 @@ public class DBItemJoeObject extends DbItem implements Serializable {
 
     public void setAuditLogId(Long auditLogId) {
         this.auditLogId = auditLogId;
+    }
+    
+    @Column(name = "[DOC_ID]", nullable = true)
+    public Long getDocId() {
+        return docId;
+    }
+
+    public void setDocId(Long docId) {
+        this.docId = docId;
     }
 
     @Column(name = "[OPERATION]", nullable = false)
