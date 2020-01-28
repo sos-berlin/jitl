@@ -96,14 +96,14 @@ public class StoreResultsModel extends NotificationModel implements INotificatio
             // tmp.setOrderStepStartTime(os.getStepStartTime());
             // tmp.setOrderStepEndTime(os.getStepEndTime());
             tmp.setJobName("dummy");
-            tmp.setCriticality(SOSJobSchedulerGlobal.JOB_CRITICALITY.NORMAL.toString());
+            tmp.setJobCriticality(SOSJobSchedulerGlobal.JOB_CRITICALITY.NORMAL.toString());
             tmp.setTaskStartTime(new Date());
 
             dbItem = getDbLayer().createNotification(tmp.getSchedulerId(), tmp.getStandalone(), tmp.getTaskId(), tmp.getStep(), tmp
                     .getOrderHistoryId(), tmp.getJobChainName(), tmp.getJobChainName(), tmp.getOrderId(), tmp.getOrderId(), tmp.getOrderStartTime(),
                     tmp.getOrderEndTime(), tmp.getOrderStepState(), tmp.getOrderStepStartTime(), tmp.getOrderStepEndTime(), tmp.getJobName(), tmp
                             .getJobName(), tmp.getTaskStartTime(), tmp.getTaskEndTime(), tmp.getError(), tmp.getReturnCode(), tmp.getAgentUrl(), tmp
-                                    .getClusterMemberId(), tmp.getCriticality(), tmp.getError(), tmp.getErrorCode(), tmp.getErrorText());
+                                    .getClusterMemberId(), tmp.getJobCriticality(), tmp.getError(), tmp.getErrorCode(), tmp.getErrorText());
             getDbLayer().getSession().save(dbItem);
 
             if (isDebugEnabled) {

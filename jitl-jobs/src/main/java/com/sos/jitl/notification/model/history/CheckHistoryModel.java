@@ -439,7 +439,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                 dbItem.setReturnCode(new Long(item.getReturnCode() == null ? 0 : item.getReturnCode()));
                 dbItem.setAgentUrl(item.getAgentUrl());
                 dbItem.setClusterMemberId(item.getClusterMemberId());
-                dbItem.setCriticality(item.getCriticality());
+                dbItem.setJobCriticality(item.getCriticality());
                 // hatte error und wird auf nicht error gesetzt
                 dbItem.setRecovered(dbItem.getError() && !hasStepError);
                 dbItem.setError(hasStepError);
