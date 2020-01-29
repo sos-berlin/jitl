@@ -90,9 +90,9 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
         if (filter.getCriticality() != null && filter.getCriticality().size() > 0) {
             where += and + "(";
             for (String criticality : filter.getCriticality()) {
-                where += "criticality='" + criticality + "' or";
+                where += "criticality='" + criticality + "' or ";
             }
-            where += " 1=0)";
+            where += "1=0)";
             and = " and ";
         }
 
@@ -100,9 +100,9 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
         if (filter.getStates() != null && filter.getStates().size() > 0) {
             where += and + "(";
             for (String state : filter.getStates()) {
-                where += getStatusClause(state) + " or";
+                where += getStatusClause(state) + " or ";
             }
-            where += " 1=0)";
+            where += "1=0)";
             and = " and ";
         }
 
@@ -150,18 +150,18 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
         if (filter.getCriticality() != null && filter.getCriticality().size() > 0) {
             where += and + "(";
             for (String criticality : filter.getCriticality()) {
-                where += "criticality='" + criticality + "' or";
+                where += "criticality='" + criticality + "' or ";
             }
-            where += " 1=0)";
+            where += "1=0)";
             and = " and ";
         }
 
         if (filter.getStates() != null && filter.getStates().size() > 0) {
             where += and + "(";
             for (String state : filter.getStates()) {
-                where += getStatusClause(state) + " or";
+                where += getStatusClause(state) + " or ";
             }
-            where += " 1=0)";
+            where += "1=0)";
             and = " and ";
         }
 
