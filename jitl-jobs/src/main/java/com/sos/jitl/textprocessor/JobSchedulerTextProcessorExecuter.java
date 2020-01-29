@@ -8,11 +8,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class JobSchedulerTextProcessorExecuter {
 
-    private static Logger logger = Logger.getLogger(JobSchedulerTextProcessorExecuter.class);
+    private static Logger logger = LoggerFactory.getLogger(JobSchedulerTextProcessorExecuter.class);
     private String command;
     private HashMap<String, String> commands;
     private File file;

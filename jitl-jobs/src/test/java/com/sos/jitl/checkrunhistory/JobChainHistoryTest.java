@@ -2,12 +2,13 @@ package com.sos.jitl.checkrunhistory;
 
 import java.time.format.DateTimeFormatter;
 
-import org.apache.log4j.Logger;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JobChainHistoryTest {
     
-    private static final Logger LOGGER = Logger.getLogger(JobChainHistoryTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobChainHistoryTest.class);
 
     @Test
     public void testJobHistory() throws Exception {
@@ -68,7 +69,7 @@ public class JobChainHistoryTest {
             LOGGER.info("Start:" + reportItem.start);
             LOGGER.info(reportItem.end.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
             LOGGER.info("End:" + reportItem.end);
-            LOGGER.info(java.time.temporal.ChronoUnit.SECONDS.between(reportItem.start, reportItem.end));
+            LOGGER.info(""+java.time.temporal.ChronoUnit.SECONDS.between(reportItem.start, reportItem.end));
             LOGGER.info("Duration:" + reportItem.duration);
             LOGGER.info("State:" + reportItem.state);
             LOGGER.info("Error:" + reportItem.error);

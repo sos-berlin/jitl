@@ -2,13 +2,15 @@
 
 package com.sos.jitl.join;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 
 public class JobSchedulerJoinOrdersMain extends JSToolBox {
 	protected JobSchedulerJoinOrdersOptions	objOptions = null;
 	private static final String CLASSNAME = "JobSchedulerJoinOrdersMain"; 
-	private static final Logger LOGGER = Logger.getLogger(JobSchedulerJoinOrdersMain.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerJoinOrdersMain.class);
  
 	public final static void main(String[] pstrArgs) {
 		final String METHODNAME = CLASSNAME + "::Main"; 

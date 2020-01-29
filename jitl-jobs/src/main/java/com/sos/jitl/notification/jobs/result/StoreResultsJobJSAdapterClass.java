@@ -2,18 +2,18 @@ package com.sos.jitl.notification.jobs.result;
 
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.jitl.notification.db.DBLayer;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Order;
-import sos.spooler.Variable_set;
 import sos.util.SOSString;
 
 public class StoreResultsJobJSAdapterClass extends JobSchedulerJobAdapter {
 
-    private static Logger logger = Logger.getLogger(StoreResultsJobJSAdapterClass.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StoreResultsJobJSAdapterClass.class);
 
     StoreResultsJob job = null;
     StoreResultsJobOptions options = null;
@@ -45,7 +45,7 @@ public class StoreResultsJobJSAdapterClass extends JobSchedulerJobAdapter {
         Order order = spooler_task.order();
         if (!isStandalone) {
             if (order == null || order.job_chain() == null || order.job_chain_node() == null) {
-                logger.info(String.format("exit processing. object is null: order = %s, order.job_chain = %s, order.job_chain_node = %s", order, order
+                LOGGER.info(String.format("exit processing. object is null: order = %s, order.job_chain = %s, order.job_chain_node = %s", order, order
                         .job_chain(), order.job_chain_node()));
                 return;
             }

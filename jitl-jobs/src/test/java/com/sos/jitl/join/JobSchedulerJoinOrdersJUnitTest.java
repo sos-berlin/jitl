@@ -1,17 +1,16 @@
 
 package com.sos.jitl.join;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
 
@@ -19,7 +18,7 @@ public class JobSchedulerJoinOrdersJUnitTest extends JSToolBox {
 
     protected JobSchedulerJoinOrdersOptions objOptions = null;
     private static final String CLASSNAME = "JobSchedulerJoinOrdersJUnitTest";
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerJoinOrdersJUnitTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerJoinOrdersJUnitTest.class);
     private JobSchedulerJoinOrders objE = null;
 
     public JobSchedulerJoinOrdersJUnitTest() {

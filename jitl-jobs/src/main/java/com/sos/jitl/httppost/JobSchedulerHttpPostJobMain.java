@@ -1,12 +1,14 @@
 package com.sos.jitl.httppost;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 
 public class JobSchedulerHttpPostJobMain extends JSToolBox {
 
     protected JobSchedulerHttpPostJobOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerHttpPostJobMain.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerHttpPostJobMain.class);
 
     public final static void main(String[] pstrArgs) {
         final String methodName = "JobSchedulerHttpPostJobMain::Main";

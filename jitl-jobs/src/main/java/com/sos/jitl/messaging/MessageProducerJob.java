@@ -3,7 +3,8 @@ package com.sos.jitl.messaging;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.jitl.messaging.options.MessageProducerOptions;
 
@@ -16,7 +17,7 @@ import com.sos.VirtualFileSystem.Options.SOSConnection2OptionsAlternate;
 
 public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptions> {
 
-    private static final Logger LOGGER = Logger.getLogger(MessageProducerJob.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MessageProducerJob.class);
     private static final String DEFAULT_QUEUE_NAME = "JobChainQueue";
     private static final String DEFAULT_PROTOCOL = "tcp";
     private boolean sentSuccesfull = false;

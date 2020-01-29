@@ -2,7 +2,8 @@ package sos.scheduler.file;
 
 import static com.sos.scheduler.messages.JSMessages.JSJ_F_0010;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.JSHelper.io.SOSFileSystemOperationsImpl;
@@ -17,7 +18,7 @@ public class JobSchedulerCreateFiles extends JobSchedulerFileOperationBase {
     private static final String PARAMETER_FILE_SIZE = "file_size";
     private static final String PARAMETER_CREATE_FILE = "create_file";
     private static final String CLASSNAME = "JobSchedulerCreateFiles";
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerCreateFiles.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCreateFiles.class);
 
     @Override
     public boolean spooler_process() {
@@ -43,7 +44,7 @@ public class JobSchedulerCreateFiles extends JobSchedulerFileOperationBase {
             return signalSuccess();
         } catch (Exception e) {
             String strM = JSJ_F_0010.params(CLASSNAME, e.getMessage());
-            LOGGER.fatal(strM);
+            LOGGER.error(strM);
             throw new JobSchedulerException(strM);
         }
     }

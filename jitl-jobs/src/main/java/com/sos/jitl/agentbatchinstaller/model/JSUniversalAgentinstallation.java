@@ -3,7 +3,8 @@ package com.sos.jitl.agentbatchinstaller.model;
 import java.io.File;
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.jitl.agentbatchinstaller.model.installations.AgentOptions;
 import com.sos.jitl.agentbatchinstaller.model.installations.Globals;
@@ -17,7 +18,7 @@ class JSUniversalAgentinstallation extends Installation {
 
     private static final String JOBSCHEDULER_UNIVERSAL_AGENT_INSTALL_SH = "jobscheduler_universal_agent_install.sh";
     protected Globals globals;
-    private static final Logger LOGGER = Logger.getLogger(JSUniversalAgentBatchInstallerExecuter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSUniversalAgentBatchInstallerExecuter.class);
     private static final int SCHEDULER_AGENT_DEFAULT_PORT = 4445;
     private HashMap<String, String> listOfEntriesWithParameter;
     private File installationFile = null;

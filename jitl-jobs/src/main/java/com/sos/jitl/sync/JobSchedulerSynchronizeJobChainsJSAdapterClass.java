@@ -3,7 +3,8 @@ package com.sos.jitl.sync;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Job_chain;
@@ -22,7 +23,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
     private static final String COMMAND_SHOW_JOB = "<show_job job=\"%s\" max_task_history=\"0\" what=\"job_orders job_chains payload\"/>";
     private static final String COMMAND_SHOW_JOB_CHAIN_FOLDERS = "<show_state max_order_history=\"0\" max_orders=\"0\" what=\"job_chains folders\" "
             + "subsystems=\"folder order\"/>";
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerSynchronizeJobChainsJSAdapterClass.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerSynchronizeJobChainsJSAdapterClass.class);
 
     @Override
     public boolean spooler_process() throws Exception {

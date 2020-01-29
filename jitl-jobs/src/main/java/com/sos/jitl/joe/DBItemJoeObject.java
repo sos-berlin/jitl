@@ -39,6 +39,7 @@ public class DBItemJoeObject extends DbItem implements Serializable {
     private String account;
     private String operation;
     private Long auditLogId;
+    private String docPath;
     private Date modified;
     private Date created;
 
@@ -119,6 +120,15 @@ public class DBItemJoeObject extends DbItem implements Serializable {
 
     public void setAuditLogId(Long auditLogId) {
         this.auditLogId = auditLogId;
+    }
+    
+    @Column(name = "[DOC_PATH]", nullable = true)
+    public String getDocPath() {
+        return docPath;
+    }
+
+    public void setDocPath(String docPath) {
+        this.docPath = docPath;
     }
 
     @Column(name = "[OPERATION]", nullable = false)

@@ -1,7 +1,11 @@
 package sos.scheduler.file;
 
-import org.apache.log4j.Logger;
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /** \class JSFolderSyncTest
  * 
@@ -28,7 +32,6 @@ public class JSFolderSyncTest {
     @SuppressWarnings("unused")
     private final String conClassName = "JSFolderSyncTest";
     private static final String conSVNVersion = "$Id$";
-    private static final Logger logger = Logger.getLogger(JSFolderSyncTest.class);
 
     private JSExistsFileOptions objO = null;
     private JSFolderSync objSync = null;

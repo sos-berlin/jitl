@@ -1,6 +1,8 @@
 package com.sos.jitl.housekeeping.rotatelog;
 
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.scheduler.messages.JSMsg;
@@ -8,7 +10,7 @@ import com.sos.scheduler.messages.JSMsg;
 public class JobSchedulerRotateLogMain extends JSToolBox {
 
     protected JobSchedulerRotateLogOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerRotateLogMain.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerRotateLogMain.class);
 
     public final static void main(String[] pstrArgs) {
         final String methodName = "JobSchedulerRotateLogMain::Main";

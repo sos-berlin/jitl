@@ -5,7 +5,8 @@ package sos.scheduler.managed;
 
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.connection.SOSConnection;
 import sos.marshalling.SOSImport;
@@ -16,7 +17,7 @@ import sos.util.SOSStandardLogger;
 /** @author Andreas Liebert */
 public class ManagedJobImport extends SOSImport {
 
-    private static final Logger LOGGER = Logger.getLogger(ManagedJobImport.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManagedJobImport.class);
     private static SOSConnection conn;
     private static SOSStandardLogger sosLogger = null;
     private int workflow = -1;

@@ -2,7 +2,8 @@ package com.sos.jitl.reporting.job.inventory;
 
 import java.nio.file.Paths;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.hibernate.classes.SOSHibernateSession;
@@ -13,7 +14,7 @@ import com.sos.jitl.reporting.db.DBLayer;
 public class InventoryJob extends JSJobUtilitiesClass<InventoryJobOptions> {
 
     private final String className = InventoryJob.class.getSimpleName();
-    private static final Logger LOGGER = Logger.getLogger(InventoryJob.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(InventoryJob.class);
     private SOSHibernateSession sosHibernateSession;
     SOSHibernateFactory factory ;
     private String answerXml;

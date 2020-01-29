@@ -1,12 +1,14 @@
 package sos.scheduler.db;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Basics.JSToolBox;
-import org.apache.log4j.Logger;
 
 public class JobSchedulerPLSQLJobMain extends JSToolBox {
 
     protected JobSchedulerPLSQLJobOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerPLSQLJobMain.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerPLSQLJobMain.class);
 
     public final static void main(final String[] pstrArgs) {
         final String methodName = "JobSchedulerPLSQLJobMain::Main";

@@ -1,11 +1,13 @@
 package com.sos.jitl.dailyplan.job;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 
 public class CreateDailyPlanMain extends JSToolBox {
 
-    private static final Logger LOGGER = Logger.getLogger(CreateDailyPlanMain.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CreateDailyPlanMain.class);
     protected CreateDailyPlanOptions objOptions = null;
 
     public final static void main(String[] pstrArgs) {

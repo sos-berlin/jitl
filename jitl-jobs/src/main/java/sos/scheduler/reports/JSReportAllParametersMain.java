@@ -1,13 +1,15 @@
 package sos.scheduler.reports;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Basics.JSToolBox;
-import org.apache.log4j.Logger;
 
 /** @author KB */
 public class JSReportAllParametersMain extends JSToolBox {
 
 	protected JSReportAllParametersOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JSReportAllParametersMain.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSReportAllParametersMain.class);
 
     public final static void main(String[] pstrArgs) {
         final String methodName = "JSReportAllParametersMain::Main";

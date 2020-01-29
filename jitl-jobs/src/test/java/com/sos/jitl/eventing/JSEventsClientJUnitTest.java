@@ -1,19 +1,21 @@
 package com.sos.jitl.eventing;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-import org.apache.log4j.Logger;
-import org.junit.*;
-
-import static org.junit.Assert.assertEquals;
 
 
 public class JSEventsClientJUnitTest extends JSToolBox {
 
     @SuppressWarnings("unused")
     private final static String conClassName = "JSEventsClientJUnitTest";						//$NON-NLS-1$
-    @SuppressWarnings("unused")
-    private static Logger logger = Logger.getLogger(JSEventsClientJUnitTest.class);
 
     protected JSEventsClientOptions objOptions = null;
     private JSEventsClient objE = null;

@@ -1,11 +1,15 @@
 package com.sos.jitl.checkhistory;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-import org.apache.log4j.Logger;
-import org.junit.*;
-
-import static org.junit.Assert.assertEquals;
 
 /** \class JobSchedulerCheckRunHistoryOptionsJUnitTest - Check the last job run
  *
@@ -35,8 +39,6 @@ import static org.junit.Assert.assertEquals;
 public class JobSchedulerCheckRunHistoryOptionsJUnitTest extends JSToolBox {
 
     private final String conClassName = "JobSchedulerCheckRunHistoryOptionsJUnitTest"; //$NON-NLS-1$
-    @SuppressWarnings("unused")//$NON-NLS-1$
-    private static Logger logger = Logger.getLogger(JobSchedulerCheckRunHistoryOptionsJUnitTest.class);
     private JobSchedulerCheckHistory objE = null;
 
     protected JobSchedulerCheckHistoryOptions objOptions = null;

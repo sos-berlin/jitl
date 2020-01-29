@@ -1,11 +1,13 @@
 package com.sos.jitl.eventing.checkevents;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Basics.JSToolBox;
-import org.apache.log4j.Logger;
 
 public class JobSchedulerCheckEventsMain extends JSToolBox {
 
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerCheckEventsMain.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCheckEventsMain.class);
     protected JobSchedulerCheckEventsOptions objOptions = null;
 
     public final static void main(String[] pstrArgs) {

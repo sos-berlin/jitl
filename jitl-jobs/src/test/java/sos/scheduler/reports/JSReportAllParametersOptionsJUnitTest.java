@@ -1,11 +1,15 @@
 package sos.scheduler.reports;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-import org.apache.log4j.Logger;
-import org.junit.*;
-
-import static org.junit.Assert.assertEquals;
 
 /** \class JSReportAllParametersOptionsJUnitTest - Report all Parameters
  *
@@ -35,8 +39,6 @@ import static org.junit.Assert.assertEquals;
 public class JSReportAllParametersOptionsJUnitTest extends JSToolBox {
 
     private final String conClassName = "JSReportAllParametersOptionsJUnitTest"; //$NON-NLS-1$
-    @SuppressWarnings("unused")//$NON-NLS-1$
-    private static Logger logger = Logger.getLogger(JSReportAllParametersOptionsJUnitTest.class);
     private JSReportAllParameters objE = null;
 
     protected JSReportAllParametersOptions objOptions = null;

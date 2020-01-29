@@ -1,6 +1,5 @@
 package com.sos.jitl.mail.smtp;
 
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -29,8 +28,6 @@ public class JSSmtpMailClientJUnitTest extends JSToolBox {
 
     @SuppressWarnings("unused")
     private final static String conClassName = "JSSmtpMailClientJUnitTest";						//$NON-NLS-1$
-    @SuppressWarnings("unused")
-    private static Logger logger = Logger.getLogger(JSSmtpMailClientJUnitTest.class);
 
     protected JSSmtpMailOptions objOptions = null;
     private JSSmtpMailClient objE = null;

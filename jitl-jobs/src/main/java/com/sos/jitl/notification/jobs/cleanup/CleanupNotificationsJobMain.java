@@ -1,12 +1,13 @@
 package com.sos.jitl.notification.jobs.cleanup;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSToolBox;
 
 public class CleanupNotificationsJobMain extends JSToolBox {
 	private final static String	className = CleanupNotificationsJobMain.class.getSimpleName();
-	private static Logger logger = Logger.getLogger(CleanupNotificationsJobMain.class);
+	private static Logger logger = LoggerFactory.getLogger(CleanupNotificationsJobMain.class);
 	protected CleanupNotificationsJobOptions objOptions	= null;
 
 	public final static void main(String[] args) {

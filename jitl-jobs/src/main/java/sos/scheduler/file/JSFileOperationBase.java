@@ -20,7 +20,8 @@ import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.util.SOSFilelistFilter;
 
@@ -60,7 +61,7 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
     protected static final String PARAMETER_REPLACING = "replacing";
     protected static final String PARAMETER_RAISE_ERROR_IF_RESULT_SET_IS = "Raise_Error_If_Result_Set_Is";
     protected static final String PARAMETER_EXPECTED_SIZE_OF_RESULT_SET = "Expected_Size_Of_Result_Set";
-    protected Logger logger = Logger.getLogger(JSFileOperationBase.class);
+    protected Logger logger = LoggerFactory.getLogger(JSFileOperationBase.class);
     protected static final String PARAMETER_RESULT_LIST_FILE = "Result_List_File";
     protected static final String PARAMETER_RECURSIVE = "recursive";
     protected static final String PARAMETER_CREATE_DIR = "create_dir";
@@ -374,7 +375,7 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
         File f = new File(folder);
         if (!f.exists()) {
             String strM = JFO_I_0105.get(folder);
-            logger.fatal(strM);
+            logger.error(strM);
             throw new JobSchedulerException(strM);
         }
         filelist = new Vector<File>();

@@ -12,69 +12,70 @@ import com.sos.jitl.notification.model.notifier.SystemNotifierModel;
 import sos.spooler.Spooler;
 
 public class SystemNotifierJob extends JSJobUtilitiesClass<SystemNotifierJobOptions> {
-	private static Logger LOGGER = LoggerFactory.getLogger(SystemNotifierJob.class);
-	private final String className = SystemNotifierJob.class.getSimpleName();
-	private SOSHibernateFactory factory;
-	private SOSHibernateSession session;
-	private Spooler spooler;
 
-	public SystemNotifierJob() {
-		super(new SystemNotifierJobOptions());
-	}
+    private static Logger LOGGER = LoggerFactory.getLogger(SystemNotifierJob.class);
+    private final String className = SystemNotifierJob.class.getSimpleName();
+    private SOSHibernateFactory factory;
+    private SOSHibernateSession session;
+    private Spooler spooler;
 
-	public void init(Spooler sp) throws Exception {
-		spooler = sp;
+    public SystemNotifierJob() {
+        super(new SystemNotifierJobOptions());
+    }
 
-		try {
-			factory = new SOSHibernateFactory(getOptions().hibernate_configuration_file_reporting.getValue());
-			factory.setAutoCommit(getOptions().connection_autocommit.value());
-			factory.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
-			factory.addClassMapping(DBLayer.getNotificationClassMapping());
-			factory.build();
-		} catch (Exception ex) {
-			throw new Exception(String.format("init connection: %s", ex.toString()));
-		}
-	}
+    public void init(Spooler sp) throws Exception {
+        spooler = sp;
 
-	public void openSession() throws Exception {
-	    session = factory.openStatelessSession();
-	}
+        try {
+            factory = new SOSHibernateFactory(getOptions().hibernate_configuration_file_reporting.getValue());
+            factory.setAutoCommit(getOptions().connection_autocommit.value());
+            factory.setTransactionIsolation(getOptions().connection_transaction_isolation.value());
+            factory.addClassMapping(DBLayer.getNotificationClassMapping());
+            factory.build();
+        } catch (Exception ex) {
+            throw new Exception(String.format("init connection: %s", ex.toString()), ex);
+        }
+    }
 
-	public void closeSession() throws Exception {
-		if (session != null) {
-		    session.close();
-		}
-	}
+    public void openSession() throws Exception {
+        session = factory.openStatelessSession();
+    }
 
-	public void exit() {
-		if (factory != null) {
-			factory.close();
-		}
-	}
+    public void closeSession() throws Exception {
+        if (session != null) {
+            session.close();
+        }
+    }
 
-	public SystemNotifierJob execute() throws Exception {
-		final String methodName = className + "::execute";
+    public void exit() {
+        if (factory != null) {
+            factory.close();
+        }
+    }
 
-		LOGGER.debug(methodName);
+    public SystemNotifierJob execute() throws Exception {
+        final String methodName = className + "::execute";
 
-		try {
-			getOptions().checkMandatory();
-			LOGGER.debug(getOptions().toString());
+        LOGGER.debug(methodName);
 
-			SystemNotifierModel model = new SystemNotifierModel(session, getOptions(), spooler);
-			model.process();
-		} catch (Exception e) {
-			LOGGER.error(String.format("%s: %s", methodName, e.getMessage()));
-			throw e;
-		}
-		return this;
-	}
+        try {
+            getOptions().checkMandatory();
+            LOGGER.debug(getOptions().toString());
 
-	public SystemNotifierJobOptions getOptions() {
+            SystemNotifierModel model = new SystemNotifierModel(session, getOptions(), spooler);
+            model.process();
+        } catch (Exception e) {
+            LOGGER.error(String.format("%s: %s", methodName, e.toString()), e);
+            throw e;
+        }
+        return this;
+    }
 
-		if (objOptions == null) {
-			objOptions = new SystemNotifierJobOptions();
-		}
-		return objOptions;
-	}
+    public SystemNotifierJobOptions getOptions() {
+
+        if (objOptions == null) {
+            objOptions = new SystemNotifierJobOptions();
+        }
+        return objOptions;
+    }
 }

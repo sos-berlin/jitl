@@ -12,7 +12,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.io.Files.JSFile;
 import com.sos.jitl.jobchainnodeparameter.model.JobChain;
@@ -25,7 +26,7 @@ import sos.util.ParameterSubstitutor;
 
 public class JobchainNodeConfiguration {
 
-    private static final Logger LOGGER = Logger.getLogger(JobchainNodeConfiguration.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobchainNodeConfiguration.class);
 
     private static final String FILENAMEEXTENSIONCONFIG_XML = ".config.xml";
     private static final String DEFAULTFILENAME4CACHE = "cache";
@@ -133,32 +134,43 @@ public class JobchainNodeConfiguration {
             }
 
             JobChain jobchain = settings.getJobChain();
-            listOfJobchainParameters = jobchain.getOrder().getParams();
+            if (jobchain.getOrder() != null && jobchain.getOrder().getParams() != null) {
+                listOfJobchainParameters = jobchain.getOrder().getParams();
+            } else {
+                listOfJobchainParameters = new Params();
+            }
         }
     }
 
     private void getJobchainParameters() throws JAXBException {
-        for (Param param : listOfJobchainParameters.getParam()) {
-            if (!"".equals(param.getName())) {
-                jobchainGlobalParameters.put(param.getName(), param.getValue());
-                jobchainParameters.put(param.getName(), param.getValue());
-            }
+        if (listOfJobchainParameters.getParam() != null) {
+            for (Param param : listOfJobchainParameters.getParam()) {
+                if (!"".equals(param.getName())) {
+                    jobchainGlobalParameters.put(param.getName(), param.getValue());
+                    jobchainParameters.put(param.getName(), param.getValue());
+                }
+            } 
         }
     }
 
     private void getJobchainNodeParameters(String node) throws JAXBException {
-        List<Process> processes = settings.getJobChain().getOrder().getProcess();
-        for (Process process : processes) {
-            if (process.getState().equals(node)) {
-                listOfJobchainNodeParameters = process.getParams();
-                for (Param param : listOfJobchainNodeParameters.getParam()) {
-                    if (!"".equals(param.getName())) {
-                        jobchainParameters.put(param.getName(), param.getValue());
-                        jobchainNodeParameters.put(param.getName(), param.getValue());
+        if (settings.getJobChain().getOrder() != null) {
+            List<Process> processes = settings.getJobChain().getOrder().getProcess();
+            if (processes != null) {
+                for (Process process : processes) {
+                    if (process.getState() != null && process.getState().equals(node)) {
+                        listOfJobchainNodeParameters = process.getParams();
+                        if (listOfJobchainNodeParameters.getParam() != null) {
+                            for (Param param : listOfJobchainNodeParameters.getParam()) {
+                                if (!"".equals(param.getName())) {
+                                    jobchainParameters.put(param.getName(), param.getValue());
+                                    jobchainNodeParameters.put(param.getName(), param.getValue());
+                                }
+                            } 
+                        }
                     }
-                }
-            }
-
+                } 
+            } 
         }
     }
 

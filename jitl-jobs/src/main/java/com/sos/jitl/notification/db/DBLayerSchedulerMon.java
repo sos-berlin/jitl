@@ -714,7 +714,7 @@ public class DBLayerSchedulerMon extends DBLayer {
         item.setReturnCode(returnCode);
         item.setAgentUrl(agentUrl);
         item.setClusterMemberId(clusterMemberId);
-        item.setCriticality(criticality);
+        item.setJobCriticality(criticality);
         item.setError(error);
         item.setErrorCode(errorCode);
         item.setErrorText(errorText);

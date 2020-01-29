@@ -1,17 +1,19 @@
 package sos.scheduler.misc;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-import org.apache.log4j.Logger;
-import org.junit.*;
-
-import static org.junit.Assert.assertEquals;
 
 public class CopyJob2OrderParameterOptionsJUnitTest extends JSToolBox {
 
     private final String conClassName = "CopyJob2OrderParameterOptionsJUnitTest"; //$NON-NLS-1$
-    @SuppressWarnings("unused")//$NON-NLS-1$
-    private static Logger logger = Logger.getLogger(CopyJob2OrderParameterOptionsJUnitTest.class);
     private CopyJob2OrderParameter objE = null;
 
     protected CopyJob2OrderParameterOptions objOptions = null;

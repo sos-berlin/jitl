@@ -3,7 +3,8 @@ package sos.scheduler.misc;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilities;
 import com.sos.JSHelper.Basics.JSToolBox;
@@ -11,7 +12,7 @@ import com.sos.JSHelper.Basics.JSToolBox;
 public class CopyJob2OrderParameter extends JSToolBox implements JSJobUtilities {
 
     protected CopyJob2OrderParameterOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(CopyJob2OrderParameter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CopyJob2OrderParameter.class);
     private JSJobUtilities objJSJobUtilities = this;
 
     public CopyJob2OrderParameter() {

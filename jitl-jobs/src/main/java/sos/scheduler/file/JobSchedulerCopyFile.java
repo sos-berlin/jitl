@@ -32,7 +32,7 @@ public class JobSchedulerCopyFile extends JobSchedulerFileOperationBase {
 				fileTarget = target.split(";");
 				if (fileSource.length != fileTarget.length) {
 					String strM = JSJ_F_0011.params(fileSource.length, fileTarget.length);
-					logger.fatal(strM);
+					logger.error(strM);
 					throw new JobSchedulerException(strM);
 				}
 			}
@@ -54,7 +54,7 @@ public class JobSchedulerCopyFile extends JobSchedulerFileOperationBase {
 			return setReturnResult(flgOperationWasSuccessful);
 		} catch (Exception e) {
 			String strM = JSJ_F_0010.params(CLASSNAME, e.getMessage());
-			logger.fatal(strM + "\n" + stackTrace2String(e));
+			logger.error(strM + "\n" + stackTrace2String(e));
 			throw new JobSchedulerException(strM, e);
 		}
 	}

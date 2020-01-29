@@ -1,12 +1,14 @@
 package com.sos.jitl.checkrunhistory;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-
-import org.apache.log4j.Logger;
-import org.junit.*;
 
 // sp 10.06.14 Test hängt im Jenkins build, lokal gibt es eine
 // SocketTimeoutException! [SP]
@@ -15,8 +17,6 @@ public class JobSchedulerCheckRunHistoryJUnitTest extends JSToolBox {
 
     @SuppressWarnings("unused")
     private final static String conClassName = "JobSchedulerCheckRunHistoryJUnitTest";						//$NON-NLS-1$
-    @SuppressWarnings("unused")
-    private static Logger logger = Logger.getLogger(JobSchedulerCheckRunHistoryJUnitTest.class);
     protected JobSchedulerCheckRunHistoryOptions objOptions = null;
     private JobSchedulerCheckRunHistory jobSchedulerCheckRunHistory = null;
 

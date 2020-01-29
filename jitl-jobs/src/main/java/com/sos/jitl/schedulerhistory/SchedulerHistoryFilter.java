@@ -3,7 +3,10 @@ package com.sos.jitl.schedulerhistory;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.hibernate.classes.DbItem;
 import com.sos.hibernate.classes.SOSHibernateIntervalFilter;
 import com.sos.hibernate.classes.SOSSearchFilterData;
@@ -11,7 +14,7 @@ import com.sos.hibernate.interfaces.ISOSHibernateFilter;
 
 public class SchedulerHistoryFilter extends SOSHibernateIntervalFilter implements ISOSHibernateFilter {
 
-    private static final Logger LOGGER = Logger.getLogger(SchedulerHistoryFilter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerHistoryFilter.class);
     private String dateFormat = "yyyy-MM-dd HH:mm:ss";
     private Date executedFrom;
     private Date executedTo;

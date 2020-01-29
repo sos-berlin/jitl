@@ -3,10 +3,12 @@ package com.sos.jitl.jobchainnodeparameter.monitor;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.jitl.jobchainnodeparameter.JobchainNodeConfiguration;
 import com.sos.jitl.jobchainnodeparameter.monitor.JobchainNodeSubstitute;
 
-import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.scheduler.messages.JSMessages;
@@ -14,7 +16,7 @@ import com.sos.scheduler.messages.JSMessages;
 public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubstituteOptions> {
 
     private static final String CLASSNAME = "ConfigurationMonitor";
-    private static final Logger LOGGER = Logger.getLogger(JobchainNodeSubstitute.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobchainNodeSubstitute.class);
 
     protected JobchainNodeSubstituteOptions configurationMonitorOptions = null;
 

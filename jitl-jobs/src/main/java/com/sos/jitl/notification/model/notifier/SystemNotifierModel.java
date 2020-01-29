@@ -1400,7 +1400,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                                 setRecovery = false;
 
                                 // repeated errors
-                                if (jobChain.getNotifyRepeatedError().getNotifyByPeriod() != null) {
+                                if (jobChain.getNotifyRepeatedError() != null && jobChain.getNotifyRepeatedError().getNotifyByPeriod() != null) {
                                     Long stepDiff = notificationLastStep.getStep() - lastErrorSended.getOrderStep();
                                     // more > 1 due stepDiff=1 is a next step as lastErrorSended and this step is currently not completed (no errors)
                                     if (stepDiff > 1) {

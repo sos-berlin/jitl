@@ -2,7 +2,8 @@ package sos.scheduler.InstallationService.batchInstallationModel;
 
 import java.io.File;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.scheduler.InstallationService.batchInstallationModel.installations.Globals;
 import sos.scheduler.InstallationService.batchInstallationModel.installations.Installation;
@@ -11,7 +12,7 @@ public class JSinstallation extends Installation {
 
     protected Globals globals;
     private File installationFile = null;
-    private static Logger logger = Logger.getLogger(JSBatchInstallerExecuter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSBatchInstallerExecuter.class);
 
     private String getValue(String installationValue, String globalValue) {
         if (globalValue == null) {
@@ -79,7 +80,7 @@ public class JSinstallation extends Installation {
         value = this.replace(value, "port", String.valueOf(this.getSsh().getPort()));
         value = this.replace(value, "user", this.getSsh().getUser());
         if (this.installationFile == null) {
-            logger.debug("Installationfile is not set. Will not be replaces");
+            LOGGER.debug("Installationfile is not set. Will not be replaces");
             this.installationFile = new File("");
         } else {
             value = this.replace(value, "installation_file", this.installationFile.getName());

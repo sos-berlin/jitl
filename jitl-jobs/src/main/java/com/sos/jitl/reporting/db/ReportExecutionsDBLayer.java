@@ -7,8 +7,9 @@ import java.util.TimeZone;
 
 import javax.persistence.TemporalType;
 
-import org.apache.log4j.Logger;
 import org.hibernate.query.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SearchStringHelper;
@@ -23,7 +24,7 @@ public class ReportExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBItemR
     private static final String DBItemReportExecution = DBItemReportExecution.class.getName();
 
     protected ReportExecutionFilter filter = null;
-    private static final Logger LOGGER = Logger.getLogger(ReportExecutionsDBLayer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReportExecutionsDBLayer.class);
     private String lastQuery = "";
 
     public ReportExecutionsDBLayer(String configurationFilename) throws SOSHibernateException {

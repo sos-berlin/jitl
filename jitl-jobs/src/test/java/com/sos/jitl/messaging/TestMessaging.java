@@ -3,11 +3,10 @@ package com.sos.jitl.messaging;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.jitl.messaging.options.MessageConsumerOptions;
 import com.sos.jitl.messaging.options.MessageProducerOptions;
@@ -17,7 +16,7 @@ import com.sos.JSHelper.Listener.JSListenerClass;
 
 public class TestMessaging extends JSJobUtilitiesClass<MessageProducerOptions> {
 
-    private static final Logger LOGGER = Logger.getLogger(TestMessaging.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestMessaging.class);
     private static MessageProducerJob producerJob = null;
     private static MessageProducerOptions producerOptions = null;
     private static MessageConsumerJob consumerJob = null;
@@ -43,10 +42,6 @@ public class TestMessaging extends JSJobUtilitiesClass<MessageProducerOptions> {
         consumerOptions = consumerJob.getOptions();
         JSListenerClass.bolLogDebugInformation = true;
         JSListenerClass.intMaxDebugLevel = 9;
-        if (!Logger.getRootLogger().getAllAppenders().hasMoreElements()) {
-            BasicConfigurator.configure();
-        }
-        LOGGER.setLevel(Level.DEBUG);
     }
 
     @Before

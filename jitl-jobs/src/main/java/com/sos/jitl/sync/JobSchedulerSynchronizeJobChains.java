@@ -4,10 +4,10 @@ import static com.sos.scheduler.messages.JSMessages.JSJ_F_107;
 import static com.sos.scheduler.messages.JSMessages.JSJ_I_110;
 import static com.sos.scheduler.messages.JSMessages.JSJ_I_111;
 
-import java.io.File;
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
@@ -15,7 +15,7 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSchedulerSynchronizeJobChainsOptions> {
 
     private final String conClassName = "JobSchedulerSynchronizeJobChains";
-    private static Logger logger = Logger.getLogger(JobSchedulerSynchronizeJobChains.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerSynchronizeJobChains.class);
 
     protected SyncNodeContainer syncNodeContainer;
     protected HashMap<String, String> SchedulerParameters = new HashMap<String, String>();
@@ -46,7 +46,7 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
 
         try {
             getOptions().checkMandatory();
-            logger.debug(getOptions().dirtyString());
+            LOGGER.debug(getOptions().dirtyString());
 
             syncNodeContainer = new SyncNodeContainer();
 
@@ -54,10 +54,10 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
             syncNodeContainer.setJobpath(getOptions().jobpath.getValue());
 
             if (getOptions().disable_sync_context.value()) {
-                logger.debug("Disable sync context");
+                LOGGER.debug("Disable sync context");
                 syncNodeContainer.setSyncNodeContext("", "");
             } else {
-                logger.debug(String.format("Set sync context: %s,%s", getOptions().job_chain_name2synchronize.getValue(),
+                LOGGER.debug(String.format("Set sync context: %s,%s", getOptions().job_chain_name2synchronize.getValue(),
                         getOptions().job_chain_state2synchronize.getValue()));
                 syncNodeContainer.setSyncNodeContext(getOptions().job_chain_name2synchronize.getValue(),
                         getOptions().job_chain_state2synchronize.getValue());
@@ -70,9 +70,9 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
             syncNodeContainer.setRequiredOrders(SchedulerParameters);
 
             if (syncNodeContainer.isReleased()) {
-                logger.debug("Release all orders");
+                LOGGER.debug("Release all orders");
             } else {
-                logger.debug("Suspending all orders");
+                LOGGER.debug("Suspending all orders");
             }
 
         } catch (Exception e) {

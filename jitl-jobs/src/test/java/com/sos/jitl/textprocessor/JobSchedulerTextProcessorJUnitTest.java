@@ -5,10 +5,11 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.FileOutputStream;
 
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
@@ -16,7 +17,7 @@ import com.sos.JSHelper.Listener.JSListenerClass;
 public class JobSchedulerTextProcessorJUnitTest extends JSToolBox {
 
     protected JobSchedulerTextProcessorOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerTextProcessorJUnitTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerTextProcessorJUnitTest.class);
     private JobSchedulerTextProcessor objE = null;
     private File inputFile;
 

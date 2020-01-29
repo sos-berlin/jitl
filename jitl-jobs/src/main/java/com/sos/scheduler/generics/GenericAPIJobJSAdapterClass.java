@@ -6,7 +6,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Job_impl;
@@ -15,7 +16,7 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 public class GenericAPIJobJSAdapterClass extends JobSchedulerJobAdapter {
 
-    private static final Logger LOGGER = Logger.getLogger(GenericAPIJobJSAdapterClass.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GenericAPIJobJSAdapterClass.class);
     private GenericAPIJobOptions objO = null;
     private ClassLoader classLoader = null;
     private HashMap<String, Job_impl> objLoadedClasses = null;

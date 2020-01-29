@@ -5,7 +5,6 @@ import java.util.TimeZone;
 
 import javax.persistence.TemporalType;
 
-import org.apache.log4j.Logger;
 import org.hibernate.query.Query;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
@@ -20,7 +19,6 @@ import com.sos.joc.model.job.TaskIdOfOrder;
 public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBItemReportTask> {
 
     protected ReportExecutionFilter filter = null;
-    private static final Logger LOGGER = Logger.getLogger(ReportTaskExecutionsDBLayer.class);
     private String lastQuery = "";
 
     public ReportTaskExecutionsDBLayer(SOSHibernateSession conn) {

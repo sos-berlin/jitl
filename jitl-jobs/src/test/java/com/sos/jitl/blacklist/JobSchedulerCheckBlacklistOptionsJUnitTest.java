@@ -1,10 +1,7 @@
 package com.sos.jitl.blacklist;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -17,9 +14,6 @@ import com.sos.jitl.checkblacklist.JobSchedulerCheckBlacklistOptions;
 
 public class JobSchedulerCheckBlacklistOptionsJUnitTest extends JSToolBox {
 
-    private final String conClassName = "JobSchedulerCheckBlacklistOptionsJUnitTest"; //$NON-NLS-1$
-    @SuppressWarnings("unused")//$NON-NLS-1$
-    private static Logger logger = Logger.getLogger(JobSchedulerCheckBlacklistOptionsJUnitTest.class);
     protected JobSchedulerCheckBlacklistOptions objOptions = null;
 
     public JobSchedulerCheckBlacklistOptionsJUnitTest() {
