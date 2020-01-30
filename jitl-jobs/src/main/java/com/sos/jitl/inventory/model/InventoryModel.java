@@ -3,6 +3,7 @@ package com.sos.jitl.inventory.model;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -1575,20 +1576,12 @@ public class InventoryModel {
     }
     
     private void writeFile (String xml, Path path) {
-        Writer writer = null;
         if (Files.exists(path) && !xml.isEmpty()) {
             try {
-                writer = new FileWriter(path.toFile());
-                writer.write(xml);
+                Files.write(path, xml.getBytes(StandardCharsets.ISO_8859_1));
             } catch (IOException e) {
                 LOGGER.debug(String.format("Error: %1$s - occurred during update of file %2$s, file not updated!",
                         e.getMessage(), path));
-            } finally {
-                try {
-                    if (writer != null) {
-                        writer.close();
-                    }
-                } catch (Exception e) {}
             }
         }
     }
