@@ -1,8 +1,6 @@
 package com.sos.jitl.inventory.model;
 
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,6 +30,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sos.classes.Latin1ToUtf8;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
@@ -614,7 +613,7 @@ public class InventoryModel {
     private DBItemInventoryFile processFile(Element element, EConfigFileExtensions fileExtension, Boolean save) throws Exception {
         String fileName = null;
         if (element.hasAttribute("path")) {
-            fileName = element.getAttribute("path") + fileExtension.extension();
+            fileName = Latin1ToUtf8.convert(element.getAttribute("path") + fileExtension.extension());
         }
         String fileBasename = fileName.substring(fileName.lastIndexOf("/") + 1);
         String fileDirectory = fileName.substring(0, fileName.lastIndexOf("/"));
@@ -624,7 +623,7 @@ public class InventoryModel {
         Date fileModified = null;
         Date fileLocalCreated = null;
         Date fileLocalModified = null;
-        String path = xPathAnswerXml.selectSingleNodeValue(element, "file_based/@file");
+        String path = Latin1ToUtf8.convert(xPathAnswerXml.selectSingleNodeValue(element, "file_based/@file"));
         BasicFileAttributes attrs = null;
         try {
             attrs = Files.readAttributes(Paths.get(path), BasicFileAttributes.class);
