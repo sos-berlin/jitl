@@ -702,6 +702,9 @@ public class Calendar2DB {
                             dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
                             dailyPlanDBItem.setIsAssigned(false);
                             dailyPlanDBItem.setModified(new Date());
+                            if (dailyPlanList.size() > MAX_DAY_OFFSET) {
+                                break;
+                            }
                             dailyPlanList.add(dailyPlanDBItem);
 
                         }
