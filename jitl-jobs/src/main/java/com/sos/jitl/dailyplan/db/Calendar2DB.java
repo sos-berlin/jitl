@@ -19,7 +19,7 @@ import com.sos.scheduler.model.objects.Spooler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.hibernate.query.criteria.internal.expression.function.AggregationFunction.MAX;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -281,7 +281,7 @@ public class Calendar2DB {
         }
         
         if (dayOffset > MAX_DAY_OFFSET) {
-            LOGGER.warn("Changing dayOffset from %s to %s. See: CVE-2020-6855", dayOffset,2000);
+            LOGGER.warn("Changing dayOffset from %s to %s. See: CVE-2020-6855", dayOffset,MAX_DAY_OFFSET);
             dayOffset = MAX_DAY_OFFSET;
         }
 
