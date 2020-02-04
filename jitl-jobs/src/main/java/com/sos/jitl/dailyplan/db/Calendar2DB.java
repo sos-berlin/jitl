@@ -97,10 +97,19 @@ public class Calendar2DB {
 
         this.from = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(from).withZone(fromZone));
         this.to = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(to).withZone(fromZone));
+        
+        GregorianCalendar calendar = new GregorianCalendar();
+        calendar.setTime(this.from);
+        calendar.add(GregorianCalendar.DAY_OF_MONTH, MAX_DAY_OFFSET);
+        Date max = calendar.getTime();  
+        if (max.before(this.to)) {
+            this.to = max;
+        }
 
         fillListOfCalendars(true);
         return getCalendarFromJobScheduler();
     }
+    
 
     public void store() throws Exception {
         final long timeStartAll = System.currentTimeMillis();
