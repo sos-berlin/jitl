@@ -118,7 +118,7 @@ public class DequeueMailExecuter {
             }
             int maxDeliveryCounter = jobSchedulerDequeueMailJobOptions.maxDelivery.value();
             boolean sendOk = jobSchedulerDequeueMailJobOptions.logOnly.value() || sosMail.send();
-            if (!sendOk | jobSchedulerDequeueMailJobOptions.logOnly.value()) {
+            if (!sendOk || jobSchedulerDequeueMailJobOptions.logOnly.value()) {
                 String but = "";
                 String trials = "";
                 if (jobSchedulerDequeueMailJobOptions.logOnly.value()) {
@@ -186,7 +186,6 @@ public class DequeueMailExecuter {
                 result = result + "\n" + bodyPart.getContent();
                 break; // without break same text appears twice in my tests
             } else if (bodyPart.isMimeType("text/html")) {
-                String html = (String) bodyPart.getContent();
                 result = result + "\n" + bodyPart.getContent();
             } else if (bodyPart.getContent() instanceof MimeMultipart) {
                 result = result + getBodyFromMimeMultipart((MimeMultipart) bodyPart.getContent());
@@ -307,8 +306,7 @@ public class DequeueMailExecuter {
             if (send) {
                 sendMessage(messageFile, curDeliveryCounter);
             } else {
-                LOGGER.info("mail file is renamed to exclude it from further processing: " + notifiedFile.getAbsolutePath());
-                messageFile.renameTo(notifiedFile);
+                messageFile.delete();
             }
         } finally {
 

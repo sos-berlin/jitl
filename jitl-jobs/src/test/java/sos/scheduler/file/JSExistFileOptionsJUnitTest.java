@@ -1,18 +1,22 @@
 package sos.scheduler.file;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-
-import org.apache.log4j.Logger;
-import org.junit.*;
-
-import static org.junit.Assert.*;
 
 public class JSExistFileOptionsJUnitTest extends JSToolBox {
 
 	private final String conClassName = "JSExistFileOptionsJUnitTest"; //$NON-NLS-1$
-	@SuppressWarnings("unused") //$NON-NLS-1$
-	private static Logger logger = Logger.getLogger(JSExistFileOptionsJUnitTest.class);
 	private JSExistsFile objE = null;
 
 	protected JSExistsFileOptions objOptions = null;

@@ -22,7 +22,9 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter {
     private Boolean isLate;
     private String schedulerId;
     private String jobChain;
+    private Boolean isJobStream;
     private String orderId;
+    private String jobStream;
     private String job;
     private List<String> states;
     private Set<Folder> listOfFolders;
@@ -222,6 +224,26 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter {
             }
         }
         return false;
+    }
+
+    
+    public String getJobStream() {
+        return jobStream;
+    }
+
+    
+    public void setJobStream(String jobStream) {
+        this.jobStream = jobStream;
+    }
+
+    
+    public Boolean isJobStream() {
+        return isJobStream;
+    }
+
+    
+    public void setIsJobStream(Boolean isJobStream) {
+        this.isJobStream = isJobStream;
     }
 
 }

@@ -1,10 +1,14 @@
 package com.sos.jitl.splitter;
 
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
-
-import org.apache.log4j.Logger;
-import org.junit.*;
 
 /** \class JobChainSplitterJUnitTest - JUnit-Test for
  * "Start a parallel processing in a jobchain"
@@ -26,8 +30,6 @@ public class JobChainSplitterJUnitTest extends JSToolBox {
 
     @SuppressWarnings("unused")//$NON-NLS-1$
     private final static String conClassName = "JobChainSplitterJUnitTest"; //$NON-NLS-1$
-    @SuppressWarnings("unused")//$NON-NLS-1$
-    private static Logger logger = Logger.getLogger(JobChainSplitterJUnitTest.class);
 
     protected JobChainSplitterOptions objOptions = null;
     private JobChainSplitter objE = null;

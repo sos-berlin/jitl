@@ -5,10 +5,11 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Listener.JSListenerClass;
@@ -19,7 +20,7 @@ import com.sos.JSHelper.io.Files.JSTextFile;
 public class SOSSQLPlusJobJUnitTest extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
 
     protected SOSSQLPlusJobOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(SOSSQLPlusJobJUnitTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SOSSQLPlusJobJUnitTest.class);
     private SOSSQLPlusJob objE = null;
     private HashMap<String, String> paramMap = null;
     final String conNL = System.getProperty("line.separator");

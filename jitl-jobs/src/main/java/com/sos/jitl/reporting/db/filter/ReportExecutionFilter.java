@@ -13,6 +13,7 @@ public class ReportExecutionFilter extends ReportHistoryFilter {
     private ArrayList<String> listOfJobs;
     private ArrayList<String> listOfExcludedJobs;
     private ArrayList<String> states;
+    private ArrayList<String> criticality;
 
     public ArrayList<String> getListOfJobs() {
         return listOfJobs;
@@ -41,6 +42,13 @@ public class ReportExecutionFilter extends ReportHistoryFilter {
         states.add(state);
     }
 
+    public void addCriticality(String criticality) {
+        if (this.criticality == null) {
+            this.criticality = new ArrayList<String>();
+        }
+        this.criticality.add(criticality);
+    }
+
     public void addJobPath(String job) {
         if (listOfJobs == null) {
             listOfJobs = new ArrayList<String>();
@@ -67,6 +75,10 @@ public class ReportExecutionFilter extends ReportHistoryFilter {
 
     public ArrayList<String> getStates() {
         return states;
+    }
+
+    public ArrayList<String> getCriticality() {
+        return this.criticality;
     }
 
     public Set<Long> getTaskIds() {

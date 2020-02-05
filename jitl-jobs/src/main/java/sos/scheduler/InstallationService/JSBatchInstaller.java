@@ -2,7 +2,8 @@ package sos.scheduler.InstallationService;
 
 import java.util.Locale;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.scheduler.InstallationService.batchInstallationModel.JSBatchInstallerExecuter;
 
@@ -16,7 +17,7 @@ import com.sos.localization.Messages;
 public class JSBatchInstaller extends JSToolBox implements JSJobUtilities, IJSCommands {
 
     protected JSBatchInstallerOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JSBatchInstaller.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSBatchInstaller.class);
     private JSJobUtilities objJSJobUtilities = this;
     private IJSCommands objJSCommands = this;
 

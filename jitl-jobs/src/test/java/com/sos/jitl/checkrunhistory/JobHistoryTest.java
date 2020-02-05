@@ -1,11 +1,12 @@
 package com.sos.jitl.checkrunhistory;
 
-import org.apache.log4j.Logger;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JobHistoryTest {
 
-    private static final Logger LOGGER = Logger.getLogger(JobHistoryTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobHistoryTest.class);
 
     @Test
     public void testJobHistory() throws Exception {

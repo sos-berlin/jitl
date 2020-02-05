@@ -1,12 +1,14 @@
 package com.sos.jitl.md5;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 
 public class JobSchedulerMD5FileMain extends JSToolBox {
 
     protected JobSchedulerMD5FileOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerMD5FileMain.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerMD5FileMain.class);
 
     public final static void main(String[] pstrArgs) {
         final String methodName = "JobSchedulerMD5FileMain::Main";

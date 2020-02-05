@@ -3,7 +3,8 @@ package com.sos.jitl.mail.smtp;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.net.SOSMail;
 import sos.scheduler.command.SOSSchedulerCommand;
@@ -15,7 +16,7 @@ import com.sos.scheduler.model.objects.Spooler;
 
 public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
 
-    private static final Logger LOGGER = Logger.getLogger(JSSmtpMailClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSSmtpMailClient.class);
     private static final String MESSAGE_FILE_PATH = "com_sos_scheduler_messages";
 
     public JSSmtpMailClient() {

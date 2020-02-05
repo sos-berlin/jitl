@@ -1,19 +1,21 @@
 package com.sos.jitl.housekeeping.cleanup;
 
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
 import com.sos.jitl.housekeeping.cleanupdb.JobSchedulerCleanupSchedulerDb;
 import com.sos.jitl.housekeeping.cleanupdb.JobSchedulerCleanupSchedulerDbOptions;
-import org.apache.log4j.Logger;
-import org.junit.*;
 
 
 public class JobSchedulerCleanupSchedulerDbJUnitTest extends JSToolBox {
 
     @SuppressWarnings("unused")//$NON-NLS-1$
     private final static String conClassName = "JobSchedulerCleanupSchedulerDbJUnitTest"; //$NON-NLS-1$
-    @SuppressWarnings("unused")//$NON-NLS-1$
-    private static Logger logger = Logger.getLogger(JobSchedulerCleanupSchedulerDbJUnitTest.class);
 
     protected JobSchedulerCleanupSchedulerDbOptions objOptions = null;
     private JobSchedulerCleanupSchedulerDb objE = null;

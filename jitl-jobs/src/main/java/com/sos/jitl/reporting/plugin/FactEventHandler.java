@@ -14,21 +14,22 @@ import org.slf4j.LoggerFactory;
 import com.sos.hibernate.classes.SOSHibernate;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
-import com.sos.jitl.classes.event.JobSchedulerEvent.EventKey;
-import com.sos.jitl.classes.event.JobSchedulerEvent.EventType;
-import com.sos.jitl.classes.event.JobSchedulerPluginEventHandler;
-import com.sos.jitl.classes.plugin.PluginMailer;
 import com.sos.jitl.dailyplan.db.DailyPlanAdjustment;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
+import com.sos.jitl.eventhandler.EventMeta.EventKey;
+import com.sos.jitl.eventhandler.EventMeta.EventType;
+import com.sos.jitl.eventhandler.handler.LoopEventHandler;
+import com.sos.jitl.eventhandler.plugin.notifier.Notifier;
 import com.sos.jitl.reporting.db.DBLayer;
 import com.sos.jitl.reporting.exceptions.SOSReportingConcurrencyException;
+import com.sos.jitl.reporting.exceptions.SOSReportingInvalidSessionException;
 import com.sos.jitl.reporting.exceptions.SOSReportingLockException;
 import com.sos.jitl.reporting.job.report.FactJobOptions;
 import com.sos.jitl.reporting.model.report.FactModel;
 import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 
-public class FactEventHandler extends JobSchedulerPluginEventHandler {
+public class FactEventHandler extends LoopEventHandler {
 
     public static enum CustomEventType {
         DailyPlanChanged, ReportingChanged
@@ -42,7 +43,6 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
     private static final String JOB_CHAIN_CREATE_DAILY_PLAN = "/sos/dailyplan/CreateDailyPlan";;
     private static final Logger LOGGER = LoggerFactory.getLogger(FactEventHandler.class);
     private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
-    private final String className = FactEventHandler.class.getSimpleName();
     private String customEventValue = null;
     private boolean rerun = false;
     private boolean firstEventProcessed = false;
@@ -51,14 +51,15 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
     private boolean useNotificationPlugin = false;
     // wait interval after db executions in seconds
     private int waitInterval = 2;
+    private Notifier pluginNotifier;
 
     public FactEventHandler(SchedulerXmlCommandExecutor xmlExecutor, EventPublisher eventBus) {
         super(xmlExecutor, eventBus);
     }
 
     @Override
-    public void onActivate(PluginMailer mailer) {
-        super.onActivate(mailer);
+    public void onActivate(Notifier notifier) {
+        super.onActivate(notifier);
 
         String method = "onActivate";
         try {
@@ -68,6 +69,10 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
             createReportingFactory(getSettings().getHibernateConfigurationReporting());
             createSchedulerFactory(getSettings().getHibernateConfigurationScheduler());
 
+            if (useNotificationPlugin) {
+                pluginNotifier = getNotifier().newInstance();
+            }
+
             EventType[] observedEventTypes = new EventType[] { EventType.TaskStarted, EventType.TaskClosed, EventType.OrderStepStarted,
                     EventType.OrderStepEnded, EventType.OrderFinished, EventType.OrderRemoved, EventType.OrderResumed, EventType.OrderWaitingInTask };
 
@@ -75,8 +80,18 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
             start(observedEventTypes);
         } catch (Exception e) {
             LOGGER.error(String.format("[%s]%s", method, e.toString()), e);
-            getMailer().sendOnError(className, method, e);
+            getNotifier().notifyOnError(method, e);
         }
+    }
+
+    @Override
+    public void onProcessingEnd(Long eventId) {
+        if (isDebugEnabled) {
+            LOGGER.debug("[onProcessingEnd]close db factories ...");
+        }
+        closeSchedulerFactory();
+        closeReportingFactory();
+        LOGGER.info("[onProcessingEnd]closed");
     }
 
     @Override
@@ -84,86 +99,30 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
         if (rerun || !firstEventProcessed) {
             if (isDebugEnabled) {
                 if (firstEventProcessed) {
-                    LOGGER.debug(String.format("[onEmptyEvent][rerun]eventId=%s", eventId));
+                    LOGGER.debug(String.format("[onEmptyEvent][rerun]%s", eventId));
                 } else {
-                    LOGGER.debug(String.format("[onEmptyEvent][firstEvent]eventId=%s", eventId));
+                    LOGGER.debug(String.format("[onEmptyEvent][firstEvent]%s", eventId));
                 }
             }
-            execute(false, eventId, null);
+            execute(eventId, null, false);
         }
-    }
-
-    @Override
-    public void onEnded() {
-        if (isDebugEnabled) {
-            LOGGER.debug("[onEnded]close http client and db factories ...");
-        }
-        closeRestApiClient();
-        closeSchedulerFactory();
-        closeReportingFactory();
-        LOGGER.info("[onEnded]end");
     }
 
     @Override
     public void onNonEmptyEvent(Long eventId, JsonArray events) {
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("[onNonEmptyEvent]eventId=%s", eventId));
-        }
         rerun = false;
-        execute(true, eventId, events);
+        execute(eventId, events, true);
     }
 
-    public void setUseNotificationPlugin(boolean useNotification) {
-        useNotificationPlugin = useNotification;
-    }
-
-    private void closeReportingFactory() {
-        if (reportingFactory != null) {
-            reportingFactory.close();
-            reportingFactory = null;
-        }
-    }
-
-    private void closeSchedulerFactory() {
-        if (schedulerFactory != null) {
-            schedulerFactory.close();
-            schedulerFactory = null;
-        }
-    }
-
-    private void createReportingFactory(Path configFile) throws Exception {
-        reportingFactory = new SOSHibernateFactory(configFile);
-        reportingFactory.setIdentifier("reporting");
-        reportingFactory.setAutoCommit(false);
-        reportingFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-        reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
-        reportingFactory.addClassMapping(DBLayer.getInventoryClassMapping());
-        reportingFactory.addClassMapping(com.sos.jitl.notification.db.DBLayer.getNotificationClassMapping());
-        reportingFactory.build();
-    }
-
-    private void createSchedulerFactory(Path configFile) throws Exception {
-        schedulerFactory = new SOSHibernateFactory(configFile);
-        schedulerFactory.setIdentifier("scheduler");
-        schedulerFactory.setAutoCommit(true);
-        Enum<SOSHibernateFactory.Dbms> dbms = schedulerFactory.getDbmsBeforeBuild();
-        if (dbms.equals(SOSHibernateFactory.Dbms.MSSQL) || dbms.equals(SOSHibernateFactory.Dbms.MYSQL)) {
-            schedulerFactory.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-        } else {
-            schedulerFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-        }
-        schedulerFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
-        schedulerFactory.build();
-    }
-
-    private void execute(boolean onNonEmptyEvent, Long eventId, JsonArray events) {
+    private void execute(Long eventId, JsonArray events, boolean onNonEmptyEvent) {
         String method = "execute";
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("[%s]onNonEmptyEvent=%s, eventId=%s", method, onNonEmptyEvent, eventId));
+            LOGGER.debug(String.format("[%s][%s][onNonEmptyEvent=%s]", method, eventId, onNonEmptyEvent));
         }
         SOSHibernateSession reportingSession = null;
         SOSHibernateSession schedulerSession = null;
         FactModel factModel = null;
+        int waitIntervalOnFinally = waitInterval;
         customEventValue = null;
         firstEventProcessed = true;
 
@@ -178,16 +137,22 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
                 executeDailyPlan(reportingSession, factModel.isChanged(), events);
                 rerun = false;
             }
+            if (getNotifier().smartNotifyOnRecovery()) {
+                LOGGER.info(String.format("[%s]recovered from previous error", method));
+            }
         } catch (SOSReportingConcurrencyException e) {
             rerun = true;
             LOGGER.warn(String.format("[%s]%s", method, e.toString()), e);
         } catch (SOSReportingLockException e) {
             rerun = true;
             LOGGER.warn(String.format("[%s]%s", method, e.toString()), e);
+        } catch (SOSReportingInvalidSessionException e) {
+            rerun = true;
+            waitIntervalOnFinally = getWaitIntervalOnError();
+            getNotifier().smartNotifyOnError(getClass(), e);
         } catch (Throwable e) {
             rerun = true;
-            LOGGER.error(String.format("[%s]%s", method, e.toString()), e);
-            getMailer().sendOnError(className, method, e);
+            getNotifier().smartNotifyOnError(getClass(), e);
         } finally {
             if (factModel != null) {
                 factModel.exit();
@@ -198,7 +163,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
             if (schedulerSession != null) {
                 schedulerSession.close();
             }
-            wait(waitInterval);
+            wait(waitIntervalOnFinally);
         }
     }
 
@@ -293,7 +258,7 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
         options.wait_interval.setValue(String.valueOf(waitInterval));
 
         factModel = new FactModel(reportingSession, schedulerSession, options, events);
-        factModel.init(getMailer(), getSettings().getConfigDirectory());
+        factModel.init(pluginNotifier, getSettings().getConfigDirectory());
         factModel.process();
 
         if (factModel.isChanged()) {
@@ -324,5 +289,48 @@ public class FactEventHandler extends JobSchedulerPluginEventHandler {
             }
         }
         return createDailyPlanEvents;
+    }
+
+    public void setUseNotificationPlugin(boolean useNotification) {
+        useNotificationPlugin = useNotification;
+    }
+
+    private void closeReportingFactory() {
+        if (reportingFactory != null) {
+            reportingFactory.close();
+            reportingFactory = null;
+        }
+    }
+
+    private void closeSchedulerFactory() {
+        if (schedulerFactory != null) {
+            schedulerFactory.close();
+            schedulerFactory = null;
+        }
+    }
+
+    private void createReportingFactory(Path configFile) throws Exception {
+        reportingFactory = new SOSHibernateFactory(configFile);
+        reportingFactory.setIdentifier("reporting");
+        reportingFactory.setAutoCommit(false);
+        reportingFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
+        reportingFactory.addClassMapping(DBLayer.getInventoryClassMapping());
+        reportingFactory.addClassMapping(com.sos.jitl.notification.db.DBLayer.getNotificationClassMapping());
+        reportingFactory.build();
+    }
+
+    private void createSchedulerFactory(Path configFile) throws Exception {
+        schedulerFactory = new SOSHibernateFactory(configFile);
+        schedulerFactory.setIdentifier("scheduler");
+        schedulerFactory.setAutoCommit(true);
+        Enum<SOSHibernateFactory.Dbms> dbms = schedulerFactory.getDbmsBeforeBuild();
+        if (dbms.equals(SOSHibernateFactory.Dbms.MSSQL) || dbms.equals(SOSHibernateFactory.Dbms.MYSQL)) {
+            schedulerFactory.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+        } else {
+            schedulerFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        }
+        schedulerFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
+        schedulerFactory.build();
     }
 }

@@ -1,4 +1,4 @@
-package com.sos.jitl.classes.event;
+package com.sos.jitl.eventhandler.handler;
 
 import java.nio.file.Path;
 

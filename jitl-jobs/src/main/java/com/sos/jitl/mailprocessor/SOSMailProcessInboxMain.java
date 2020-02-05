@@ -1,13 +1,15 @@
 
 package com.sos.jitl.mailprocessor;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 
 public class SOSMailProcessInboxMain extends JSToolBox {
 	protected SOSMailProcessInboxOptions objOptions = null;
 	private static final String CLASSNAME = "SOSMailProcessInboxMain";
-	private static final Logger LOGGER = Logger.getLogger(SOSMailProcessInboxMain.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(SOSMailProcessInboxMain.class);
 
 	public final static void main(String[] pstrArgs) {
 		final String METHODNAME = CLASSNAME + "::Main";

@@ -4,7 +4,8 @@ import static com.sos.JSHelper.Options.SOSOptionRegExp.strCaseInsensitive;
 import static sos.scheduler.job.JobSchedulerConstants.JOB_SCHEDULER_LOG_FILE_NAME;
 import static sos.scheduler.job.JobSchedulerConstants.JOB_SCHEDULER_LOG_FILE_NAME_EXTENSION;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
@@ -16,7 +17,7 @@ import com.sos.scheduler.messages.JSMsg;
 public class JobSchedulerRotateLog extends JSJobUtilitiesClass<JobSchedulerRotateLogOptions> {
 
     private static final String JOB_SCHEDULER_OLD_LOG_FILENAME = "scheduler-old";
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerRotateLog.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerRotateLog.class);
     private String schedulerID = "";
 
     public JobSchedulerRotateLog() {

@@ -117,6 +117,8 @@ public class InventoryCleanup {
         factory.setAutoCommit(autoCommit);
         factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         factory.addClassMapping(DBLayer.getInventoryClassMapping());
+        factory.addClassMapping(DBLayer.getJobStreamClassMapping());
+        
         factory.build();
         return factory.openSession();
     }
@@ -216,6 +218,7 @@ public class InventoryCleanup {
             System.out.println("OR");
             System.out.println("Syntax: java " + InventoryCleanup.class.getName() + " REPORTING_HIBERNATE_CFG_PATH "
                     + "JOBSCHEDULER_ID HOSTNAME HTTP_PORT");
+            System.out.println("Syntax: java " + InventoryCleanup.class.getName() + " remove");
             System.out.println();
             System.out.println("Parameters:");
             System.out.printf("%-30s| %s%n", "REPORTING_HIBERNATE_CFG_PATH", "Path to reporting.hibernate.cfg.xml");
@@ -223,6 +226,11 @@ public class InventoryCleanup {
             System.out.printf("%-30s| %s%n", "HOSTNAME", "hostname of the JobScheduler instance to remove from DB");
             System.out.printf("%-30s| %s%n", "HTTP_PORT", "HTTP port of the JobScheduler instance to remove from DB");
             System.out.printf("%-30s| %s%n", "info", "shows a list of existing JobScheduler instances in the DB");
+            System.out.println();
+            System.out.printf("%-30s| %s%n", "remove", "Determines the parameters automatically for the instance ");
+            System.out.printf("%-30s| %s%n", "", "in which the cleanup was started and removes this instance ");
+            System.out.printf("%-30s| %s%n", "", "from the database.");
+            System.out.printf("%-30s| %s%n", "", "CAUTION! Make sure beforehand that this instance is not running!");
 
         }
         System.exit(0);

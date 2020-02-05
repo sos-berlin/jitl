@@ -84,6 +84,7 @@ public class SaveOrUpdateHelper {
             dbItem.setScheduleId(job.getScheduleId());
             dbItem.setScheduleName(job.getScheduleName());
             dbItem.setTitle(job.getTitle());
+            dbItem.setCriticality(job.getCriticality());
             dbItem.setUsedInJobChains(job.getUsedInJobChains());
             dbItem.setRunTimeIsTemporary(false);
             dbItem.setIsYadeJob(job.getIsYadeJob());

@@ -17,7 +17,6 @@ public class CheckHistoryModelTest extends ModelTest {
 
         CheckHistoryJobOptions opt = new CheckHistoryJobOptions();
         opt.hibernate_configuration_file_reporting.setValue(ConfigTest.HIBERNATE_CONFIGURATION_FILE);
-        opt.schema_configuration_file.setValue(ConfigTest.SCHEMA_CONFIGURATION_FILE);
         opt.plugins.setValue(CheckHistoryTimerPlugin.class.getName());
 
         try {

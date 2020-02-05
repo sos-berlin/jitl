@@ -1,18 +1,19 @@
 package com.sos.jitl.eventing;
 
-import org.apache.log4j.Logger;
 import org.apache.xpath.XPathAPI;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import sos.scheduler.job.JobSchedulerExistsEventJob;
 
 public class JSEventsClientBaseClassTest extends JSEventsClientBaseClass {
 
-	private static final Logger LOGGER = Logger.getLogger(JSEventsClientBaseClassTest.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JSEventsClientBaseClassTest.class);
 
 	@Before
 	public void setUp() throws Exception {

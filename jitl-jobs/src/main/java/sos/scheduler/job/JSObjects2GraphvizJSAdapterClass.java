@@ -1,6 +1,8 @@
 package sos.scheduler.job;
 
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.graphviz.main.JSObjects2Graphviz;
 import com.sos.graphviz.main.JSObjects2GraphvizOptions;
@@ -9,7 +11,7 @@ import com.sos.graphviz.main.JSObjects2GraphvizOptions;
 public class JSObjects2GraphvizJSAdapterClass extends JobSchedulerJobAdapter {
 
     private final String conClassName = "JSObjects2GraphvizJSAdapterClass";						//$NON-NLS-1$
-    private final Logger logger = Logger.getLogger(JSObjects2GraphvizJSAdapterClass.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSObjects2GraphvizJSAdapterClass.class);
     private final String conSVNVersion = "$Id: SOSSSHJob2JSAdapter.java 18220 2012-10-18 07:46:10Z kb $";
 
     public void init() {
@@ -55,7 +57,7 @@ public class JSObjects2GraphvizJSAdapterClass extends JobSchedulerJobAdapter {
         @SuppressWarnings("unused")
         final String conMethodName = conClassName + "::doProcessing"; //$NON-NLS-1$
 
-        logger.info(conSVNVersion);
+        LOGGER.info(conSVNVersion);
 
         JSObjects2Graphviz objR = new JSObjects2Graphviz();
         JSObjects2GraphvizOptions objO = objR.getOptions();

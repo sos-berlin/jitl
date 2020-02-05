@@ -64,7 +64,9 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     private String scriptLanguage;
     private Boolean hasDescription;
     private Boolean runTimeIsTemporary;
-    
+    /** new fields starting release 1.13.3 */
+    private String criticality;
+
     public DBItemInventoryJob() {
     }
 
@@ -112,6 +114,7 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     }
 
     /** Others */
+
     @Column(name = "[NAME]", nullable = false)
     public void setName(String val) {
         this.name = val;
@@ -165,6 +168,16 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     @Type(type = "numeric_boolean")
     public void setIsRuntimeDefined(boolean val) {
         this.isRuntimeDefined = val;
+    }
+
+    @Column(name = "[CRITICALITY]", nullable = false)
+    public void setCriticality(String val) {
+        this.criticality = val;
+    }
+
+    @Column(name = "[CRITICALITY]", nullable = false)
+    public String getCriticality() {
+        return this.criticality;
     }
 
     @Column(name = "[IS_RUNTIME_DEFINED]", nullable = false)
@@ -300,7 +313,7 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     public void setHasDescription(Boolean hasDescription) {
         this.hasDescription = hasDescription;
     }
-    
+
     @Column(name = "[RUN_TIME_IS_TEMPORARY]", nullable = false)
     @Type(type = "numeric_boolean")
     public Boolean getRunTimeIsTemporary() {
@@ -315,7 +328,7 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
         }
         this.runTimeIsTemporary = runTimeIsTemporary;
     }
-    
+
     @Column(name = "[IS_YADE_JOB]", nullable = true)
     @Type(type = "numeric_boolean")
     public Boolean getIsYadeJob() {
@@ -327,7 +340,7 @@ public class DBItemInventoryJob extends DbItem implements Serializable {
     public void setIsYadeJob(Boolean isYadeJob) {
         this.isYadeJob = isYadeJob;
     }
-    
+
     @Column(name = "[SCRIPT_LANGUAGE]", nullable = true)
     public String getScriptLanguage() {
         return scriptLanguage;

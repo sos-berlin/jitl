@@ -1,12 +1,14 @@
 package sos.scheduler.misc;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Basics.JSToolBox;
-import org.apache.log4j.Logger;
 
 public class CopyJob2OrderParameterMain extends JSToolBox {
 
     protected CopyJob2OrderParameterOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(CopyJob2OrderParameterMain.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CopyJob2OrderParameterMain.class);
 
     public final static void main(String[] pstrArgs) {
         final String methodName = "CopyJob2OrderParameterMain::Main";

@@ -1,4 +1,4 @@
-package com.sos.jitl.classes.plugin;
+package com.sos.jitl.eventhandler.plugin.notifier;
 
 import java.util.Map;
 
@@ -12,11 +12,11 @@ import sos.net.mail.options.SOSSmtpMailOptions;
 import sos.util.SOSDate;
 import sos.util.SOSString;
 
-public class PluginMailer {
+public class Mailer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PluginMailer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Mailer.class);
 
-    private static final String NEW_LINE = "\r\n";
+    public static final String NEW_LINE = "\r\n";
     private SOSSmtpMailOptions options = null;
     private Map<String, String> settings = null;
     private String pluginName;
@@ -24,7 +24,7 @@ public class PluginMailer {
     private boolean sendOnWarning = false;
     private boolean queueOnly = false;
 
-    public PluginMailer(String pluginName, Map<String, String> ms) {
+    public Mailer(String pluginName, Map<String, String> ms) {
         settings = ms;
         init(pluginName);
     }
@@ -78,27 +78,45 @@ public class PluginMailer {
 
     public void sendOnError(String callerClass, String callerMethod, String body) {
         if (sendOnError) {
-            send("ERROR", String.format("[error] Plugin %s, %s processed with errors", this.pluginName, callerClass, callerMethod), body);
+            send("ERROR", String.format("[error] Plugin %s, %s.%s processed with errors", pluginName, callerClass, callerMethod), null, body);
         }
     }
 
     public void sendOnError(String callerClass, String callerMethod, Throwable t) {
+        sendOnError(callerClass, callerMethod, null, t);
+    }
+
+    public void sendOnError(String callerClass, String callerMethod, String bodyPart, Throwable t) {
         if (sendOnError) {
-            send("ERROR", String.format("[error] Plugin %s, %s.%s processed with errors", this.pluginName, callerClass, callerMethod), getStackTrace(
-                    t));
+            send("ERROR", String.format("[error] Plugin %s, %s.%s processed with errors", pluginName, callerClass, callerMethod), bodyPart,
+                    getStackTrace(t));
         }
     }
 
     public void sendOnWarning(String callerClass, String callerMethod, String body) {
         if (sendOnWarning) {
-            send("WARNING", String.format("[warn] Plugin %s, %s processed with warnings", this.pluginName, callerClass, callerMethod), body);
+            send("WARNING", String.format("[warn] Plugin %s, %s.%s processed with warnings", pluginName, callerClass, callerMethod), null, body);
         }
     }
 
     public void sendOnWarning(String callerClass, String callerMethod, Throwable t) {
         if (sendOnWarning) {
-            send("WARNING", String.format("[warn] Plugin %s, %s processed with warnings", this.pluginName, callerClass, callerMethod), getStackTrace(
-                    t));
+            send("WARNING", String.format("[warn] Plugin %s, %s.%s processed with warnings", pluginName, callerClass, callerMethod), null,
+                    getStackTrace(t));
+        }
+    }
+
+    public void sendOnWarning(String callerClass, String callerMethod, String bodyPart, Throwable t) {
+        if (sendOnWarning) {
+            send("WARNING", String.format("[warn] Plugin %s, %s.%s processed with warnings", pluginName, callerClass, callerMethod), bodyPart,
+                    getStackTrace(t));
+        }
+    }
+
+    public void sendOnRecovery(String callerClass, String callerMethod, Throwable t) {
+        if (sendOnError || sendOnWarning) {
+            send("RECOVERY", String.format("[recovery] Plugin %s, %s.%s recovered from previous error", pluginName, callerClass, callerMethod), null,
+                    getStackTrace(t));
         }
     }
 
@@ -106,7 +124,7 @@ public class PluginMailer {
         return t == null ? "null" : Throwables.getStackTraceAsString(t);
     }
 
-    private void send(String range, String subject, String body) {
+    private void send(String range, String subject, String bodyPart, String body) {
         try {
             options.subject.setValue(subject);
             StringBuilder sb = new StringBuilder();
@@ -117,6 +135,11 @@ public class PluginMailer {
             sb.append(String.format("Plugin %s", pluginName));
             sb.append(String.format("%s%s", NEW_LINE, NEW_LINE));
             sb.append(String.format("%s ", range));
+            if (!SOSString.isEmpty(bodyPart)) {
+                sb.append(String.format("%s", NEW_LINE));
+                sb.append(bodyPart);
+                sb.append(String.format("%s", NEW_LINE));
+            }
             sb.append(body);
             sb.append(String.format("%s%s%s", NEW_LINE, NEW_LINE, NEW_LINE));
             sb.append("Please refer to the scheduler.log");
@@ -130,6 +153,6 @@ public class PluginMailer {
     }
 
     public String getPluginName() {
-        return this.pluginName;
+        return pluginName;
     }
 }

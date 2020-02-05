@@ -20,13 +20,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernate;
-import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.exceptions.SOSHibernateObjectOperationStaleStateException;
-import com.sos.jitl.classes.event.JobSchedulerEvent.EventKey;
-import com.sos.jitl.classes.event.JobSchedulerEvent.EventType;
-import com.sos.jitl.classes.plugin.PluginMailer;
+import com.sos.jitl.eventhandler.EventMeta.EventKey;
+import com.sos.jitl.eventhandler.EventMeta.EventType;
+import com.sos.jitl.eventhandler.plugin.notifier.Notifier;
 import com.sos.jitl.reporting.db.DBItemReportExecution;
 import com.sos.jitl.reporting.db.DBItemReportTask;
 import com.sos.jitl.reporting.db.DBItemReportTrigger;
@@ -35,6 +34,7 @@ import com.sos.jitl.reporting.db.DBItemSchedulerHistory;
 import com.sos.jitl.reporting.db.DBItemSchedulerHistoryOrderStepReporting;
 import com.sos.jitl.reporting.db.DBLayerReporting;
 import com.sos.jitl.reporting.exceptions.SOSReportingConcurrencyException;
+import com.sos.jitl.reporting.exceptions.SOSReportingInvalidSessionException;
 import com.sos.jitl.reporting.exceptions.SOSReportingLockException;
 import com.sos.jitl.reporting.helper.CounterSynchronize;
 import com.sos.jitl.reporting.helper.EStartCauses;
@@ -114,8 +114,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
         registerPlugin();
     }
 
-    public void init(PluginMailer mailer, Path configDirectory) {
-        pluginOnInit(mailer, configDirectory);
+    public void init(Notifier notifier, Path configDirectory) {
+        pluginOnInit(notifier, configDirectory);
     }
 
     public void exit() {
@@ -185,9 +185,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
             } catch (Throwable ee) {
                 LOGGER.warn(String.format("error occured during reset synchronizing on exception: %s", method, ee.toString()));
             }
-            Exception lae = SOSHibernate.findLockException(e);
-            if (lae == null) {
-                throw e;
+            Exception ex = SOSHibernate.findLockException(e);
+            if (ex == null) {
+                ex = SOSHibernate.findInvalidSessionException(e);
+                if (ex == null) {
+                    throw e;
+                } else {
+                    throw new SOSReportingInvalidSessionException(e);
+                }
             } else {
                 throw new SOSReportingLockException(e);
             }
@@ -389,7 +394,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
                         if (isDebugEnabled) {
                             LOGGER.debug(String.format("[%s][%s][%s][%s][step>=%s]%s", method, (i + 1), trigger.getParentName(), trigger.getName(),
-                                    trigger.getResultSteps(), SOSHibernateFactory.toString(trigger)));
+                                    trigger.getResultSteps(), SOSString.toString(trigger)));
                         }
 
                         Query<DBItemSchedulerHistoryOrderStepReporting> query = getDbLayer().getSchedulerHistoryOrderStepsQuery(schedulerSession,
@@ -804,7 +809,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
                     if (isDebugEnabled) {
                         LOGGER.debug(String.format("[%s][%s][scheduler][task][%s][%s]%s", method, counterTotal, task.getId(), task.getJobName(),
-                                SOSHibernateFactory.toString(task)));
+                                SOSString.toString(task)));
                     }
 
                     checkReduceEventTaskStartedHistoryIds(method, counterTotal, task.getId(), task.getJobName());
@@ -843,7 +848,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         reportTask = getDbLayer().insertTask(task, inventoryInfo, isOrder, syncCompleted);
                         if (isDebugEnabled) {
                             LOGGER.debug(String.format("[%s][%s][inserted][%s][%s][%s]%s", method, counterTotal, reportTask.getId(), reportTask
-                                    .getHistoryId(), reportTask.getName(), SOSHibernateFactory.toString(reportTask)));
+                                    .getHistoryId(), reportTask.getName(), SOSString.toString(reportTask)));
                         }
                         counterInserted++;
                     } else {
@@ -854,7 +859,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         getDbLayer().updateTask(reportTask, task, syncCompleted);
                         if (isDebugEnabled) {
                             LOGGER.debug(String.format("[%s][%s][updated][%s][%s][%s]%s", method, counterTotal, reportTask.getId(), reportTask
-                                    .getHistoryId(), reportTask.getName(), SOSHibernateFactory.toString(reportTask)));
+                                    .getHistoryId(), reportTask.getName(), SOSString.toString(reportTask)));
                         }
                         if (updateExecutions) {
                             int rc = getDbLayer().updateComplitedExecutionsByTask(reportTask);
@@ -974,7 +979,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     }
                     if (isDebugEnabled) {
                         LOGGER.debug(String.format("[%s][%s][scheduler][orderStep][%s][%s][%s]%s", method, counterTotal, step.getOrderJobChain(), step
-                                .getOrderId(), step.getStepStep(), SOSHibernateFactory.toString(step)));
+                                .getOrderId(), step.getStepStep(), SOSString.toString(step)));
                     }
                     DBItemReportTask reportTask = null;
                     // e.g. waiting_for_agent
@@ -998,8 +1003,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                     reportTask = getDbLayer().insertTaskByOrderStep(step, taskInventoryInfo, false);
                                     if (isDebugEnabled) {
                                         LOGGER.debug(String.format("[%s][%s][task][%s][%s][%s][inserted by order step]%s", method, counterTotal,
-                                                reportTask.getId(), reportTask.getHistoryId(), reportTask.getName(), SOSHibernateFactory.toString(
-                                                        reportTask)));
+                                                reportTask.getId(), reportTask.getHistoryId(), reportTask.getName(), SOSString.toString(reportTask)));
                                     }
                                 } catch (Exception e) {
                                     throw new SOSReportingConcurrencyException(e);
@@ -1015,19 +1019,19 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                     reportTask.setName(taskInventoryInfo.getName());
                                     reportTask.setBasename(ReportUtil.getBasenameFromName(taskInventoryInfo.getName()));
                                     reportTask.setTitle(taskInventoryInfo.getTitle());
+                                    reportTask.setCriticality(taskInventoryInfo.getCriticality());
                                     reportTask.setModified(ReportUtil.getCurrentDateTime());
                                     getDbLayer().getSession().update(reportTask);
                                     if (isDebugEnabled) {
                                         LOGGER.debug(String.format("[%s][%s][task][%s][%s][%s][updated from inventory]%s", method, counterTotal,
-                                                reportTask.getId(), reportTask.getHistoryId(), reportTask.getName(), SOSHibernateFactory.toString(
-                                                        reportTask)));
+                                                reportTask.getId(), reportTask.getHistoryId(), reportTask.getName(), SOSString.toString(reportTask)));
                                     }
                                 }
                             }
                         } else {
                             if (isDebugEnabled) {
                                 LOGGER.debug(String.format("[%s][%s][task][%s][%s][%s][already exist]%s", method, counterTotal, reportTask.getId(),
-                                        reportTask.getHistoryId(), reportTask.getName(), SOSHibernateFactory.toString(reportTask)));
+                                        reportTask.getHistoryId(), reportTask.getName(), SOSString.toString(reportTask)));
                             }
                         }
                         step.setTaskId(reportTask.getHistoryId());
@@ -1074,7 +1078,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                 throw new Exception(String.format("error on insertTrigger: %s", e.toString()), e);
                             }
                             if (isDebugEnabled) {
-                                LOGGER.debug(String.format("[%s][%s][trigger][inserted]%s", method, counterTotal, SOSHibernateFactory.toString(rt)));
+                                LOGGER.debug(String.format("[%s][%s][trigger][inserted]%s", method, counterTotal, SOSString.toString(rt)));
                             }
                             counterInsertedTriggers++;
                         } else {
@@ -1085,8 +1089,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                     throw new Exception(String.format("error on updateTrigger: %s", e.toString()), e);
                                 }
                                 if (isDebugEnabled) {
-                                    LOGGER.debug(String.format("[%s][%s][trigger][updated]%s", method, counterTotal, SOSHibernateFactory.toString(
-                                            rt)));
+                                    LOGGER.debug(String.format("[%s][%s][trigger][updated]%s", method, counterTotal, SOSString.toString(rt)));
                                 }
                                 counterUpdatedTriggers++;
                             }
@@ -1101,7 +1104,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             counterSkip++;
                             if (isDebugEnabled) {
                                 LOGGER.debug(String.format("[%s][%s][skip][trigger][step %s < %s]%s", method, counterTotal, step.getStepStep(), rt
-                                        .getResultSteps(), SOSHibernateFactory.toString(rt)));
+                                        .getResultSteps(), SOSString.toString(rt)));
                             }
                             continue;
                         } else if (step.getStepStep() == rt.getResultSteps()) {
@@ -1114,15 +1117,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                         if (isDebugEnabled) {
                                             LOGGER.debug(String.format(
                                                     "[%s][%s][execution][%s][syncCompleted=true][step %s=%s][should be updated due task closed]%s",
-                                                    method, counterTotal, re.getId(), step.getStepStep(), rt.getResultSteps(), SOSHibernateFactory
-                                                            .toString(re)));
+                                                    method, counterTotal, re.getId(), step.getStepStep(), rt.getResultSteps(), SOSString.toString(
+                                                            re)));
                                         }
                                     } else {
                                         counterSkip++;
                                         if (isDebugEnabled) {
                                             LOGGER.debug(String.format("[%s][%s][skip][execution][%s][syncCompleted=true][step %s=%s]%s", method,
-                                                    counterTotal, re.getId(), step.getStepStep(), rt.getResultSteps(), SOSHibernateFactory.toString(
-                                                            re)));
+                                                    counterTotal, re.getId(), step.getStepStep(), rt.getResultSteps(), SOSString.toString(re)));
                                         }
                                         if (orderSync.equals(OrderSync.UNCOMPLETED) && uncompletedTaskHistoryIds.contains(step.getStepTaskId())) {
                                             uncompletedTaskHistoryIds.remove(step.getStepTaskId());
@@ -1156,7 +1158,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                     counterSkip++;
                                     if (isDebugEnabled) {
                                         LOGGER.debug(String.format("[%s][%s][skip][execution][%s][not changed]%s", method, counterTotal, re.getId(),
-                                                SOSHibernateFactory.toString(re)));
+                                                SOSString.toString(re)));
                                     }
 
                                     if (orderSync.equals(OrderSync.UNCOMPLETED) && uncompletedTaskHistoryIds.contains(step.getStepTaskId())) {
@@ -1195,7 +1197,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                     throw new SOSReportingConcurrencyException(e);
                                 }
                                 if (isDebugEnabled) {
-                                    LOGGER.debug(String.format("[%s][%s][reportTask][inserted]%s", method, counterTotal, SOSHibernateFactory.toString(
+                                    LOGGER.debug(String.format("[%s][%s][reportTask][inserted]%s", method, counterTotal, SOSString.toString(
                                             reportTask)));
                                 }
                                 counterInsertedTasks++;
@@ -1209,8 +1211,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             throw new Exception(String.format("error on insertExecution: %s", e.toString()), e);
                         }
                         if (isDebugEnabled) {
-                            LOGGER.debug(String.format("[%s][%s][execution][%s][inserted]%s", method, counterTotal, re.getId(), SOSHibernateFactory
-                                    .toString(re)));
+                            LOGGER.debug(String.format("[%s][%s][execution][%s][inserted]%s", method, counterTotal, re.getId(), SOSString.toString(
+                                    re)));
                         }
                         counterInsertedExecutions++;
                     } else {
@@ -1222,8 +1224,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             throw new Exception(String.format("error on updateExecution: %s", e.toString()));
                         }
                         if (isDebugEnabled) {
-                            LOGGER.debug(String.format("[%s][%s][execution][%s][updated]%s", method, counterTotal, re.getId(), SOSHibernateFactory
-                                    .toString(re)));
+                            LOGGER.debug(String.format("[%s][%s][execution][%s][updated]%s", method, counterTotal, re.getId(), SOSString.toString(
+                                    re)));
                         }
                         counterUpdatedExecutions++;
                     }
@@ -1240,8 +1242,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             throw new Exception(String.format("error on updateTriggerResults: %s", e.toString()), e);
                         }
                         if (isDebugEnabled) {
-                            LOGGER.debug(String.format("[%s][%s][trigger][%s][result updated]%s", method, counterTotal, rt.getId(),
-                                    SOSHibernateFactory.toString(rt)));
+                            LOGGER.debug(String.format("[%s][%s][trigger][%s][result updated]%s", method, counterTotal, rt.getId(), SOSString
+                                    .toString(rt)));
                         }
                         triggerObjects.put(step.getOrderHistoryId(), rt);
                         counterUpdatedTriggers++;
@@ -1356,8 +1358,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         checkReduceEventTaskStartedHistoryIds(method, counterTotal, reportTask.getHistoryId(), reportTask.getName());
 
                         if (isDebugEnabled) {
-                            LOGGER.debug(String.format("[%s][%s][%s]%s", method, reportTask.getId(), reportTask.getName(), SOSHibernateFactory
-                                    .toString(reportTask)));
+                            LOGGER.debug(String.format("[%s][%s][%s]%s", method, reportTask.getId(), reportTask.getName(), SOSString.toString(
+                                    reportTask)));
                         }
                         if (reportTask.getIsOrder()) {
                             List<DBItemReportExecution> executions = getDbLayer().getExecutionsByTask(reportTask.getId());
@@ -1382,14 +1384,15 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                     }
                                     InventoryInfo taskInventoryInfo = getInventoryInfo(method, infos);
                                     if (isDebugEnabled) {
-                                        LOGGER.debug(String.format("[%s][%s][%s]%s", method, reportTask.getId(), reportTask.getName(),
-                                                SOSHibernateFactory.toString(taskInventoryInfo)));
+                                        LOGGER.debug(String.format("[%s][%s][%s]%s", method, reportTask.getId(), reportTask.getName(), SOSString
+                                                .toString(taskInventoryInfo)));
                                     }
                                     if (taskInventoryInfo != null && taskInventoryInfo.getName() != null) {
                                         reportTask.setFolder(ReportUtil.getFolderFromName(taskInventoryInfo.getName()));
                                         reportTask.setName(taskInventoryInfo.getName());
                                         reportTask.setBasename(ReportUtil.getBasenameFromName(taskInventoryInfo.getName()));
                                         reportTask.setTitle(taskInventoryInfo.getTitle());
+                                        reportTask.setCriticality(taskInventoryInfo.getCriticality());
                                         doUpdate = true;
                                     }
                                 }
@@ -1399,8 +1402,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                 boolean syncCompleted = false;
                                 for (DBItemReportExecution execution : executions) {
                                     if (isDebugEnabled) {
-                                        LOGGER.debug(String.format("[%s][%s][%s]%s", method, reportTask.getId(), reportTask.getName(),
-                                                SOSHibernateFactory.toString(execution)));
+                                        LOGGER.debug(String.format("[%s][%s][%s]%s", method, reportTask.getId(), reportTask.getName(), SOSString
+                                                .toString(execution)));
                                     }
                                     if (execution.getSyncCompleted()) {
                                         syncCompleted = true;
@@ -1439,9 +1442,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
                                     if (isDebugEnabled) {
                                         LOGGER.debug(String.format("[%s][%s][%s][last execution with endTime]%s", method, reportTask.getId(),
-                                                reportTask.getName(), SOSHibernateFactory.toString(lastExecutionWithEndTime)));
+                                                reportTask.getName(), SOSString.toString(lastExecutionWithEndTime)));
                                         LOGGER.debug(String.format("[%s][%s][%s][last execution with endTime trigger]%s", method, reportTask.getId(),
-                                                reportTask.getName(), SOSHibernateFactory.toString(trigger)));
+                                                reportTask.getName(), SOSString.toString(trigger)));
                                     }
                                     if (trigger != null && trigger.getSyncCompleted()) {
                                         reportTask.setEndTime(lastExecutionWithEndTime.getEndTime());
@@ -1482,8 +1485,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             getDbLayer().getSession().update(reportTask);
                             counterUpdatedTasks++;
                             if (isDebugEnabled) {
-                                LOGGER.debug(String.format("[%s][isOrder=0][set syncCompleted=1]%s", method, SOSHibernateFactory.toString(
-                                        reportTask)));
+                                LOGGER.debug(String.format("[%s][isOrder=0][set syncCompleted=1]%s", method, SOSString.toString(reportTask)));
                             }
                         }
                     }
@@ -1599,6 +1601,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
         item.setClusterType(null);
         item.setUrl(null);
+        item.setCriticality(null);
         item.setOrdering(new Integer(0));
 
         if (infos != null && infos.size() > 0) {
@@ -1611,11 +1614,12 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     item.setName(SOSString.isEmpty(row.get("name")) ? null : row.get("name"));
                     item.setTitle(SOSString.isEmpty(row.get("title")) ? null : row.get("title"));
                     item.setIsRuntimeDefined(row.get("is_runtime_defined").equals("1"));
-                    if (row.size() > 3) {
+                    item.setCriticality(row.get("criticality"));
+                    if (row.size() > 4) {
                         if (row.containsKey("is_order_job")) {
                             item.setIsOrderJob(row.get("is_order_job").equals("1"));
                         }
-                        if (row.size() > 4) {
+                        if (row.size() > 5) {
                             if (row.containsKey("cluster_type")) {
                                 item.setClusterType(SOSString.isEmpty(row.get("cluster_type")) ? null : row.get("cluster_type"));
                             }
@@ -1707,7 +1711,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             LOGGER.info(String.format("[%s to %s UTC] 0 changes", from, to));
         }
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s: duration=%s", method, ReportUtil.getDuration(start, new DateTime())));
+            LOGGER.debug(String.format("[%s]duration=%s", method, ReportUtil.getDuration(start, new DateTime())));
         }
     }
 
@@ -1765,9 +1769,9 @@ public class FactModel extends ReportingModel implements IReportingModel {
         }
     }
 
-    private void pluginOnInit(PluginMailer mailer, Path configDirectory) {
+    private void pluginOnInit(Notifier notifier, Path configDirectory) {
         if (notificationPlugin != null) {
-            notificationPlugin.init(getDbLayer().getSession(), mailer, configDirectory);
+            notificationPlugin.init(getDbLayer().getSession(), notifier, configDirectory);
         }
     }
 
@@ -1781,7 +1785,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             return;
         }
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("[%s]%s", method, SOSHibernateFactory.toString(trigger)));
+            LOGGER.debug(String.format("[%s]%s", method, SOSString.toString(trigger)));
         }
         notificationPlugin.setOrderEndTime(trigger.getSchedulerId(), trigger.getHistoryId(), trigger.getEndTime());
     }
@@ -1800,15 +1804,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 trigger = getDbLayer().getTrigger(execution.getTriggerId());
             } catch (SOSHibernateException e) {
                 if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[%s][cannot get trigger for the given triggerId]%s[exception]%s", method, SOSHibernateFactory
-                            .toString(execution), e.toString()));
+                    LOGGER.debug(String.format("[%s][cannot get trigger for the given triggerId]%s[exception]%s", method, SOSString.toString(
+                            execution), e.toString()));
                 }
                 return;
             }
             if (trigger == null) {
                 if (isDebugEnabled) {
-                    LOGGER.debug(String.format("[%s][not found trigger with the given triggerId]%s", method, SOSHibernateFactory.toString(
-                            execution)));
+                    LOGGER.debug(String.format("[%s][not found trigger with the given triggerId]%s", method, SOSString.toString(execution)));
                 }
                 return;
             }
@@ -1819,13 +1822,13 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 endedOrderTasks4notification.remove(execution.getHistoryId());
                 if (isDebugEnabled) {
                     LOGGER.debug(String.format("[pluginOnProcess][endedOrderTasks4notification][removed][task history id=%s]%s", execution
-                            .getHistoryId(), SOSHibernateFactory.toString(execution)));
+                            .getHistoryId(), SOSString.toString(execution)));
                 }
             }
         }
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("[%s]%s", method, SOSHibernateFactory.toString(trigger)));
-            LOGGER.debug(String.format("[%s]%s", method, SOSHibernateFactory.toString(execution)));
+            LOGGER.debug(String.format("[%s]%s", method, SOSString.toString(trigger)));
+            LOGGER.debug(String.format("[%s]%s", method, SOSString.toString(execution)));
         }
         notificationPlugin.process(notificationPlugin.convert2OrderExecution(trigger, execution), true, true);
     }
@@ -1843,13 +1846,13 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 endedOrderTasks4notification.put(task.getHistoryId(), task);
                 if (isDebugEnabled) {
                     LOGGER.debug(String.format("[pluginOnProcess][endedOrderTasks4notification][added][task history id=%s]%s", task.getHistoryId(),
-                            SOSHibernateFactory.toString(task)));
+                            SOSString.toString(task)));
                 }
             }
             return;
         }
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("[pluginOnProcess]%s", SOSHibernateFactory.toString(task)));
+            LOGGER.debug(String.format("[pluginOnProcess]%s", SOSString.toString(task)));
         }
         notificationPlugin.process(notificationPlugin.convert2StandaloneExecution(task), false, true);
     }
@@ -1875,4 +1878,5 @@ public class FactModel extends ReportingModel implements IReportingModel {
     public boolean isLocked() {
         return isLocked;
     }
+
 }

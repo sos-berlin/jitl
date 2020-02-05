@@ -78,7 +78,7 @@ http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd"
             </tr>
         </table>
          -->
-        <p>
+        <!--p>
             The result set is sorted according to the used filter or search
             parameters:
             <ul>
@@ -101,7 +101,7 @@ http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd"
                     set is sorted by file age.
                 </li>
             </ul>
-        </p>
+        </p-->
     </note>
     <note language="de">
         <title>Das Erzeugen einer Ergebnisliste (result set)</title>

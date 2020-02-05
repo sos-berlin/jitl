@@ -3,17 +3,20 @@ package com.sos.jitl.jobchainnodeparameter.monitor;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.jitl.jobchainnodeparameter.JobchainNodeConfiguration;
 import com.sos.jitl.jobchainnodeparameter.monitor.JobchainNodeSubstitute;
 
-import org.apache.log4j.Logger;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.scheduler.messages.JSMessages;
 
 public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubstituteOptions> {
+
     private static final String CLASSNAME = "ConfigurationMonitor";
-    private static final Logger LOGGER = Logger.getLogger(JobchainNodeSubstitute.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobchainNodeSubstitute.class);
 
     protected JobchainNodeSubstituteOptions configurationMonitorOptions = null;
 
@@ -25,7 +28,7 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
     private String orderId;
     private String jobChainPath;
     private String fileContent;
-    
+
     JobchainNodeConfiguration jobchainNodeConfiguration;
 
     public JobchainNodeSubstitute() {
@@ -54,12 +57,15 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
 
             jobchainNodeConfiguration.setOrderPayload(orderPayload);
             jobchainNodeConfiguration.setLiveFolder(configurationMonitorOptions.configurationMonitorConfigurationPath.getValue());
-            jobchainNodeConfiguration.setJobChainNodeConfigurationFileName(configurationMonitorOptions.configurationMonitorConfigurationFile.getValue());
+            jobchainNodeConfiguration.setJobChainNodeConfigurationFileName(configurationMonitorOptions.configurationMonitorConfigurationFile
+                    .getValue());
             jobchainNodeConfiguration.setListOfSchedulerParameters(schedulerParameters);
             jobchainNodeConfiguration.setListOfOrderParameters(orderParameters);
             jobchainNodeConfiguration.setListOfTaskParameters(taskParameters);
-            if (orderParameters != null){
+            if (orderParameters != null) {
                 jobchainNodeConfiguration.substituteOrderParamters(getOptions().getCurrentNodeName());
+            } else {
+                jobchainNodeConfiguration.substituteTaskParamters();
             }
             fileContent = jobchainNodeConfiguration.getFileContent();
         } catch (Exception e) {
@@ -90,12 +96,12 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
 
     @Override
     public void setJSParam(String pstrKey, String pstrValue) {
-        // Implement Method here  
+        // Implement Method here
     }
 
     @Override
     public void setJSParam(String pstrKey, StringBuffer pstrValue) {
-        // Implement Method here  
+        // Implement Method here
     }
 
     public void setOrderParameters(HashMap<String, String> orderParameters) {
@@ -122,4 +128,4 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
         return fileContent;
     }
 
-} 
+}

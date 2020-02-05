@@ -1,10 +1,11 @@
 package com.sos.jitl.mail.smtp;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JSSmtpMailClientAdapterClass extends JSSmtpMailClientBaseClass {
 
-    private static final Logger LOGGER = Logger.getLogger(JSSmtpMailClientAdapterClass.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSSmtpMailClientAdapterClass.class);
 
     @Override
     public boolean spooler_process() throws Exception {

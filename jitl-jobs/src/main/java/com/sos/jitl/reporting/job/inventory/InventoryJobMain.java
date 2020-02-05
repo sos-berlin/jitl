@@ -1,18 +1,20 @@
 package com.sos.jitl.reporting.job.inventory;
 
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSToolBox;
 
 public class InventoryJobMain extends JSToolBox {
 
     private final static String className = InventoryJobMain.class.getSimpleName();
-    private static Logger logger = Logger.getLogger(InventoryJobMain.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(InventoryJobMain.class);
 
     public final static void main(String[] args) {
         final String methodName = className + "::main";
 
-        logger.info(String.format(methodName));
+        LOGGER.info(String.format(methodName));
         int exitCode = 0;
         InventoryJob job = new InventoryJob();
         try {
@@ -21,10 +23,10 @@ public class InventoryJobMain extends JSToolBox {
 
             job.init();
             job.execute();
-            logger.info(String.format("JSJ-I-106: %1$s - ended without errors", methodName));
+            LOGGER.info(String.format("JSJ-I-106: %1$s - ended without errors", methodName));
         } catch (Exception e) {
             exitCode = 99;
-            logger.error(String.format("JSJ-E-105: %1$s - terminated with exit-code %2$d", methodName, exitCode), e);
+            LOGGER.error(String.format("JSJ-E-105: %1$s - terminated with exit-code %2$d", methodName, exitCode), e);
         } finally {
             job.exit();
         }

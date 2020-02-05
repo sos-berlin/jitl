@@ -1,9 +1,11 @@
 package com.sos.jitl.splitter;
 
-import org.apache.log4j.Logger;
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Order;
 import sos.spooler.Variable_set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.jitl.sync.SyncNodeList;
@@ -13,7 +15,7 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
     private static final String PARAMETER_SYNC_SESSION_ID = "sync_session_id";
     private static final String PARAMETER_JOB_CHAIN_STATE2SYNCHRONIZE = "job_chain_state2synchronize";
     private static final String PARAMETER_JOB_CHAIN_NAME2SYNCHRONIZE = "job_chain_name2synchronize";
-    private static final Logger LOGGER = Logger.getLogger(JobChainSplitterJSAdapterClass.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobChainSplitterJSAdapterClass.class);
 
     @Override
     public boolean spooler_process() throws Exception {

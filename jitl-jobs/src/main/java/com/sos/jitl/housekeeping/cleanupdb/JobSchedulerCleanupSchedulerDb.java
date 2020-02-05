@@ -1,9 +1,7 @@
 package com.sos.jitl.housekeeping.cleanupdb;
 
-import org.apache.log4j.Logger;
-
-//import sos.jadehistory.db.JadeFilesDBLayer;
-//import sos.jadehistory.db.JadeFilesHistoryDBLayer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
@@ -19,7 +17,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
 
     protected JobSchedulerCleanupSchedulerDbOptions objOptions = null;
     private final String conClassName = "JobSchedulerCleanupSchedulerDb";
-    private static Logger logger = Logger.getLogger(JobSchedulerCleanupSchedulerDb.class);
+    private static Logger logger = LoggerFactory.getLogger(JobSchedulerCleanupSchedulerDb.class);
 
     public JobSchedulerCleanupSchedulerDb() {
         super(new JobSchedulerCleanupSchedulerDbOptions());
@@ -38,6 +36,7 @@ public class JobSchedulerCleanupSchedulerDb extends JSJobUtilitiesClass<JobSched
         sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
         sosHibernateFactory.addClassMapping(DBLayer.getSchedulerClassMapping());
         sosHibernateFactory.addClassMapping(DBLayer.getYadeClassMapping());
+        
         sosHibernateFactory.build();
         return sosHibernateFactory.openStatelessSession();
     }

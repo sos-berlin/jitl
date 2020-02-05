@@ -12,7 +12,6 @@ http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
     <codeexample type="ini">
         <embeddedExample>
     [default]
-    history = /jade/transfer_history.csv
     mandator = SOS
     scheduler_host = localhost
     scheduler_port = 4444
@@ -28,7 +27,6 @@ http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
         <explanation language="en">
             <title>Example for the include directive</title>
             <p>
-            With this example the file transfer history settings are specified in the  the <em>default</em> profile.
             The <code>include</code> directive is used to call this profile from the <em>sample_transfer</em> profile.
             </p>
             <p>
@@ -49,7 +47,6 @@ http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1.xsd">
                 <code>include</code>
                 das Profil mit dem Namen
                 <em>default</em>
-                und übernimmt damit ebenfalls die Einstellungen für die Historienverarbeitung.
             </p>
             <p>
             Die include-Directive erlaubt es, mehrere, durch Komma getrennte, Namen von Profilen, in das

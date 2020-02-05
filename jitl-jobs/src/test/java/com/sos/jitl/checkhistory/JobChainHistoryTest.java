@@ -2,15 +2,16 @@ package com.sos.jitl.checkhistory;
 
 import java.time.format.DateTimeFormatter;
 
-import org.apache.log4j.Logger;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.jitl.checkhistory.classes.JobSchedulerHistoryInfoEntry;
 import com.sos.jitl.restclient.WebserviceCredentials;
 
 public class JobChainHistoryTest {
-    
-    private static final Logger LOGGER = Logger.getLogger(JobChainHistoryTest.class);
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobChainHistoryTest.class);
 
     @Test
     public void testJobChainHistory() throws Exception {
@@ -19,9 +20,9 @@ public class JobChainHistoryTest {
         webserviceCredentials.setUser("api_user");
         webserviceCredentials.setSchedulerId("scheduler_joc_cockpit");
 
-        JobChainHistory jobChainHistory = new com.sos.jitl.checkhistory.JobChainHistory("http://localhost:4446/joc/api", webserviceCredentials);
+        JobChainHistory jobChainHistory = new com.sos.jitl.checkhistory.JobChainHistory("http://localhost:8081/rest", webserviceCredentials);
 
-        JobSchedulerHistoryInfo jobChainHistoryInfo = jobChainHistory.getJobChainInfo("/check_history/job_chain3");
+        JobSchedulerHistoryInfo jobChainHistoryInfo = jobChainHistory.getJobChainInfo("/job_chain1");
         report(jobChainHistoryInfo.getLastCompleted());
         report(jobChainHistoryInfo.getRunning());
         report(jobChainHistoryInfo.getLastCompletedSuccessful());
@@ -61,7 +62,7 @@ public class JobChainHistoryTest {
         LOGGER.info("isCompletedSuccessfulBefore -1:10:43:56:" + jobChainHistoryInfo.isCompletedSuccessfulBefore());
         // Some counters for job starts between 10:00 and 14:00
         jobChainHistoryInfo = jobChainHistory.getJobChainInfo("sos/events/scheduler_event_service", "-8:10:00:00..-4:14:00:00");
-        
+
     }
 
     private void report(JobSchedulerHistoryInfoEntry reportItem) {
@@ -72,10 +73,12 @@ public class JobChainHistoryTest {
             LOGGER.info("Job chain name:" + reportItem.jobChainName);
             LOGGER.info("Top:" + reportItem.top);
             LOGGER.info("Start:" + reportItem.start);
-            LOGGER.info("End:" + reportItem.end.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+            if (reportItem.end != null) {
+                LOGGER.info("End:" + reportItem.end.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+                LOGGER.info("Duration in seconds:" + java.time.temporal.ChronoUnit.SECONDS.between(reportItem.start, reportItem.end));
+                LOGGER.info("Duration:" + reportItem.duration);
+            }
             LOGGER.info("End:" + reportItem.end);
-            LOGGER.info("Duration in seconds:" + java.time.temporal.ChronoUnit.SECONDS.between(reportItem.start, reportItem.end));
-            LOGGER.info("Duration:" + reportItem.duration);
             LOGGER.info("State:" + reportItem.state);
             LOGGER.info("Error:" + reportItem.error);
         } else {

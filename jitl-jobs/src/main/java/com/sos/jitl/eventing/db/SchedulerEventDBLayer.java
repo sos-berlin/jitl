@@ -7,8 +7,9 @@ import java.util.List;
 import javax.persistence.TemporalType;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.apache.log4j.Logger;
 import org.hibernate.query.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -27,7 +28,7 @@ public class SchedulerEventDBLayer extends SOSHibernateDBLayer {
 
 	private static final String ADD = "add";
 	private static final String REMOVE = "remove";
-	private static final Logger LOGGER = Logger.getLogger(SchedulerEventDBLayer.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerEventDBLayer.class);
 	private static final String SchedulerEventDBItem = SchedulerEventDBItem.class.getName();
 
 	private String notifyCommand;

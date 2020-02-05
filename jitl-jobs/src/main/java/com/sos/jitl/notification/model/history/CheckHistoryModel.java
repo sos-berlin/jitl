@@ -1,6 +1,7 @@
 package com.sos.jitl.notification.model.history;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -66,32 +67,15 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
     }
 
     public void initConfig() throws Exception {
-        String method = "initConfig";
         plugins = new ArrayList<ICheckHistoryPlugin>();
         timers = new LinkedHashMap<String, ElementTimer>();
         jobChains = new LinkedHashMap<String, ArrayList<String>>();
         jobs = new LinkedHashMap<String, ArrayList<String>>();
 
-        File dir = null;
-        File schemaFile = new File(options.schema_configuration_file.getValue());
-        if (!schemaFile.exists()) {
-            throw new Exception(String.format("[%s][schema file not found]%s", method, schemaFile.getCanonicalPath()));
-        }
-        if (SOSString.isEmpty(this.options.configuration_dir.getValue())) {
-            dir = new File(this.options.configuration_dir.getValue());
-        } else {
-            dir = schemaFile.getParentFile().getAbsoluteFile();
-        }
-        if (!dir.exists()) {
-            throw new Exception(String.format("[%s][configuration dir not found]%s", method, dir.getCanonicalPath()));
-        }
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("[%s][%s][%s]", method, schemaFile, dir.getCanonicalPath()));
-        }
-        readConfigFiles(dir);
+        readConfigFiles();
     }
 
-    private void readConfigFiles(File dir) throws Exception {
+    private void readConfigFiles() throws Exception {
         String method = "readConfigFiles";
         jobChains = new LinkedHashMap<String, ArrayList<String>>();
         jobs = new LinkedHashMap<String, ArrayList<String>>();
@@ -99,24 +83,16 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
         checkInsertJobChainNotifications = true;
         checkInsertJobNotifications = true;
 
-        File[] files = getAllConfigurationFiles(dir);
-        if (files.length == 0) {
-            throw new Exception(String.format("[%s][configuration files not found]%s", method, dir.getCanonicalPath()));
+        List<File> files = getAllConfigFiles(Paths.get(options.configuration_dir.getValue()));
+        if (isDebugEnabled) {
+            LOGGER.debug((String.format("[%s]found %s file(s)", method, files.size())));
         }
-        for (int i = 0; i < files.length; i++) {
-            File f = files[i];
-            String cp = f.getCanonicalPath();
-            LOGGER.info(String.format("[%s][%s]%s", method, (i + 1), cp));
-            SOSXMLXPath xpath = null;
-            try {
-                xpath = new SOSXMLXPath(cp);
-            } catch (Exception e) {
-                throw new Exception(String.format("[%s][SOSXMLXPath][%s]%s", method, cp, e.toString()), e);
-            }
-            setConfigAllJobChains(xpath);
-            setConfigAllJobs(xpath);
-            setConfigTimers(xpath);
+        int counter = 0;
+        for (int i = 0; i < files.size(); i++) {
+            counter++;
+            setConfigFromFile(counter, files.get(i));
         }
+
         if (jobChains.isEmpty() && jobs.isEmpty() && timers.isEmpty()) {
             executeChecks = false;
             if (isDebugEnabled) {
@@ -125,6 +101,21 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
         } else {
             executeChecks = true;
         }
+    }
+
+    private void setConfigFromFile(int counter, File f) throws Exception {
+        String method = "setConfigFromFile";
+        String cp = f.getCanonicalPath();
+        LOGGER.info(String.format("[%s][%s]%s", method, counter, cp));
+        SOSXMLXPath xpath = null;
+        try {
+            xpath = new SOSXMLXPath(cp);
+        } catch (Exception e) {
+            throw new Exception(String.format("[%s][%s][SOSXMLXPath][%s]%s", method, counter, normalizePath(f), e.toString()), e);
+        }
+        setConfigAllJobChains(xpath);
+        setConfigAllJobs(xpath);
+        setConfigTimers(xpath);
     }
 
     private void setConfigTimers(SOSXMLXPath xpath) throws Exception {
@@ -372,8 +363,8 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                         .getOrderHistoryId(), item.getJobChainName(), item.getJobChainTitle(), item.getOrderId(), item.getOrderTitle(), item
                                 .getOrderStartTime(), item.getOrderEndTime(), item.getOrderStepState(), item.getOrderStepStartTime(), item
                                         .getOrderStepEndTime(), item.getJobName(), item.getJobTitle(), item.getTaskStartTime(), item.getTaskEndTime(),
-                        false, new Long(item.getReturnCode() == null ? 0 : item.getReturnCode()), item.getAgentUrl(), item.getClusterMemberId(),
-                        hasStepError, item.getErrorCode(), item.getErrorText());
+                        false, new Long(item.getReturnCode() == null ? 0 : item.getReturnCode()), item.getAgentUrl(), item.getClusterMemberId(), item
+                                .getCriticality(), hasStepError, item.getErrorCode(), item.getErrorText());
 
                 getDbLayer().getSession().save(dbItem);
                 if (isDebugEnabled) {
@@ -448,6 +439,7 @@ public class CheckHistoryModel extends NotificationModel implements INotificatio
                 dbItem.setReturnCode(new Long(item.getReturnCode() == null ? 0 : item.getReturnCode()));
                 dbItem.setAgentUrl(item.getAgentUrl());
                 dbItem.setClusterMemberId(item.getClusterMemberId());
+                dbItem.setJobCriticality(item.getCriticality());
                 // hatte error und wird auf nicht error gesetzt
                 dbItem.setRecovered(dbItem.getError() && !hasStepError);
                 dbItem.setError(hasStepError);

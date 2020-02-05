@@ -1,14 +1,20 @@
-package com.sos.jitl.classes.event;
+package com.sos.jitl.eventhandler.handler;
 
 import javax.json.JsonArray;
 
-import com.sos.jitl.classes.plugin.PluginMailer;
+import com.sos.jitl.eventhandler.plugin.notifier.Notifier;
 
-public interface IJobSchedulerPluginEventHandler {
+public interface ILoopEventHandler {
 
-    void onActivate(PluginMailer mailer);
+    void onActivate(Notifier notifier);
 
     void onPrepare(EventHandlerSettings settings);
+
+    Long onGetStartEventId() throws Exception;
+
+    void onProcessingStart(Long eventId);
+
+    void onProcessingEnd(Long eventId);
 
     void onEmptyEvent(Long eventId);
 
@@ -20,11 +26,11 @@ public interface IJobSchedulerPluginEventHandler {
 
     void setIdentifier(String identifier);
 
+    String getIdentifier();
+
     void close();
 
-    void awaitEnd();
+    EventHandlerSettings getSettings();
 
     void setSettings(EventHandlerSettings settings);
-
-    EventHandlerSettings getSettings();
 }

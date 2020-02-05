@@ -3,7 +3,9 @@ package com.sos.jitl.sync;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class SyncNode {
 
@@ -14,7 +16,7 @@ public class SyncNode {
     private int required = 1;
     private List<SyncNodeWaitingOrder> listOfSyncNodeWaitingOrder;
 
-    private static Logger logger = Logger.getLogger(SyncNode.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SyncNode.class);
 
     public SyncNode() {
         super();
@@ -47,16 +49,16 @@ public class SyncNode {
     }
 
     public void setRequired(final int required) {
-        logger.debug(String.format("%s: required orders=%s", syncNodeJobchainName, required));
+        LOGGER.debug(String.format("%s: required orders=%s", syncNodeJobchainName, required));
         this.required = required;
     }
 
     public void setRequired(final String required) {
         try {
-            logger.debug(String.format("%s: required orders=%s", syncNodeJobchainName, required));
+            LOGGER.debug(String.format("%s: required orders=%s", syncNodeJobchainName, required));
             this.required = Integer.parseInt(required);
         } catch (NumberFormatException e) {
-            logger.warn(String.format("could not convert %s", required));
+            LOGGER.warn(String.format("could not convert %s", required));
         }
     }
 
@@ -70,7 +72,7 @@ public class SyncNode {
 
     public boolean isReleased() {
         boolean erg = listOfSyncNodeWaitingOrder.size() >= required;
-        logger.debug(String.format("Jobchain: %s, State: %s,  required: %s, waiting: %s ----> %s", syncNodeJobchainPath, syncNodeState, required,
+        LOGGER.debug(String.format("Jobchain: %s, State: %s,  required: %s, waiting: %s ----> %s", syncNodeJobchainPath, syncNodeState, required,
                 listOfSyncNodeWaitingOrder.size(), erg));
 
         return listOfSyncNodeWaitingOrder.size() >= required;

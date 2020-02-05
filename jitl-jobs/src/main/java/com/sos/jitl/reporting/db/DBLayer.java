@@ -11,6 +11,8 @@ import com.sos.jade.db.DBItemYadeTransfers;
 import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
 import com.sos.jitl.eventing.db.SchedulerEventDBItem;
 import com.sos.jitl.joc.db.JocConfigurationDbItem;
+import com.sos.jitl.joe.DBItemJoeLock;
+import com.sos.jitl.joe.DBItemJoeObject;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderDBItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryDBItem;
 import com.sos.jitl.schedulerhistory.db.SchedulerOrderHistoryLogDBItemPostgres;
@@ -53,12 +55,12 @@ public class DBLayer {
     public static final String DBITEM_INVENTORY_ORDERS = DBItemInventoryOrder.class.getSimpleName();
     public static final String TABLE_INVENTORY_ORDERS = "INVENTORY_ORDERS";
     public static final String TABLE_INVENTORY_ORDERS_SEQUENCE = "REPORTING_IO_ID_SEQ";
-    
+
     /** Table REPORTING_TRIGGERS */
     public static final String DBITEM_REPORT_TRIGGERS = DBItemReportTrigger.class.getSimpleName();
     public static final String TABLE_REPORT_TRIGGERS = "REPORTING_TRIGGERS";
     public static final String TABLE_REPORT_TRIGGERS_SEQUENCE = "REPORTING_SEQ_RT";
- 
+
     /** Table REPORTING_EXECUTIONS */
     public static final String DBITEM_REPORT_EXECUTIONS = DBItemReportExecution.class.getSimpleName();
     public static final String TABLE_REPORT_EXECUTIONS = "REPORTING_EXECUTIONS";
@@ -77,57 +79,67 @@ public class DBLayer {
     /** Table REPORTING_VARIABLES */
     public static final String DBITEM_REPORT_VARIABLES = DBItemReportVariable.class.getSimpleName();
     public static final String TABLE_REPORT_VARIABLES = "REPORTING_VARIABLES";
-    
+
     /** Table INVENTORY_OPERATING_SYSTEM */
     public static final String DBITEM_INVENTORY_OPERATING_SYSTEMS = DBItemInventoryOperatingSystem.class.getSimpleName();
     public static final String TABLE_INVENTORY_OPERATING_SYSTEMS = "INVENTORY_OPERATING_SYSTEMS";
     public static final String TABLE_INVENTORY_OPERATING_SYSTEMS_SEQUENCE = "REPORTING_IOS_ID_SEQ";
-    
+
     /** Table INVENTORY_PROCESS_CLASSES */
     public static final String DBITEM_INVENTORY_PROCESS_CLASSES = DBItemInventoryProcessClass.class.getSimpleName();
     public static final String TABLE_INVENTORY_PROCESS_CLASSES = "INVENTORY_PROCESS_CLASSES";
     public static final String TABLE_INVENTORY_PROCESS_CLASSES_SEQUENCE = "REPORTING_IPC_ID_SEQ";
-    
+
     /** Table INVENTORY_AGENT_CLUSTER */
     public static final String DBITEM_INVENTORY_AGENT_CLUSTER = DBItemInventoryAgentCluster.class.getSimpleName();
     public static final String TABLE_INVENTORY_AGENT_CLUSTER = "INVENTORY_AGENT_CLUSTERS";
     public static final String TABLE_INVENTORY_AGENT_CLUSTER_SEQUENCE = "REPORTING_IAC_ID_SEQ";
-    
+
     /** Table INVENTORY_AGENT_CLUSTER_MEMBERS */
     public static final String DBITEM_INVENTORY_AGENT_CLUSTERMEMBERS = DBItemInventoryAgentClusterMember.class.getSimpleName();
     public static final String TABLE_INVENTORY_AGENT_CLUSTERMEMBERS = "INVENTORY_AGENT_CLUSTERMEMBERS";
     public static final String TABLE_INVENTORY_AGENT_CLUSTERMEMBERS_SEQUENCE = "REPORTING_IACM_ID_SEQ";
-    
+
     /** Table INVENTORY_AGENT_INSTANCES */
     public static final String DBITEM_INVENTORY_AGENT_INSTANCES = DBItemInventoryAgentInstance.class.getSimpleName();
     public static final String TABLE_INVENTORY_AGENT_INSTANCES = "INVENTORY_AGENT_INSTANCES";
     public static final String TABLE_INVENTORY_AGENT_INSTANCES_SEQUENCE = "REPORTING_IAI_ID_SEQ";
-    
+
     /** Table INVENTORY_SCHEDULES */
     public static final String DBITEM_INVENTORY_SCHEDULES = DBItemInventorySchedule.class.getSimpleName();
     public static final String TABLE_INVENTORY_SCHEDULES = "INVENTORY_SCHEDULES";
     public static final String TABLE_INVENTORY_SCHEDULES_SEQUENCE = "REPORTING_IS_ID_SEQ";
-    
+
     /** Table INVENTORY_LOCKS */
     public static final String DBITEM_INVENTORY_LOCKS = DBItemInventoryLock.class.getSimpleName();
     public static final String TABLE_INVENTORY_LOCKS = "INVENTORY_LOCKS";
     public static final String TABLE_INVENTORY_LOCKS_SEQUENCE = "REPORTING_IL_ID_SEQ";
-    
+
     /** Table INVENTORY_APPLIED_LOCKS */
     public static final String DBITEM_INVENTORY_APPLIED_LOCKS = DBItemInventoryAppliedLock.class.getSimpleName();
     public static final String TABLE_INVENTORY_APPLIED_LOCKS = "INVENTORY_APPLIED_LOCKS";
     public static final String TABLE_INVENTORY_APPLIED_LOCKS_SEQUENCE = "REPORTING_IAL_ID_SEQ";
 
+    /** Table JOE_OBJECTS */
+    public static final String DBITEM_JOE_OBJECT = DBItemJoeObject.class.getSimpleName();
+    public static final String TABLE_JOE_OBJECTS = "JOE_OBJECTS";
+    public static final String TABLE_JOE_OBJECT_SEQUENCE = "JOE_OBJECTS_ID_SEQ";
+
+    /** Table JOE_LOCKS */
+    public static final String DBITEM_JOE_LOCK = DBItemJoeLock.class.getSimpleName();
+    public static final String TABLE_JOE_LOCKS = "JOE_LOCKS";
+    public static final String TABLE_JOE_LOCK_SEQUENCE = "JOE_LOCKS_ID_SEQ";
+
     /** Table AUIDT_LOG */
     public static final String DBITEM_AUDIT_LOG = DBItemAuditLog.class.getSimpleName();
     public static final String TABLE_AUDIT_LOG = "AUDIT_LOG";
     public static final String TABLE_AUDIT_LOG_SEQUENCE = "AUDIT_LOG_SEQ";
-    
+
     /** Table JOC_CONFIGURATIONS */
     public static final String DBITEM_JOC_CONFIGURATIONS = JocConfigurationDbItem.class.getSimpleName();
     public static final String TABLE_JOC_CONFIGURATIONS = "JOC_CONFIGURATIONS";
     public static final String TABLE_JOC_CONFIGURATIONS_SEQUENCE = "JOC_CONFIGURATIONS_SEQ";
-    
+
     /** Table CALENDARS */
     public static final String DBITEM_CALENDARS = DBItemCalendar.class.getSimpleName();
     public static final String TABLE_CALENDARS = "INVENTORY_CALENDARS";
@@ -162,7 +174,7 @@ public class DBLayer {
     public static final String DBITEM_DOCUMENTATION_USAGE = DBItemDocumentationUsage.class.getSimpleName();
     public static final String TABLE_DOCUMENTATION_USAGE = "DOCUMENTATION_USAGES";
     public static final String TABLE_DOCUMENTATION_USAGE_SEQUENCE = "REPORTING_DOCU_ID_SEQ";
-    
+
     /** Table SUBMISSIONS */
     public static final String DBITEM_SUBMISSIONS = DBItemSubmission.class.getSimpleName();
     public static final String TABLE_SUBMISSIONS = "INVENTORY_SUBMISSIONS";
@@ -177,20 +189,24 @@ public class DBLayer {
     public static final String SchedulerEventDBItem = SchedulerEventDBItem.class.getSimpleName();
     public static final String TABLE_REPORT_CUSTOM_EVENTS_SEQUENCE = "REPORTING_RCE_ID_SEQ";
     public static final String TABLE_REPORT_CUSTOM_EVENTS = "REPORTING_CUSTOM_EVENTS";
-    
+
+    /** Table XML_EDITOR_OBJECTS */
+    public static final String DBITEM_XML_EDITOR_OBJECTS = DBItemXmlEditorObject.class.getSimpleName();
+    public static final String TABLE_XML_EDITOR_OBJECTS = "XMLEDITOR_OBJECTS";
+    public static final String TABLE_XML_EDITOR_OBJECTS_SEQUENCE = "XMLEDITOR_O_ID_SEQ";
+
     public static final String TABLE_DAILY_PLAN_SEQUENCE = "DAILY_PLAN_ID_SEQ";
-    
+
     public static final String DEFAULT_NAME = ".";
     public static final String DEFAULT_FOLDER = "/";
     public static final Long DEFAULT_ID = 0L;
 
-
     private SOSHibernateSession session;
- 
+
     public DBLayer(SOSHibernateSession session) {
         this.session = session;
     }
-  
+
     public SOSHibernateSession getSession() {
         return this.session;
     }
@@ -220,6 +236,9 @@ public class DBLayer {
         cl.add(DBItemDocumentationUsage.class);
         cl.add(DBItemSubmission.class);
         cl.add(DBItemSubmittedObject.class);
+        cl.add(DBItemJoeObject.class);
+        cl.add(DBItemJoeLock.class);
+        cl.add(DBItemXmlEditorObject.class);
         return cl;
     }
 
@@ -234,6 +253,14 @@ public class DBLayer {
         cl.add(DailyPlanDBItem.class);
         cl.add(JocConfigurationDbItem.class);
         cl.add(SchedulerEventDBItem.class);
+        
+        cl.add(com.sos.jitl.jobstreams.db.DBItemOutCondition.class);
+        cl.add(com.sos.jitl.jobstreams.db.DBItemOutConditionEvent.class);
+        cl.add(com.sos.jitl.jobstreams.db.DBItemInCondition.class);
+        cl.add(com.sos.jitl.jobstreams.db.DBItemInConditionCommand.class);
+        cl.add(com.sos.jitl.jobstreams.db.DBItemConsumedInCondition.class);
+        cl.add(com.sos.jitl.jobstreams.db.DBItemEvent.class);
+
         return cl;
     }
 
@@ -256,6 +283,17 @@ public class DBLayer {
         cl.add(DBItemYadeFiles.class);
         cl.add(DBItemYadeProtocols.class);
         cl.add(DBItemYadeTransfers.class);
+        return cl;
+    }
+
+    public static ClassList getJobStreamClassMapping() {
+        ClassList cl = new ClassList();
+        cl.add(com.sos.jitl.jobstreams.db.DBItemOutCondition.class);
+        cl.add(com.sos.jitl.jobstreams.db.DBItemOutConditionEvent.class);
+        cl.add(com.sos.jitl.jobstreams.db.DBItemInCondition.class);
+        cl.add(com.sos.jitl.jobstreams.db.DBItemInConditionCommand.class);
+        cl.add(com.sos.jitl.jobstreams.db.DBItemConsumedInCondition.class);
+        cl.add(com.sos.jitl.jobstreams.db.DBItemEvent.class);
         return cl;
     }
 

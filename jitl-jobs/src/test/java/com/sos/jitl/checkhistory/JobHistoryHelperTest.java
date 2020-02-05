@@ -42,9 +42,9 @@ public class JobHistoryHelperTest {
 
     @Test
     public void testGetJobChainName() {
-        assertEquals("testGetOrderId", "jobchain", jobHistoryHelper.getJobChainName("jobchain"));
-        assertEquals("testGetOrderId", "jobchain", jobHistoryHelper.getJobChainName("jobchain()"));
-        assertEquals("testGetOrderId", "jobchain", jobHistoryHelper.getJobChainName("jobchain(test)"));
+        assertEquals("testGetOrderId", "jobchain", HistoryHelper.getJobChainName("jobchain"));
+        assertEquals("testGetOrderId", "jobchain", HistoryHelper.getJobChainName("jobchain()"));
+        assertEquals("testGetOrderId", "jobchain", HistoryHelper.getJobChainName("jobchain(test)"));
     }
 
     @Test
@@ -72,22 +72,22 @@ public class JobHistoryHelperTest {
     @Test
     public void testGetMethodName() throws Exception {
         String s = "";
-        s = jobHistoryHelper.getMethodName("abcd(3:00:00:00)");
+        s = HistoryHelper.getMethodName("abcd(3:00:00:00)");
         assertEquals("testGetMethodName", "abcd", s);
-        s = jobHistoryHelper.getMethodName("abcd()");
+        s = HistoryHelper.getMethodName("abcd()");
         assertEquals("testGetMethodName", "abcd", s);
-        s = jobHistoryHelper.getMethodName("abcd");
+        s = HistoryHelper.getMethodName("abcd");
         assertEquals("testGetMethodName", "abcd", s);
     }
 
     @Test
     public void testGetParameter() throws Exception {
         String s = "";
-        s = jobHistoryHelper.getParameter("abcd(3:00:00:00)");
+        s = HistoryHelper.getParameter("abcd(3:00:00:00)");
         assertEquals("testGetParameter", "3:00:00:00", s);
-        s = jobHistoryHelper.getParameter("abcd()");
+        s = HistoryHelper.getParameter("abcd()");
         assertEquals("testGetParameter", "", s);
-        s = jobHistoryHelper.getParameter("abcd");
+        s = HistoryHelper.getParameter("abcd");
         assertEquals("testGetParameter", "", s);
     }
 

@@ -2,7 +2,8 @@ package com.sos.jitl.housekeeping.cleanupdb;
 
 import java.io.File;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Spooler;
@@ -34,7 +35,7 @@ import com.sos.JSHelper.Basics.IJSCommands;
 public class JobSchedulerCleanupSchedulerDbJSAdapterClass extends JobSchedulerJobAdapter {
 
     private final String conClassName = "JobSchedulerCleanupSchedulerDbJSAdapterClass";  //$NON-NLS-1$
-    private static Logger logger = Logger.getLogger(JobSchedulerCleanupSchedulerDbJSAdapterClass.class);
+    private static Logger logger = LoggerFactory.getLogger(JobSchedulerCleanupSchedulerDbJSAdapterClass.class);
 
     public void init() {
         @SuppressWarnings("unused")

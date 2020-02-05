@@ -5,9 +5,9 @@ import com.sos.JSHelper.DataElements.JSDataElementDateISO;
 import com.sos.JSHelper.Listener.JSListenerClass;
 import com.sos.JSHelper.io.Files.JSXMLFile;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
 import org.junit.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
@@ -15,13 +15,12 @@ import java.io.File;
 public class JobSchedulerXslTransformJUnitTest extends JSToolBox {
 
     protected JobSchedulerXslTransformOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerXslTransformJUnitTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerXslTransformJUnitTest.class);
     private JobSchedulerXslTransform objE = null;
     String strBaseFolder = "R:/backup/sos/";
     String strBaseDirName = strBaseFolder + "java/development/com.sos.scheduler/src/sos/scheduler/jobdoc/";
 
     public JobSchedulerXslTransformJUnitTest() {
-        BasicConfigurator.configure();
     }
 
     @Before

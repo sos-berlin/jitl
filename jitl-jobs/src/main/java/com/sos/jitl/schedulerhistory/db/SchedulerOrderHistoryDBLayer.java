@@ -6,9 +6,10 @@ import java.util.TimeZone;
 
 import javax.persistence.TemporalType;
 
-import org.apache.log4j.Logger;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.query.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
@@ -18,7 +19,7 @@ import com.sos.jitl.schedulerhistory.SchedulerOrderHistoryFilter;
 public class SchedulerOrderHistoryDBLayer extends SOSHibernateIntervalDBLayer<SchedulerOrderHistoryDBItem> {
 
     protected SchedulerOrderHistoryFilter filter = null;
-    private static final Logger LOGGER = Logger.getLogger(SchedulerOrderHistoryDBLayer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerOrderHistoryDBLayer.class);
     private String lastQuery = "";
 
     public SchedulerOrderHistoryDBLayer(File configurationFile_) throws SOSHibernateException {

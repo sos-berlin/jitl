@@ -1,8 +1,7 @@
 package com.sos.jitl.inventory.model;
 
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,12 +13,14 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -29,6 +30,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sos.classes.Latin1ToUtf8;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
@@ -62,6 +64,7 @@ import com.sos.jitl.reporting.helper.EConfigFileExtensions;
 import com.sos.jitl.reporting.helper.EStartCauses;
 import com.sos.jitl.reporting.helper.ReportUtil;
 import com.sos.jitl.reporting.plugin.FactEventHandler.CustomEventType;
+import com.sos.scheduler.SOSJobSchedulerGlobal;
 import com.sos.scheduler.engine.data.events.custom.VariablesCustomEvent;
 import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
@@ -83,6 +86,7 @@ public class InventoryModel {
     private int countSuccessOrders = 0;
     private int countNotFoundJobChainJobs = 0;
     private int countTotalLocks = 0;
+    private int countTotalMonitors = 0;
     private int countSuccessLocks = 0;
     private int countTotalProcessClasses = 0;
     private int countSuccessProcessClasses = 0;
@@ -254,6 +258,7 @@ public class InventoryModel {
         countSuccessProcessClasses = 0;
         countTotalSchedules = 0;
         countSuccessSchedules = 0;
+        countTotalMonitors = 0;
         notFoundJobChainJobs = new LinkedHashMap<String, ArrayList<String>>();
         errorJobChains = new LinkedHashMap<String, String>();
         errorOrders = new LinkedHashMap<String, String>();
@@ -277,6 +282,7 @@ public class InventoryModel {
                 countTotalSchedules, errorSchedules.size()));
         LOGGER.debug(String.format("%s: inserted or updated locks = %s (total %s, error = %s)", method, countSuccessLocks,
                 countTotalLocks, errorLocks.size()));
+        LOGGER.debug(String.format("%s: inserted or updated monitors = %s", method, countTotalMonitors));
         if (!errorJobChains.isEmpty()) {
             LOGGER.debug(String.format("%s:   errors by insert or update job chains:", method));
             int i = 1;
@@ -584,6 +590,15 @@ public class InventoryModel {
                     continue;
                 }
             }
+            NodeList monitorNodes = xPathAnswerXml.selectNodeList("/spooler/answer/state/monitors/monitor[file_based/@file]");
+            for (int i = 0; i < monitorNodes.getLength(); i++) {
+                try {
+                    processMonitorFromNodes((Element)monitorNodes.item(i));
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage(), e);
+                    continue;
+                }
+            }
             connection.commit();
         } catch (Exception e) {
             try {
@@ -598,7 +613,7 @@ public class InventoryModel {
     private DBItemInventoryFile processFile(Element element, EConfigFileExtensions fileExtension, Boolean save) throws Exception {
         String fileName = null;
         if (element.hasAttribute("path")) {
-            fileName = element.getAttribute("path") + fileExtension.extension();
+            fileName = Latin1ToUtf8.convert(element.getAttribute("path") + fileExtension.extension());
         }
         String fileBasename = fileName.substring(fileName.lastIndexOf("/") + 1);
         String fileDirectory = fileName.substring(0, fileName.lastIndexOf("/"));
@@ -608,7 +623,7 @@ public class InventoryModel {
         Date fileModified = null;
         Date fileLocalCreated = null;
         Date fileLocalModified = null;
-        String path = xPathAnswerXml.selectSingleNodeValue(element, "file_based/@file");
+        String path = Latin1ToUtf8.convert(xPathAnswerXml.selectSingleNodeValue(element, "file_based/@file"));
         BasicFileAttributes attrs = null;
         try {
             attrs = Files.readAttributes(Paths.get(path), BasicFileAttributes.class);
@@ -664,7 +679,13 @@ public class InventoryModel {
                 if (title != null && !title.isEmpty()) {
                     item.setTitle(title);
                 }
-                boolean isOrderJob = jobSource.getAttribute("order") != null && "yes".equals(jobSource.getAttribute("order")
+                String criticality = jobSource.getAttribute("criticality");
+                if (criticality != null && !criticality.isEmpty()) {
+                    item.setCriticality(criticality);
+                }else {
+                    item.setCriticality(SOSJobSchedulerGlobal.JOB_CRITICALITY.NORMAL.toString());
+                }
+                boolean isOrderJob = jobSource.hasAttribute("order") && "yes,1,true".contains(jobSource.getAttribute("order")
                         .toLowerCase());
                 item.setIsOrderJob(isOrderJob);
                 Node runTimeNode = xPathAnswerXml.selectSingleNode(jobSource, "run_time");
@@ -864,7 +885,7 @@ public class InventoryModel {
                 if(maxOrders != null && !maxOrders.isEmpty()) {
                     item.setMaxOrders(Integer.parseInt(maxOrders));
                 }
-                item.setDistributed("yes".equalsIgnoreCase(jobChainSource.getAttribute("distributed")));
+                item.setDistributed(jobChainSource.hasAttribute("distributed") && "yes,1,true".contains(jobChainSource.getAttribute("distributed")));
                 if (jobChainSource.hasAttribute("process_class")) {
                     String processClass = jobChainSource.getAttribute("process_class");
                     Path path = Paths.get(item.getName());
@@ -1268,6 +1289,13 @@ public class InventoryModel {
         }
     }
     
+    private void processMonitorFromNodes(Element monitor) throws Exception {
+        DBItemInventoryFile file = processFile(monitor, EConfigFileExtensions.MONITOR, true);
+        if (file != null) {
+            countTotalMonitors++;
+        }
+    }
+    
     private void processScheduleFromNodes(Element schedule) throws Exception {
         DBItemInventoryFile file = processFile(schedule, EConfigFileExtensions.SCHEDULE, true);
         if (file != null) {
@@ -1474,63 +1502,85 @@ public class InventoryModel {
         inventoryDbLayer.getSession().beginTransaction();
         List<DBItemSubmission> submissions = inventoryDbLayer.getUncommittedSubmissions(inventoryInstance.getId());
         inventoryDbLayer.getSession().commit();
-        String xmlHeader = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n\n";
         for (DBItemSubmission submission : submissions) {
             inventoryDbLayer.getSession().beginTransaction();
             LOGGER.debug(String.format("***** processing submission with ID=%1$s *****", submission.getSubmissionId()));
             List<DBItemSubmittedObject> submittedObjects = inventoryDbLayer.getUncommittedSubmittedObjects(submission.getSubmissionId());
             inventoryDbLayer.getSession().commit();
+            if (submittedObjects != null) {
             for (DBItemSubmittedObject submittedObject : submittedObjects) {
+                if (submittedObject.getPath() == null) {
+                    continue;
+                }
+                boolean isFolder = false;
+                if (submittedObject.getPath().endsWith("/")) {
+                    isFolder = true;
+                }
                 Path path = liveDirectory.resolve(submittedObject.getPath().substring(1));
-                LOGGER.info(String.format("***** processing submission for ProcessClass =%1$s *****", path.toString()));
+                LOGGER.info(String.format("***** processing submission for Object = %1$s *****", path.toString()));
                 if (Files.exists(path)) {
                     if (submittedObject.getToDelete()) {
-                        LOGGER.info(String.format("***** delete file for ProcessClass =%1$s *****", path.toString()));
-                        Files.delete(path);
-                    } else {
-                        FileTime fileTime = Files.getLastModifiedTime(path);
-                        if (!(fileTime.compareTo(FileTime.fromMillis(submittedObject.getModified().getTime())) > 0)) {
-                            LOGGER.debug(String.format("***** file date is older, overwriting file: %1$s *****", path.toString()));
-                            String xml = xmlHeader + submittedObject.getContent();
-                            writeFile(xml, path);
+                        if (isFolder) {
+                            LOGGER.info(String.format("***** delete folder: %1$s *****", path.toString()));
+                            for (Path p : Files.walk(path).sorted(Comparator.reverseOrder()).collect(Collectors.toSet())) {
+                                Files.delete(p);
+                            }
                         } else {
-                            LOGGER.debug(String.format("***** file date is younger, not overwriting file: %1$s *****", path.toString()));                            
+                            LOGGER.info(String.format("***** delete file for Object = %1$s *****", path.toString()));
+                            Files.delete(path);
+                        }
+                    } else {
+                        if (submittedObject.getContent() == null || submittedObject.getContent().isEmpty() || isFolder) {
+                            //
+                        } else {
+                            FileTime fileTime = Files.getLastModifiedTime(path);
+                            if (!(fileTime.compareTo(FileTime.fromMillis(submittedObject.getModified().getTime())) > 0)) {
+                                LOGGER.debug(String.format("***** file date is older, overwriting file: %1$s *****", path.toString()));
+                                writeFile(submittedObject.getContent(), path);
+                            } else {
+                                LOGGER.debug(String.format("***** file date is younger, not overwriting file: %1$s *****", path.toString()));
+                            }
                         }
                     }
-                    inventoryDbLayer.getSession().beginTransaction();
-                    LOGGER.debug("***** delete processed submission *****");
-                    inventoryDbLayer.getSession().delete(submission);
-                    inventoryDbLayer.getSession().commit();
-                    Long count = inventoryDbLayer.getUncommitedInstanceCount(submission.getSubmissionId());
-                    if (count == 0) {
-                        LOGGER.debug("***** LAST ENTRY! delete submitted object, too *****");
-                        inventoryDbLayer.getSession().beginTransaction();
-                        inventoryDbLayer.getSession().delete(submittedObject);
-                        inventoryDbLayer.getSession().commit();
+                } else {
+                    if (submittedObject.getToDelete()) {
+                        //
                     } else {
-                        LOGGER.debug(String.format("***** %1$d more submission found for this submitted object, not deleting submitted object. *****", 
-                                count));
+                        if (isFolder) {
+                            LOGGER.debug(String.format("***** create folder: %1$s *****", path.toString()));
+                            Files.createDirectories(path);
+                        } else {
+                            LOGGER.debug(String.format("***** create file: %1$s *****", path.toString()));
+                            writeFile(submittedObject.getContent(), path);
+                        }
                     }
                 }
+                inventoryDbLayer.getSession().beginTransaction();
+                LOGGER.debug("***** delete processed submission *****");
+                inventoryDbLayer.getSession().delete(submission);
+                inventoryDbLayer.getSession().commit();
+                Long count = inventoryDbLayer.getUncommitedInstanceCount(submission.getSubmissionId());
+                if (count == 0) {
+                    LOGGER.debug("***** LAST ENTRY! delete submitted object, too *****");
+                    inventoryDbLayer.getSession().beginTransaction();
+                    inventoryDbLayer.getSession().delete(submittedObject);
+                    inventoryDbLayer.getSession().commit();
+                } else {
+                    LOGGER.debug(String.format("***** %1$d more submission found for this submitted object, not deleting submitted object. *****", 
+                            count));
+                }
+            }
             }
         }
     }
     
     private void writeFile (String xml, Path path) {
-        Writer writer = null;
         if (Files.exists(path) && !xml.isEmpty()) {
             try {
-                writer = new FileWriter(path.toFile());
-                writer.write(xml);
+                Files.write(path, xml.getBytes(StandardCharsets.ISO_8859_1));
             } catch (IOException e) {
                 LOGGER.debug(String.format("Error: %1$s - occurred during update of file %2$s, file not updated!",
                         e.getMessage(), path));
-            } finally {
-                try {
-                    if (writer != null) {
-                        writer.close();
-                    }
-                } catch (Exception e) {}
             }
         }
     }

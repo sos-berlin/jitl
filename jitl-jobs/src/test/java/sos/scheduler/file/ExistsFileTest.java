@@ -5,10 +5,11 @@ import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.io.Files.JSFile;
@@ -16,7 +17,7 @@ import com.sos.JSHelper.io.Files.JSFile;
 /** @author oh */
 public class ExistsFileTest extends JSToolBox {
 
-    private static final Logger LOGGER = Logger.getLogger(ExistsFileTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExistsFileTest.class);
     private JSFile objFile = null;
 
     @Before
@@ -110,11 +111,11 @@ public class ExistsFileTest extends JSToolBox {
         JSExistsFile objR = new JSExistsFile();
         JSExistsFileOptions objO = objR.getOptions();
         objO.setAllOptions(objT);
-        LOGGER.info(objO.on_empty_result_set.isDirty());
+        LOGGER.info("" + objO.on_empty_result_set.isDirty());
         objR.Execute();
         Vector<File> lstResultList = objR.getResultList();
-        LOGGER.info(lstResultList.size());
-        LOGGER.info(lstResultList);
+        LOGGER.info("" + lstResultList.size());
+        LOGGER.info("" + lstResultList);
     }
 
     class WriteToFile implements Runnable {
@@ -122,7 +123,7 @@ public class ExistsFileTest extends JSToolBox {
         @Override
         public void run() {
             for (int i = 0; i < 15; i++) {
-                LOGGER.debug(i);
+                LOGGER.debug("" + i);
                 try {
                     objFile.write(i + ": This is a test");
                     objFile.writeLine(i + ": This is a test");

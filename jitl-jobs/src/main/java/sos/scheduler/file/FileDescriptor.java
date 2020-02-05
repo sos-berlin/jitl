@@ -2,7 +2,9 @@ package sos.scheduler.file;
 
 import java.io.File;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class FileDescriptor {
 
@@ -10,8 +12,7 @@ public class FileDescriptor {
     private final String conClassName = this.getClass().getSimpleName();
     @SuppressWarnings("unused")
     private static final String conSVNVersion = "$Id$";
-    @SuppressWarnings("unused")
-    private final Logger logger = Logger.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(FileDescriptor.class);
     private long lastModificationDate;
     private long lastFileLength;
     private String FileName;

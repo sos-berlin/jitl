@@ -308,6 +308,11 @@ public class DBItemInventoryInstance extends DbItem implements Serializable {
             return String.format("%s/%s:%s", schedulerId, hostname, url.replaceFirst(".*:(\\d+)$", "$1"));
         }
     }
+    
+    @Transient
+    public boolean standalone() {
+        return "standalone".equals(this.getClusterType());
+    }
    
     @Override
     public int hashCode() {

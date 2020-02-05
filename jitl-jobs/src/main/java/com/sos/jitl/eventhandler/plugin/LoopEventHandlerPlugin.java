@@ -1,4 +1,4 @@
-package com.sos.jitl.classes.plugin;
+package com.sos.jitl.eventhandler.plugin;
 
 import static scala.collection.JavaConversions.mapAsJavaMap;
 
@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,8 +17,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.exception.SOSNoResponseException;
-import com.sos.jitl.classes.event.EventHandlerSettings;
-import com.sos.jitl.classes.event.IJobSchedulerPluginEventHandler;
+import com.sos.jitl.eventhandler.handler.EventHandlerSettings;
+import com.sos.jitl.eventhandler.handler.ILoopEventHandler;
+import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
+import com.sos.jitl.eventhandler.plugin.notifier.Notifier;
 import com.sos.scheduler.engine.kernel.Scheduler;
 import com.sos.scheduler.engine.kernel.plugin.AbstractPlugin;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
@@ -25,14 +29,22 @@ import com.sos.scheduler.engine.kernel.variable.VariableSet;
 import sos.scheduler.job.JobSchedulerJob;
 import sos.util.SOSString;
 
-public class JobSchedulerEventPlugin extends AbstractPlugin {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerEventPlugin.class);
-    private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
+public class LoopEventHandlerPlugin extends AbstractPlugin {
 
     public static final String DUMMY_COMMAND =
             "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
-    private final String className = JobSchedulerEventPlugin.class.getSimpleName();
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoopEventHandlerPlugin.class);
+    private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
+    private static final boolean isTraceEnabled = LOGGER.isTraceEnabled();
+
+    private static final String CLASS_NAME = LoopEventHandlerPlugin.class.getSimpleName();
+    // in seconds
+    private long AWAIT_TERMINATION_TIMEOUT_EVENTHANDLER = 3;
+    private long AWAIT_TERMINATION_TIMEOUT_PLUGIN = 30;
+
+    // C++ thread
+    private static List<ILoopEventHandler> activeHandlers = new ArrayList<>();
 
     private final Scheduler scheduler;
     private final SchedulerXmlCommandExecutor xmlCommandExecutor;
@@ -46,17 +58,18 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
     private String schedulerParamHibernateScheduler;
     private String schedulerParamHibernateReporting;
 
-    private volatile boolean hasErrorOnPrepare = false;
+    private volatile Throwable exceptionOnPrepare;
 
-    public JobSchedulerEventPlugin(Scheduler engineScheduler, SchedulerXmlCommandExecutor executor, VariableSet variables) {
+    public LoopEventHandlerPlugin(Scheduler engineScheduler, SchedulerXmlCommandExecutor executor, VariableSet variables) {
         scheduler = engineScheduler;
         xmlCommandExecutor = executor;
         variableSet = variables;
         threadPool = Executors.newSingleThreadExecutor();
     }
 
-    public void executeOnPrepare(IJobSchedulerPluginEventHandler eventHandler) {
-        String method = getMethodName("executeOnPrepare");
+    /** C++ thread */
+    public void onPrepare(ILoopEventHandler eventHandler) {
+        String method = getMethodName("onPrepare");
 
         readJobSchedulerVariables();
 
@@ -68,58 +81,47 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
                 LOGGER.info(String.format("%s[run][thread]%s", method, name));
                 try {
                     eventHandler.onPrepare(getSettings());
-                    hasErrorOnPrepare = false;
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     LOGGER.error(String.format("%s[exception]%s", method, e.toString()), e);
-                    hasErrorOnPrepare = true;
-                } catch (Throwable te) {
-                    LOGGER.error(String.format("%s[throwable] %s", method, te.toString()), te);
-                    hasErrorOnPrepare = true;
-                    throw te;
+                    exceptionOnPrepare = e;
                 }
                 LOGGER.info(String.format("%s[end][thread]%s", method, name));
             }
         };
         threadPool.submit(thread);
+
         super.onPrepare();
     }
 
-    public void executeOnActivate(IJobSchedulerPluginEventHandler eventHandler) {
-        String method = getMethodName("executeOnActivate");
+    /** C++ thread */
+    public void onActivate(ILoopEventHandler eventHandler) {
+        String method = getMethodName("onActivate");
 
+        activeHandlers.add(eventHandler);
         if (eventHandler.getSettings() == null) {
             readJobSchedulerVariables();
         }
-        Map<String, String> mailDefaults = mapAsJavaMap(scheduler.mailDefaults());
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s[mailDefaults]%s", method, mailDefaults));
-        }
+
+        Mailer mailer = getMailer();
+        Class<?> clazz = this.getClass();
         Runnable thread = new Runnable() {
 
             @Override
             public void run() {
                 String name = Thread.currentThread().getName();
                 LOGGER.info(String.format("%s[run][thread]%s", method, name));
-
-                PluginMailer mailer = new PluginMailer(identifier, mailDefaults);
                 try {
-                    if (hasErrorOnPrepare) {
-                        String msg = "skip due executeOnPrepare errors";
-                        LOGGER.error(String.format("%s[error]%s", method, msg));
-                        mailer.sendOnError(className, method, String.format("%s[error]%s", method, msg));
-                    } else {
-                        if (eventHandler.getSettings() == null) {
-                            eventHandler.setSettings(getSettings());
-                        }
-                        eventHandler.onActivate(mailer);
+                    if (exceptionOnPrepare != null) {
+                        mailer.sendOnError(CLASS_NAME, "onPrepare", exceptionOnPrepare);
+                        exceptionOnPrepare = null;
                     }
-                } catch (Exception e) {
+                    if (eventHandler.getSettings() == null) {
+                        eventHandler.setSettings(getSettings());
+                    }
+                    eventHandler.onActivate(new Notifier(mailer, clazz));
+                } catch (Throwable e) {
                     LOGGER.error(String.format("%s[exception]%s", method, e.toString()), e);
-                    mailer.sendOnError(className, method, e);
-                } catch (Throwable te) {
-                    LOGGER.error(String.format("%s[throwable]%s", method, te.toString()), te);
-                    mailer.sendOnError(className, method, te);
-                    throw te;
+                    mailer.sendOnError(CLASS_NAME, "onActivate", e);
                 }
                 LOGGER.info(String.format("%s[end][thread]%s", method, name));
             }
@@ -129,48 +131,109 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         super.onActivate();
     }
 
-    public void executeClose(IJobSchedulerPluginEventHandler eventHandler) {
-        String method = getMethodName("executeClose");
-        LOGGER.info(method);
+    /** C++ thread */
+    public void close() {
+        String method = getMethodName("close");
+        LOGGER.debug(method);
 
-        eventHandler.close();
-        eventHandler.awaitEnd();
-
-        try {
-            threadPool.shutdownNow();
-            boolean shutdown = threadPool.awaitTermination(1L, TimeUnit.SECONDS);
-            if (isDebugEnabled) {
-                if (shutdown) {
-                    LOGGER.debug(String.format("%s thread has been shut down correctly", method));
-                } else {
-                    LOGGER.debug(String.format("%s thread has ended due to timeout on shutdown. doesn´t wait for answer from thread", method));
-                }
-            }
-        } catch (InterruptedException e) {
-            LOGGER.error(String.format("%s[exception]%s", method, e.toString()), e);
-        }
-
+        closeEventHandlers();
+        shutdownThreadPool(method, threadPool, AWAIT_TERMINATION_TIMEOUT_PLUGIN);
         super.close();
     }
 
+    /** C++ thread */
+    private Mailer getMailer() {
+        // available only on onActivate
+        Map<String, String> mailDefaults = mapAsJavaMap(scheduler.mailDefaults());
+        Mailer mailer = new Mailer(identifier, mailDefaults);
+        if (isDebugEnabled) {
+            LOGGER.debug(String.format("%s[mailDefaults]%s", getMethodName("onActivate"), mailDefaults));
+        }
+        return mailer;
+    }
+
+    /** C++ thread */
+    private void closeEventHandlers() {
+        String method = getMethodName("closeEventHandlers");
+
+        int size = activeHandlers.size();
+        if (size > 0) {
+            // closes http client on all plugins/event handlers
+            ExecutorService threadPool = Executors.newFixedThreadPool(size);
+            for (int i = 0; i < size; i++) {
+                ILoopEventHandler eh = activeHandlers.get(i);
+                Runnable thread = new Runnable() {
+
+                    @Override
+                    public void run() {
+                        String name = Thread.currentThread().getName();
+                        if (isDebugEnabled) {
+                            LOGGER.debug(String.format("%s[%s][run][thread]%s", method, eh.getIdentifier(), name));
+                        }
+                        eh.close();
+                        if (isDebugEnabled) {
+                            LOGGER.debug(String.format("%s[%s][end][thread]%s", method, eh.getIdentifier(), name));
+                        }
+                    }
+                };
+                threadPool.submit(thread);
+            }
+            shutdownThreadPool(method, threadPool, AWAIT_TERMINATION_TIMEOUT_EVENTHANDLER);
+            activeHandlers = new ArrayList<>();
+        } else {
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("%s[skip]already closed", method));
+            }
+        }
+    }
+
+    /** C++ thread */
+    private void shutdownThreadPool(String callerMethod, ExecutorService threadPool, long awaitTerminationTimeout) {
+        try {
+            threadPool.shutdown();
+            // threadPool.shutdownNow();
+            boolean shutdown = threadPool.awaitTermination(awaitTerminationTimeout, TimeUnit.SECONDS);
+            if (isDebugEnabled) {
+                if (shutdown) {
+                    LOGGER.debug(String.format("%sthread has been shut down correctly", callerMethod));
+                } else {
+                    LOGGER.debug(String.format("%sthread has ended due to timeout of %ss on shutdown", callerMethod, awaitTerminationTimeout));
+                }
+            }
+        } catch (InterruptedException e) {
+            LOGGER.error(String.format("%s[exception]%s", callerMethod, e.toString()), e);
+        }
+    }
+
+    /** JAVA thread */
     private EventHandlerSettings getSettings() throws Exception {
         String method = getMethodName("getSettings");
 
+        if (xmlCommandExecutor == null) {
+            throw new Exception("xmlCommandExecutor is null");
+        }
         EventHandlerSettings settings = new EventHandlerSettings();
         for (int i = 0; i < 120; i++) {
             try {
-                String answer = executeXML(DUMMY_COMMAND);
+                String answer = xmlCommandExecutor.executeXml(DUMMY_COMMAND);
                 if (!SOSString.isEmpty(answer)) {
                     settings.setSchedulerAnswer(answer);
                     String state = settings.getSchedulerAnswer("/spooler/answer/state/@state");
-                    if ("running,waiting_for_activation,paused".contains(state)) {
+                    if (isTraceEnabled) {
+                        LOGGER.trace(String.format("%s[%s][state]%s", method, i, state));
+                    }
+                    if ("loading,running,waiting_for_activation,paused".contains(state)) {
                         break;
                     }
                 }
-                Thread.sleep(1_000);
-            } catch (Exception e) {
-                LOGGER.error(String.format("%s: %s", method, e.toString()), e);
-                Thread.sleep(1_000);
+            } catch (Throwable e) {
+                LOGGER.error(String.format("%s[exception]%s", method, e.toString()), e);
+            } finally {
+                try {
+                    Thread.sleep(1_000);
+                } catch (Throwable e) {
+                    LOGGER.error(String.format("%s[exception]%s", method, e.toString()), e);
+                }
             }
         }
 
@@ -178,8 +241,8 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
             throw new SOSNoResponseException(String.format("%s[error]missing JobScheduler answer", method));
         }
 
-        if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s[answer]%s", method, settings.getSchedulerAnswer()));
+        if (isTraceEnabled) {
+            LOGGER.trace(String.format("%s[answer]%s", method, settings.getSchedulerAnswer()));
         }
 
         settings.setSchedulerXml(Paths.get(settings.getSchedulerAnswer("/spooler/answer/state/@config_file")));
@@ -193,8 +256,8 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
                 .getHibernateConfigurationScheduler()));
 
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("%s hibernateScheduler=%s, hibernateReporting=%s", method, settings.getHibernateConfigurationScheduler(),
-                    settings.getHibernateConfigurationReporting()));
+            LOGGER.debug(String.format("%s[scheduler=%s][reporting=%s]", method, settings.getHibernateConfigurationScheduler(), settings
+                    .getHibernateConfigurationReporting()));
         }
 
         settings.setLiveDirectory(settings.getConfigDirectory().resolve("live"));
@@ -226,79 +289,71 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         return settings;
     }
 
+    /** JAVA thread */
     private Path getHibernateConfigurationScheduler(Path configDirectory) throws Exception {
         String method = getMethodName("getHibernateConfigurationScheduler");
 
         Path file = null;
         if (SOSString.isEmpty(schedulerParamHibernateScheduler)) {
-            if (isDebugEnabled) {
-                LOGGER.debug(String.format("%s not found scheduler variable '%s'. search for default schedulerHibernate %s", method,
-                        JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_SCHEDULER, JobSchedulerJob.HIBERNATE_DEFAULT_FILE_NAME_SCHEDULER));
+            if (isTraceEnabled) {
+                LOGGER.trace(String.format("%s[%s is null or empty]use %s", method, JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_SCHEDULER,
+                        JobSchedulerJob.HIBERNATE_DEFAULT_FILE_NAME_SCHEDULER));
             }
             file = configDirectory.resolve(JobSchedulerJob.HIBERNATE_DEFAULT_FILE_NAME_SCHEDULER);
         } else {
-            if (isDebugEnabled) {
-                LOGGER.debug(String.format("%s found scheduler variable '%s'=%s", method, JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_SCHEDULER,
+            if (isTraceEnabled) {
+                LOGGER.trace(String.format("%s[%s]use %s", method, JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_SCHEDULER,
                         schedulerParamHibernateScheduler));
             }
             file = Paths.get(schedulerParamHibernateScheduler);
         }
         if (!Files.exists(file)) {
-            throw new FileNotFoundException(String.format("%s not found hibernateScheduler file %s", method, file.toString()));
+            throw new FileNotFoundException(String.format("%s not found scheduler hibernate file %s", method, file.toString()));
         }
         return file;
     }
 
+    /** JAVA thread */
     private Path getHibernateConfigurationReporting(Path configDirectory, Path hibernateScheduler) throws Exception {
         String method = getMethodName("getHibernateConfigurationReporting");
 
         Path file = null;
         if (SOSString.isEmpty(schedulerParamHibernateReporting)) {
-            if (isDebugEnabled) {
-                LOGGER.debug(String.format("%s not found scheduler variable '%s'. search for default reportingHibernate %s", method,
-                        JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_REPORTING, JobSchedulerJob.HIBERNATE_DEFAULT_FILE_NAME_REPORTING));
+            if (isTraceEnabled) {
+                LOGGER.trace(String.format("%s[%s is null or empty]use %s", method, JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_REPORTING,
+                        JobSchedulerJob.HIBERNATE_DEFAULT_FILE_NAME_REPORTING));
             }
             file = configDirectory.resolve(JobSchedulerJob.HIBERNATE_DEFAULT_FILE_NAME_REPORTING);
 
             if (!Files.exists(file)) {
-                if (isDebugEnabled) {
-                    LOGGER.debug(String.format("%s not foud default reportingHibernate %s. set reportingHibernate = schedulerHibernate", method,
-                            JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_REPORTING));
+                if (isTraceEnabled) {
+                    LOGGER.trace(String.format("%s[%s not founded]use %s", method, JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_REPORTING,
+                            hibernateScheduler));
                 }
                 file = hibernateScheduler;
             }
         } else {
-            if (isDebugEnabled) {
-                LOGGER.debug(String.format("%s found scheduler variable '%s'=%s", method, JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_REPORTING,
+            if (isTraceEnabled) {
+                LOGGER.trace(String.format("%s[%s]use %s", method, JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_REPORTING,
                         schedulerParamHibernateReporting));
             }
             file = Paths.get(schedulerParamHibernateReporting);
 
             if (!Files.exists(file)) {
-                throw new FileNotFoundException(String.format("%s not found hibernateReporting file %s", method, file.toString()));
+                throw new FileNotFoundException(String.format("%s not found reporting hibernate file %s", method, file.toString()));
             }
         }
         return file;
     }
 
-    private String executeXML(String xmlCommand) {
-        try {
-            if (xmlCommandExecutor != null) {
-                return xmlCommandExecutor.executeXml(xmlCommand);
-            } else {
-                LOGGER.error("xmlCommandExecutor is null");
-            }
-        } catch (Exception e) {
-        }
-        return null;
-    }
-
+    /** C++ thread */
     private void readJobSchedulerVariables() {
         schedulerParamProxyUrl = getJobSchedulerVariable(JobSchedulerJob.SCHEDULER_PARAM_PROXY_URL);
         schedulerParamHibernateScheduler = getJobSchedulerVariable(JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_SCHEDULER);
         schedulerParamHibernateReporting = getJobSchedulerVariable(JobSchedulerJob.SCHEDULER_PARAM_HIBERNATE_REPORTING);
     }
 
+    /** C++ thread */
     public String getJobSchedulerVariable(String name) {
         String val = variableSet.apply(name);
         if (val != null && !val.isEmpty()) {
@@ -308,7 +363,7 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
     }
 
     private String getMethodName(String name) {
-        String prefix = identifier == null ? "" : String.format("[%s] ", this.identifier);
+        String prefix = identifier == null ? "" : String.format("[%s]", identifier);
         return String.format("%s[%s]", prefix, name);
     }
 
@@ -329,14 +384,16 @@ public class JobSchedulerEventPlugin extends AbstractPlugin {
         public HostPort(String hostAdnPort) {
             if (hostAdnPort != null) {
                 host = "localhost";
-                if (hostAdnPort.indexOf(":") > -1) {
-                    String[] arr = hostAdnPort.split(":");
+                String[] arr = hostAdnPort.split(":");
+                switch (arr.length) {
+                case 1:
+                    port = hostAdnPort;
+                    break;
+                default:
                     if (!arr[0].equalsIgnoreCase(host) && !arr[0].equals("0.0.0.0")) {
                         host = arr[0];
                     }
                     port = arr[1];
-                } else {
-                    port = hostAdnPort;
                 }
             }
         }

@@ -1,19 +1,19 @@
 package sos.scheduler.job;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.text.StrSubstitutor;
-import org.apache.log4j.Logger;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** @author KB */
 public class JobSchedulerJobAdapterTest {
 
-    private static final Logger LOGGER = Logger.getLogger(JobSchedulerJobAdapterTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerJobAdapterTest.class);
 
     @Test
     public final void testDeleteCurrentNodeNameFromKeys() {

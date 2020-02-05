@@ -6,7 +6,7 @@ import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 
-import com.sos.jitl.classes.event.JobSchedulerEvent.EventKey;
+import com.sos.jitl.eventhandler.EventMeta.EventKey;
 
 public class TaskStarted {
 

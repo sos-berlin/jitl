@@ -1,15 +1,17 @@
 package sos.scheduler.file;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.i18n.annotation.I18NResourceBundle;
-import org.apache.log4j.Logger;
 
 /** @author KB */
 @I18NResourceBundle(baseName = "com_sos_scheduler_messages", defaultLocale = "en")
 public class JSExistsFileMain extends JSToolBox {
 
     protected JSExistsFileOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(JSExistsFileMain.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSExistsFileMain.class);
 
     public final static void main(String[] pstrArgs) {
         final String methodName = "JSExistsFileMain::Main";

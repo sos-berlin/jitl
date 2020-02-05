@@ -6,8 +6,10 @@ import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.jitl.classes.event.EventHandlerSettings;
-import com.sos.jitl.classes.plugin.PluginMailer;
+import com.sos.jitl.eventhandler.handler.EventHandlerSettings;
+import com.sos.jitl.eventhandler.handler.ILoopEventHandler;
+import com.sos.jitl.eventhandler.plugin.notifier.Mailer;
+import com.sos.jitl.eventhandler.plugin.notifier.Notifier;
 import com.sos.jitl.reporting.plugin.FactEventHandler;
 import com.sos.scheduler.engine.eventbus.EventPublisher;
 import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
@@ -18,6 +20,24 @@ import sos.xml.SOSXMLXPath;
 public class FactEventHandlerTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FactEventHandlerTest.class);
+
+    public static void closeEventHandlerAfter(ILoopEventHandler eh, int seconds) {
+        Thread thread = new Thread() {
+
+            public void run() {
+                String name = Thread.currentThread().getName();
+                LOGGER.info(String.format("[%s][start]closeEventHandlerAfter %ss...", name, seconds));
+                try {
+                    Thread.sleep(seconds * 1_000);
+                } catch (InterruptedException e) {
+                    LOGGER.info(String.format("[%s][exception]%s", name, e.toString()), e);
+                }
+                eh.close();
+                LOGGER.info(String.format("[%s][end]closeEventHandlerAfter %ss", name, seconds));
+            }
+        };
+        thread.start();
+    }
 
     public static void main(String[] args) throws Exception {
 
@@ -56,10 +76,12 @@ public class FactEventHandlerTest {
         eventHandler.setUseNotificationPlugin(useNotification);
         eventHandler.setIdentifier("reporting");
         try {
-            PluginMailer mailer = new PluginMailer(eventHandler.getIdentifier(), new HashMap<>());
+            FactEventHandlerTest.closeEventHandlerAfter(eventHandler, 120);// close after n seconds
+
+            Notifier notifier = new Notifier(new Mailer(eventHandler.getIdentifier(), new HashMap<>()), FactEventHandlerTest.class);
 
             eventHandler.onPrepare(settings);
-            eventHandler.onActivate(mailer);
+            eventHandler.onActivate(notifier);
         } catch (Exception e) {
             throw e;
         } finally {

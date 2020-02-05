@@ -32,6 +32,7 @@ public class DailyPlanDBItem extends DbItem {
     private Long id;
     private String schedulerId;
     private String job;
+    private String jobStream;
     private String jobChain;
     private String orderId;
     private Date plannedStart;
@@ -91,6 +92,16 @@ public class DailyPlanDBItem extends DbItem {
     @Column(name = "[JOB]",  nullable = false)
     public String getJob() {
         return job;
+    }
+
+    @Column(name = "[JOBSTREAM]",  nullable = true)
+    public void setJobStream(String jobStream) {
+        this.jobStream = jobStream;
+    }
+
+    @Column(name = "[JOBSTREAM]",  nullable = true)
+    public String getJobStream() {
+        return jobStream;
     }
 
     @Column(name = "[STATE]",  nullable = true)

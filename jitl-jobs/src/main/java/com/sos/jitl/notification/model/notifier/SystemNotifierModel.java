@@ -54,7 +54,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
     private Spooler spooler;
     private SystemNotifierJobOptions options;
     private String systemId;
-    private File systemFile;
+    private File systemFile = null;
     private ArrayList<ElementNotificationMonitor> monitors;
     private ArrayList<ElementJob> monitorJobs;
     private ArrayList<ElementJobChain> monitorJobChains;
@@ -101,21 +101,41 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
     private boolean initConfig() throws Exception {
         String method = "initConfig";
-        File schemaFile = new File(options.schema_configuration_file.getValue());
-        if (!schemaFile.exists()) {
-            throw new Exception(String.format("[%s][schema file not found]%s", method, schemaFile.getCanonicalPath()));
+
+        systemFile = null;
+        systemId = null;
+        String systemFilePath = null;
+        if (!SOSString.isEmpty(options.system_configuration_file.getValue())) {
+            systemFile = new File(options.system_configuration_file.getValue());
+            systemFilePath = systemFile.getCanonicalPath();
+            if (!systemFile.exists()) {
+                throw new Exception(String.format("[%s][%s]system configuration file not found", method, normalizePath(systemFile)));
+            }
         }
-        systemFile = new File(this.options.system_configuration_file.getValue());
-        String systemFilePath = systemFile.getCanonicalPath();
-        if (!systemFile.exists()) {
-            throw new Exception(String.format("[%s][system configuration file not found]%s", method, systemFilePath));
+        if (systemFile == null) {
+            systemFile = getDefaultNotificationXml();
+            systemFilePath = systemFile.getCanonicalPath();
+            if (!systemFile.exists()) {
+                throw new Exception(String.format("[%s][%s]default system configuration file not found", method, normalizePath(systemFile)));
+            }
+            systemId = NotificationModel.DEFAULT_SYSTEM_ID;
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s]ignore configured SystemMonitorNotification/@system_id and use default system_id=%s", method,
+                        systemId));
+            }
+        } else {
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("[%s][%s]skip check default configuration file", method, getDefaultNotificationXml()));
+            }
         }
 
         LOGGER.info(String.format("[%s]%s", method, systemFilePath));
 
         SOSXMLXPath xpath = new SOSXMLXPath(systemFilePath);
         initMonitorObjects();
-        systemId = NotificationXmlHelper.getSystemMonitorNotificationSystemId(xpath);
+        if (SOSString.isEmpty(systemId)) {
+            systemId = NotificationXmlHelper.getSystemMonitorNotificationSystemId(xpath);
+        }
         if (SOSString.isEmpty(systemId)) {
             throw new Exception(String.format("systemId is NULL (configured SystemMonitorNotification/@system_id is not found)"));
         }
@@ -366,7 +386,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             } catch (Exception e) {
                 // no exception handling for rollback
             }
-            LOGGER.warn(String.format(THREE_PARAMS_LOGGING, method, "notifyOnTimer", serviceName, ex.getMessage()));
+            LOGGER.warn(String.format(THREE_PARAMS_LOGGING, method, "notifyOnTimer", serviceName, ex.getMessage()), ex);
             counter.addError();
         }
     }
@@ -659,17 +679,25 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
         if (job.getNotifications() < 1) {
             counter.addSkip();
-
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("[%s][skip][notifications < 1]%s", method, NotificationModel.toString(job)));
             }
             return;
         }
+        boolean executed = false;
         if (!SOSString.isEmpty(serviceNameOnError)) {
             executeNotifyJob(currentCounter, sm, systemId, notification, job, true);
+            executed = true;
         }
         if (!SOSString.isEmpty(serviceNameOnSuccess)) {
             executeNotifyJob(currentCounter, sm, systemId, notification, job, false);
+            executed = true;
+        }
+        if (!executed) {
+            counter.addSkip();
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("%s[skip]serviceNameOnError and serviceNameOnSuccess are empty", method));
+            }
         }
     }
 
@@ -995,7 +1023,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
             } catch (Exception e) {
                 // no exception handling
             }
-            LOGGER.warn(String.format(THREE_PARAMS_LOGGING, method, notifyMsg, serviceName, ex.getMessage()));
+            LOGGER.warn(String.format(THREE_PARAMS_LOGGING, method, notifyMsg, serviceName, ex.getMessage()), ex);
             counter.addError();
         }
     }
@@ -1010,7 +1038,6 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
         if (jobChain.getNotifications() < 1) {
             counter.addSkip();
-
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("%s[skip][notifications < 1]%s", method, NotificationModel.toString(jobChain)));
             }
@@ -1019,11 +1046,20 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
         String serviceNameOnError = jobChain.getMonitor().getServiceNameOnError();
         String serviceNameOnSuccess = jobChain.getMonitor().getServiceNameOnSuccess();
+        boolean executed = false;
         if (!SOSString.isEmpty(serviceNameOnError)) {
             executeNotifyJobChain(currentCounter, sm, systemId, notification, jobChain, true);
+            executed = true;
         }
         if (!SOSString.isEmpty(serviceNameOnSuccess)) {
             executeNotifyJobChain(currentCounter, sm, systemId, notification, jobChain, false);
+            executed = true;
+        }
+        if (!executed) {
+            counter.addSkip();
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("%s[skip]serviceNameOnError and serviceNameOnSuccess are empty", method));
+            }
         }
     }
 
@@ -1364,7 +1400,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
                                 setRecovery = false;
 
                                 // repeated errors
-                                if (jobChain.getNotifyRepeatedError().getNotifyByPeriod() != null) {
+                                if (jobChain.getNotifyRepeatedError() != null && jobChain.getNotifyRepeatedError().getNotifyByPeriod() != null) {
                                     Long stepDiff = notificationLastStep.getStep() - lastErrorSended.getOrderStep();
                                     // more > 1 due stepDiff=1 is a next step as lastErrorSended and this step is currently not completed (no errors)
                                     if (stepDiff > 1) {
@@ -1648,7 +1684,7 @@ public class SystemNotifierModel extends NotificationModel implements INotificat
 
             getDbLayer().getSession().commit();
         } catch (Exception ex) {
-            LOGGER.warn(String.format("[%s]%s", method, ex.toString()));
+            LOGGER.warn(String.format("[%s]%s", method, ex.toString()), ex);
             try {
                 getDbLayer().getSession().rollback();
             } catch (Exception e) {

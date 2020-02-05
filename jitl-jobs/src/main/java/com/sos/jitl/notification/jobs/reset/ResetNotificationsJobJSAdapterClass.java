@@ -6,53 +6,54 @@ import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.util.SOSString;
 
 public class ResetNotificationsJobJSAdapterClass extends JobSchedulerJobAdapter {
-	private ResetNotificationsJob job;
 
-	@Override
-	public boolean spooler_init() {
-		try {
-			job = new ResetNotificationsJob();
-			ResetNotificationsJobOptions options = job.getOptions();
-			options.setCurrentNodeName(this.getCurrentNodeName());
-			options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
-			job.setJSJobUtilites(this);
-			job.setJSCommands(this);
+    private ResetNotificationsJob job;
 
-			if (SOSString.isEmpty(options.hibernate_configuration_file_reporting.getValue())) {
-				options.hibernate_configuration_file_reporting.setValue(getHibernateConfigurationReporting().toString());
-			}
+    @Override
+    public boolean spooler_init() {
+        try {
+            job = new ResetNotificationsJob();
+            ResetNotificationsJobOptions options = job.getOptions();
+            options.setCurrentNodeName(this.getCurrentNodeName());
+            options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
+            job.setJSJobUtilites(this);
+            job.setJSCommands(this);
 
-			job.init();
-		} catch (Exception e) {
-			throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
-		}
-		return super.spooler_init();
-	}
+            if (SOSString.isEmpty(options.hibernate_configuration_file_reporting.getValue())) {
+                options.hibernate_configuration_file_reporting.setValue(getHibernateConfigurationReporting().toString());
+            }
 
-	@Override
-	public boolean spooler_process() throws Exception {
-		try {
-			super.spooler_process();
+            job.init();
+        } catch (Exception e) {
+            throw new JobSchedulerException("Fatal Error:" + e.toString(), e);
+        }
+        return super.spooler_init();
+    }
 
-			ResetNotificationsJobOptions options = job.getOptions();
-			options.setCurrentNodeName(this.getCurrentNodeName());
-			options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
+    @Override
+    public boolean spooler_process() throws Exception {
+        try {
+            super.spooler_process();
 
-			job.openSession();
-			job.execute();
-		} catch (Exception e) {
-			throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
-		} finally {
-			job.closeSession();
-		}
-		return signalSuccess();
-	}
+            ResetNotificationsJobOptions options = job.getOptions();
+            options.setCurrentNodeName(this.getCurrentNodeName());
+            options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
 
-	@Override
-	public void spooler_close() throws Exception {
-		if (job != null) {
-			job.exit();
-		}
-		super.spooler_close();
-	}
+            job.openSession();
+            job.execute();
+        } catch (Exception e) {
+            throw new JobSchedulerException("Fatal Error:" + e.toString(), e);
+        } finally {
+            job.closeSession();
+        }
+        return signalSuccess();
+    }
+
+    @Override
+    public void spooler_close() throws Exception {
+        if (job != null) {
+            job.exit();
+        }
+        super.spooler_close();
+    }
 }

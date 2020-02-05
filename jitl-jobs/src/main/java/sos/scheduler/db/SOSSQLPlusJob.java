@@ -10,7 +10,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
@@ -20,7 +21,7 @@ import com.sos.VirtualFileSystem.shell.CmdShell;
 public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
 
     private static final String CLASSNAME = "SOSSQLPlusJob";
-    private static final Logger LOGGER = Logger.getLogger(SOSSQLPlusJob.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SOSSQLPlusJob.class);
 
     public SOSSQLPlusJob() {
         super(new SOSSQLPlusJobOptions());

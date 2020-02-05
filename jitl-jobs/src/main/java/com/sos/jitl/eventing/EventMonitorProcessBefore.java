@@ -1,10 +1,11 @@
 package com.sos.jitl.eventing;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EventMonitorProcessBefore extends JSEventsClientBaseClass {
 
-    private static final Logger LOGGER = Logger.getLogger(EventMonitorProcessBefore.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EventMonitorProcessBefore.class);
 
     @Override
     public boolean spooler_process_before() throws Exception {

@@ -6,17 +6,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.apache.log4j.Logger;
 import org.hibernate.query.Query;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSToolBox;
 import com.sos.JSHelper.Listener.JSListenerClass;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.dailyplan.db.Calendar2DB;
-import com.sos.jitl.dailyplan.db.DailyPlanCalender2DBFilter;
 import com.sos.jitl.dailyplan.db.DailyPlanDBItem;
 import com.sos.jitl.dailyplan.db.DailyPlanDBLayer;
 import com.sos.jitl.reporting.db.DBLayer;
@@ -24,7 +24,7 @@ import com.sos.jitl.reporting.db.DBLayer;
 public class CreateDailyPlanJUnitTest extends JSToolBox {
 
     protected CreateDailyPlanOptions objOptions = null;
-    private static final Logger LOGGER = Logger.getLogger(CreateDailyPlanJUnitTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CreateDailyPlanJUnitTest.class);
     private CreateDailyPlan objE = null;
 
     public CreateDailyPlanJUnitTest() {
@@ -53,7 +53,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
 
         try {
             HashMap<String, String> pobjHM = new HashMap<String, String>();
-            pobjHM.put("command_url", "http://ur_dell:44001/jobscheduler/master/api/command");
+            pobjHM.put("command_url", "http://localhost:4446/jobscheduler/master/api/command");
          //   pobjHM.put("dayOffset", 30);
 
             // pobjHM.put("configurationFile", "R:/nobackup/junittests/hibernate/hibernate.cfg.xml");
@@ -61,7 +61,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             // pobjHM.put("configurationFile",
             // "D:/Arbeit/scheduler/jobscheduler/re-dell_4444_jobscheduler.1.11x64-snapshot/scheduler_data/config/hibernate.cfg.xml");
             objE.getOptions().setAllOptions(pobjHM);
-            assertEquals("", objOptions.commandUrl.getValue(), "http://ur_dell:44001/jobscheduler/master/api/command");
+            assertEquals("", objOptions.commandUrl.getValue(), "http://localhost:4446/jobscheduler/master/api/command");
             // objE.setSchedulerId("re-dell_4444_jobscheduler.1.11x64-snapshot");
 
             objE.setSchedulerId("scheduler_joc_cockpit");

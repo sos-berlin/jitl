@@ -11,7 +11,8 @@ import static com.sos.scheduler.messages.JSMessages.JSJ_I_0090;
 import java.io.File;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Job_chain;
@@ -24,7 +25,7 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 public class JSExistsFileJSAdapterClass extends JobSchedulerJobAdapter {
 
     private static final String SCHEDULER_FILE_PATH = "scheduler_file_path";
-    private static final Logger LOGGER = Logger.getLogger(JSExistsFileJSAdapterClass.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSExistsFileJSAdapterClass.class);
     private JSExistsFileOptions objO = null;
 
     public void init() {

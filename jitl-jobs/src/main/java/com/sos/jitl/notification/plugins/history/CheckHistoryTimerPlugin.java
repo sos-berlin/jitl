@@ -13,7 +13,6 @@ import javax.script.ScriptEngineManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.jitl.notification.db.DBItemSchedulerMonChecks;
 import com.sos.jitl.notification.db.DBItemSchedulerMonNotifications;
 import com.sos.jitl.notification.db.DBItemSchedulerMonResults;
@@ -300,7 +299,7 @@ public class CheckHistoryTimerPlugin implements ICheckHistoryPlugin {
                 .getStepTo());
 
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("[%s]%s", method, SOSHibernateFactory.toString(item)));
+            LOGGER.debug(String.format("[%s]%s", method, SOSString.toString(item)));
         }
         if (item != null) {
             if (item.getChecked()) {

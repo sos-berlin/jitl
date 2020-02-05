@@ -23,6 +23,7 @@ import org.hibernate.annotations.Type;
 import sos.util.SOSString;
 
 import com.sos.hibernate.classes.DbItem;
+import com.sos.scheduler.SOSJobSchedulerGlobal;
 
 @Entity
 @Table(name = DBLayer.TABLE_SCHEDULER_MON_NOTIFICATIONS)
@@ -50,6 +51,7 @@ public class DBItemSchedulerMonNotifications extends DbItem implements Serializa
     private Date orderStepEndTime;
     private String jobName;
     private String jobTitle;
+    private String jobCriticality;
     private Date taskStartTime;
     private Date taskEndTime;
     private boolean recovered;
@@ -262,6 +264,19 @@ public class DBItemSchedulerMonNotifications extends DbItem implements Serializa
     @Column(name = "[JOB_TITLE]", nullable = true)
     public String getJobTitle() {
         return jobTitle;
+    }
+
+    @Column(name = "[JOB_CRITICALITY]", nullable = false)
+    public void setJobCriticality(String val) {
+        if (SOSString.isEmpty(val)) {
+            val = SOSJobSchedulerGlobal.JOB_CRITICALITY.NORMAL.toString();
+        }
+        this.jobCriticality = val;
+    }
+
+    @Column(name = "[JOB_CRITICALITY]", nullable = false)
+    public String getJobCriticality() {
+        return this.jobCriticality;
     }
 
     @Temporal(TemporalType.TIMESTAMP)

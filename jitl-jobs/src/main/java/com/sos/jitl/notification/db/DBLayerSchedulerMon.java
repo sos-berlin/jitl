@@ -687,8 +687,8 @@ public class DBLayerSchedulerMon extends DBLayer {
     public DBItemSchedulerMonNotifications createNotification(String schedulerId, boolean standalone, Long taskId, Long step, Long orderHistoryId,
             String jobChainName, String jobChainTitle, String orderId, String orderTitle, Date orderStartTime, Date orderEndTime,
             String orderStepState, Date orderStepStartTime, Date orderStepEndTime, String jobName, String jobTitle, Date taskStartTime,
-            Date taskEndTime, boolean recovered, Long returnCode, String agentUrl, String clusterMemberId, boolean error, String errorCode,
-            String errorText) throws Exception {
+            Date taskEndTime, boolean recovered, Long returnCode, String agentUrl, String clusterMemberId, String criticality, boolean error,
+            String errorCode, String errorText) throws Exception {
         DBItemSchedulerMonNotifications item = new DBItemSchedulerMonNotifications();
         // set unique key
         item.setSchedulerId(schedulerId);
@@ -714,6 +714,7 @@ public class DBLayerSchedulerMon extends DBLayer {
         item.setReturnCode(returnCode);
         item.setAgentUrl(agentUrl);
         item.setClusterMemberId(clusterMemberId);
+        item.setJobCriticality(criticality);
         item.setError(error);
         item.setErrorCode(errorCode);
         item.setErrorText(errorText);

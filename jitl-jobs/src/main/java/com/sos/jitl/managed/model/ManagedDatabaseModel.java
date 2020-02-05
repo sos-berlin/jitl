@@ -1,5 +1,9 @@
 package com.sos.jitl.managed.model;
 
+import java.io.FileNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +21,7 @@ import sos.util.SOSString;
 public class ManagedDatabaseModel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagedDatabaseModel.class);
+    private static final boolean isDebugEnabled = LOGGER.isDebugEnabled();
 
     public static final String PARAMETER_NAME_VALUE = "name_value";
 
@@ -43,11 +48,30 @@ public class ManagedDatabaseModel {
 
             warning = new StringBuffer();
             SOSHibernateSQLExecutor executor = session.getSQLExecutor();
-            List<String> statements = executor.getStatements(options.command.getValue());
+
+            List<String> statements = null;
+            try {
+                Path path = Paths.get(options.command.getValue().trim());
+                if (Files.notExists(path)) {
+                    if (isDebugEnabled) {
+                        LOGGER.debug(String.format("[load from file][%s]file not found", path));
+                    }
+                    throw new FileNotFoundException(String.format("[%s]file not found", path));
+                }
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("[load from file]%s", path));
+                }
+                statements = executor.getStatements(path);
+            } catch (Throwable e) { // catch (InvalidPathException | NullPointerException ex) {
+                statements = executor.getStatements(options.command.getValue());
+            }
+
             session.beginTransaction();
             for (String statement : statements) {
                 boolean isResultListQuery = SOSHibernateSQLExecutor.isResultListQuery(statement, options.exec_returns_resultset.value());
-                LOGGER.debug(String.format("isResultListQuery=%s", isResultListQuery));
+                if (isDebugEnabled) {
+                    LOGGER.debug(String.format("isResultListQuery=%s", isResultListQuery));
+                }
                 LOGGER.info(String.format("executing database statement: %s", statement));
 
                 if (isResultListQuery) {
@@ -57,7 +81,9 @@ public class ManagedDatabaseModel {
                 }
             }
             session.commit();
-        } catch (Exception e) {
+        } catch (
+
+        Exception e) {
             try {
                 session.rollback();
             } catch (Throwable ex) {
@@ -71,8 +97,9 @@ public class ManagedDatabaseModel {
         try {
             boolean checkResultSet = !options.resultset_as_parameters.getValue().equalsIgnoreCase("false");
             boolean isParamValue = options.resultset_as_parameters.getValue().equals(PARAMETER_NAME_VALUE);
-            LOGGER.debug(String.format("isOrderJob=%s, checkResultSet=%s, isParamValue=%s", isOrderJob, checkResultSet, isParamValue));
-
+            if (isDebugEnabled) {
+                LOGGER.debug(String.format("isOrderJob=%s, checkResultSet=%s, isParamValue=%s", isOrderJob, checkResultSet, isParamValue));
+            }
             rs = executor.getResultSet(statement);
 
             if (checkResultSet || options.resultset_as_warning.value()) {
@@ -84,7 +111,9 @@ public class ManagedDatabaseModel {
 
                     if (isOrderJob && checkResultSet) {
                         if (orderParams == null) {
-                            LOGGER.debug(String.format("[order][skip set param: orderParams=null]%s", record));
+                            if (isDebugEnabled) {
+                                LOGGER.debug(String.format("[order][skip set param: orderParams=null]%s", record));
+                            }
                         } else {
                             if (isParamValue) {
                                 String paramKey = null;
@@ -102,14 +131,18 @@ public class ManagedDatabaseModel {
                                     }
                                 }
                                 if (paramKey != null && paramValue != null) {
-                                    LOGGER.debug(String.format("[order][set param]%s=%s", paramKey, paramValue));
+                                    if (isDebugEnabled) {
+                                        LOGGER.debug(String.format("[order][set param]%s=%s", paramKey, paramValue));
+                                    }
                                     orderParams.set_var(paramKey, paramValue);
                                 }
                             } else {
                                 if (rowCount == 1) {
                                     for (String key : record.keySet()) {
                                         String value = record.get(key);
-                                        LOGGER.debug(String.format("[order][set param]%s=%s", key, value));
+                                        if (isDebugEnabled) {
+                                            LOGGER.debug(String.format("[order][set param]%s=%s", key, value));
+                                        }
                                         orderParams.set_var(key, value);
                                     }
                                 }
