@@ -88,14 +88,9 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
         }
         
         if (filter.getCriticality() != null && filter.getCriticality().size() > 0) {
-            where += and + "(";
-            for (String criticality : filter.getCriticality()) {
-                where += "criticality='" + criticality + "' or ";
-            }
-            where += "1=0)";
+            where += and + " criticality in (:criticalities)";
             and = " and ";
         }
-
 
         if (filter.getStates() != null && filter.getStates().size() > 0) {
             where += and + "(";
@@ -148,11 +143,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
         }
 
         if (filter.getCriticality() != null && filter.getCriticality().size() > 0) {
-            where += and + "(";
-            for (String criticality : filter.getCriticality()) {
-                where += "criticality='" + criticality + "' or ";
-            }
-            where += "1=0)";
+            where += and + " criticality in (:criticalities)";
             and = " and ";
         }
 
@@ -245,6 +236,9 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
         }
         if (filter.getExecutedTo() != null) {
             query.setParameter("startTimeTo", filter.getExecutedTo(), TemporalType.TIMESTAMP);
+        }
+        if (filter.getCriticality() != null && !filter.getCriticality().isEmpty()) {
+            query.setParameterList("criticalities", filter.getCriticality());
         }
         
         if (filter.getLimit() > 0) {
