@@ -1508,79 +1508,78 @@ public class InventoryModel {
             List<DBItemSubmittedObject> submittedObjects = inventoryDbLayer.getUncommittedSubmittedObjects(submission.getSubmissionId());
             inventoryDbLayer.getSession().commit();
             if (submittedObjects != null) {
-            for (DBItemSubmittedObject submittedObject : submittedObjects) {
-                if (submittedObject.getPath() == null) {
-                    continue;
-                }
-                boolean isFolder = false;
-                if (submittedObject.getPath().endsWith("/")) {
-                    isFolder = true;
-                }
-                Path path = liveDirectory.resolve(submittedObject.getPath().substring(1));
-                LOGGER.info(String.format("***** processing submission for Object = %1$s *****", path.toString()));
-                if (Files.exists(path)) {
-                    if (submittedObject.getToDelete()) {
-                        if (isFolder) {
-                            LOGGER.info(String.format("***** delete folder: %1$s *****", path.toString()));
-                            for (Path p : Files.walk(path).sorted(Comparator.reverseOrder()).collect(Collectors.toSet())) {
-                                Files.delete(p);
+                for (DBItemSubmittedObject submittedObject : submittedObjects) {
+                    if (submittedObject.getPath() == null) {
+                        continue;
+                    }
+                    boolean isFolder = false;
+                    if (submittedObject.getPath().endsWith("/")) {
+                        isFolder = true;
+                    }
+                    Path path = liveDirectory.resolve(submittedObject.getPath().substring(1));
+                    LOGGER.info(String.format("***** processing submission for Object = %1$s *****", path.toString()));
+                    if (Files.exists(path)) {
+                        if (submittedObject.getToDelete()) {
+                            if (isFolder) {
+                                LOGGER.info(String.format("***** delete folder: %1$s *****", path.toString()));
+                                for (Path p : Files.walk(path).sorted(Comparator.reverseOrder()).collect(Collectors.toSet())) {
+                                    Files.delete(p);
+                                }
+                            } else {
+                                LOGGER.info(String.format("***** delete file for Object = %1$s *****", path.toString()));
+                                Files.delete(path);
                             }
                         } else {
-                            LOGGER.info(String.format("***** delete file for Object = %1$s *****", path.toString()));
-                            Files.delete(path);
+                            if (submittedObject.getContent() == null || submittedObject.getContent().isEmpty() || isFolder) {
+                                //
+                            } else {
+                                FileTime fileTime = Files.getLastModifiedTime(path);
+                                if (!(fileTime.compareTo(FileTime.fromMillis(submittedObject.getModified().getTime())) > 0)) {
+                                    LOGGER.debug(String.format("***** file date is older, overwriting file: %1$s *****", path.toString()));
+                                    writeFile(submittedObject.getContent(), path);
+                                } else {
+                                    LOGGER.debug(String.format("***** file date is younger, not overwriting file: %1$s *****", path.toString()));
+                                }
+                            }
                         }
                     } else {
-                        if (submittedObject.getContent() == null || submittedObject.getContent().isEmpty() || isFolder) {
+                        if (submittedObject.getToDelete()) {
                             //
                         } else {
-                            FileTime fileTime = Files.getLastModifiedTime(path);
-                            if (!(fileTime.compareTo(FileTime.fromMillis(submittedObject.getModified().getTime())) > 0)) {
-                                LOGGER.debug(String.format("***** file date is older, overwriting file: %1$s *****", path.toString()));
-                                writeFile(submittedObject.getContent(), path);
+                            if (isFolder) {
+                                LOGGER.debug(String.format("***** create folder: %1$s *****", path.toString()));
+                                Files.createDirectories(path);
                             } else {
-                                LOGGER.debug(String.format("***** file date is younger, not overwriting file: %1$s *****", path.toString()));
+                                LOGGER.debug(String.format("***** create file: %1$s *****", path.toString()));
+                                writeFile(submittedObject.getContent(), path);
                             }
                         }
                     }
-                } else {
-                    if (submittedObject.getToDelete()) {
-                        //
+                    inventoryDbLayer.getSession().beginTransaction();
+                    LOGGER.debug("***** delete processed submission *****");
+                    inventoryDbLayer.getSession().delete(submission);
+                    inventoryDbLayer.getSession().commit();
+                    Long count = inventoryDbLayer.getUncommitedInstanceCount(submission.getSubmissionId());
+                    if (count == 0) {
+                        LOGGER.debug("***** LAST ENTRY! delete submitted object, too *****");
+                        inventoryDbLayer.getSession().beginTransaction();
+                        inventoryDbLayer.getSession().delete(submittedObject);
+                        inventoryDbLayer.getSession().commit();
                     } else {
-                        if (isFolder) {
-                            LOGGER.debug(String.format("***** create folder: %1$s *****", path.toString()));
-                            Files.createDirectories(path);
-                        } else {
-                            LOGGER.debug(String.format("***** create file: %1$s *****", path.toString()));
-                            writeFile(submittedObject.getContent(), path);
-                        }
+                        LOGGER.debug(String.format("***** %1$d more submission found for this submitted object, not deleting submitted object. *****",
+                                count));
                     }
                 }
-                inventoryDbLayer.getSession().beginTransaction();
-                LOGGER.debug("***** delete processed submission *****");
-                inventoryDbLayer.getSession().delete(submission);
-                inventoryDbLayer.getSession().commit();
-                Long count = inventoryDbLayer.getUncommitedInstanceCount(submission.getSubmissionId());
-                if (count == 0) {
-                    LOGGER.debug("***** LAST ENTRY! delete submitted object, too *****");
-                    inventoryDbLayer.getSession().beginTransaction();
-                    inventoryDbLayer.getSession().delete(submittedObject);
-                    inventoryDbLayer.getSession().commit();
-                } else {
-                    LOGGER.debug(String.format("***** %1$d more submission found for this submitted object, not deleting submitted object. *****", 
-                            count));
-                }
-            }
             }
         }
     }
     
-    private void writeFile (String xml, Path path) {
-        if (Files.exists(path) && !xml.isEmpty()) {
+    private void writeFile(String xml, Path path) {
+        if (xml != null && !xml.isEmpty()) {
             try {
                 Files.write(path, xml.getBytes(StandardCharsets.ISO_8859_1));
             } catch (IOException e) {
-                LOGGER.debug(String.format("Error: %1$s - occurred during update of file %2$s, file not updated!",
-                        e.getMessage(), path));
+                LOGGER.error(String.format("Error: %1$s - occurred during update of file %2$s, file not updated!", e.getMessage(), path));
             }
         }
     }
