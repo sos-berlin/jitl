@@ -12,7 +12,6 @@ import sos.net.SOSMailAttachment;
 import sos.settings.SOSProfileSettings;
 import sos.settings.SOSSettings;
 import sos.spooler.Order;
-import sos.spooler.Variable_set;
 import sos.util.SOSFile;
 
 public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
@@ -40,7 +39,8 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
 		String bcc = "";
 		String subject = "";
 		String body = "";
-		String contentType = "";
+        String contentType = "";
+        String charset = "utf-8";
 		String encoding = "";
 		String attachmentCharset = "";
 		String attachmentContentType = "";
@@ -124,10 +124,14 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
 							&& !this.getParameters().get("content_type").isEmpty()) {
 						contentType = this.getParameters().get("content_type");
 					}
-					if (this.getParameters().get("encoding") != null
-							&& !this.getParameters().get("encoding").isEmpty()) {
-						encoding = this.getParameters().get("encoding");
-					}
+                    if (this.getParameters().get("charset") != null
+                            && !this.getParameters().get("charset").isEmpty()) {
+                        charset = this.getParameters().get("charset");
+                    }
+                    if (this.getParameters().get("encoding") != null
+                            && !this.getParameters().get("encoding").isEmpty()) {
+                        encoding = this.getParameters().get("encoding");
+                    }
 					if (this.getParameters().get("attachment_charset") != null
 							&& !this.getParameters().get("attachment_charset").isEmpty()) {
 						attachmentCharset = this.getParameters().get("attachment_charset");
@@ -234,9 +238,12 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
 					if (!contentType.isEmpty()) {
 						sosMail.setContentType(contentType);
 					}
-					if (!encoding.isEmpty()) {
-						sosMail.setEncoding(encoding);
-					}
+                    if (!encoding.isEmpty()) {
+                        sosMail.setEncoding(encoding);
+                    }
+                    if (!charset.isEmpty()) {
+                        sosMail.setCharset(charset);
+                    }
 					if (!attachmentCharset.isEmpty()) {
 						sosMail.setAttachmentCharset(attachmentCharset);
 					}
