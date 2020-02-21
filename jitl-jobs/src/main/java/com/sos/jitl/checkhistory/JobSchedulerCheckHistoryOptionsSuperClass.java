@@ -44,6 +44,58 @@ public class JobSchedulerCheckHistoryOptionsSuperClass extends JSOptionsClass {
         this.result = result;
     }
 
+    
+    @JSOptionDefinition(name = "credential_store_file", description = "", key = "credential_store_file",
+            type = "SOSOptionString", mandatory = false)
+    public SOSOptionString credential_store_file = new SOSOptionString(this, conClassName + ".credential_store_file", "", "",
+            "", false);
+
+    public SOSOptionString getcredential_store_file() {
+        return credential_store_file;
+    }
+
+    public void setcredential_store_file(final SOSOptionString p_credential_store_file) {
+        credential_store_file = p_credential_store_file;
+    }
+    
+    @JSOptionDefinition(name = "credential_store_key_file", description = "", key = "credential_store_key_file",
+            type = "SOSOptionString", mandatory = false)
+    public SOSOptionString credential_store_key_file = new SOSOptionString(this, conClassName + ".credential_store_key_file", "", "",
+            "", false);
+
+    public SOSOptionString getcredential_store_key_file() {
+        return credential_store_key_file;
+    }
+
+    public void setcredential_store_key_file(final SOSOptionString p_credential_store_key_file) {
+        credential_store_key_file = p_credential_store_key_file;
+    }    
+    
+    @JSOptionDefinition(name = "credential_store_password", description = "", key = "credential_store_password",
+            type = "SOSOptionString", mandatory = false)
+    public SOSOptionString credential_store_password = new SOSOptionString(this, conClassName + ".credential_store_password", "", "",
+            "", false);
+
+    public SOSOptionString getcredential_store_password() {
+        return credential_store_password;
+    }
+
+    public void setcredential_store_password(final SOSOptionString p_credential_store_password) {
+        credential_store_password = p_credential_store_password;
+    }    
+        
+    @JSOptionDefinition(name = "credential_store_entry_path", description = "", key = "credential_store_entry_path",
+            type = "SOSOptionString", mandatory = false)
+    public SOSOptionString credential_store_entry_path = new SOSOptionString(this, conClassName + ".credential_store_entry_path", "", "",
+            "", false);
+
+    public SOSOptionString getcredential_store_entry_path() {
+        return credential_store_entry_path;
+    }
+
+    public void setcredential_store_entry_path(final SOSOptionString p_credential_store_entry_path) {
+        credential_store_entry_path = p_credential_store_entry_path;
+    }    
 
     @JSOptionDefinition(name = "job_chain_name", description = "The name of a job chain.", key = "job_chain_name", type = "JSJobChainName", mandatory = false)
     public JSJobChainName jobChainName = new JSJobChainName(this, conClassName + ".job_chain_name", "The name of a job chain.", "", "", false);
