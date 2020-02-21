@@ -870,6 +870,84 @@ Legt fest, ob im Falle einer Auswertung der angegebenen query zu <code>true</cod
                </div>
             </note>
          </param>
+         
+   <param name="credential_store_file" required="false">
+        <note language="de">
+        <title>Speicherort der Credential Keystore Datei</title>
+<p>
+	     Der Name der Keepass Datei, die die Credentials für den Zugriff auf die Datenbank enthält.
+</p>
+<p>
+        Alternativ kann der Wert des Parameters in der Url mit ?file= angegeben werden.
+</p>
+        </note>
+        <note language="en">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+        
+        <title>Location of the Credential Store file</title>
+          <p>
+            The name of the keepass file that contains the credentials for the access to the database.
+          </p>
+          <p>
+            Alternatively it is possible to specify the value in the url with ?file=
+          </p>
+          </div>
+        </note>
+      </param>
+	  
+    <param name="credential_store_key_file" required="false">
+        <note language="de">
+        <title>Speicherort der Credential Keystore Schlüssel Datei</title>
+<p>
+	     Der Name der Keepass Schlüssel Datei, die den Schlüssel für den Zugriff auf die Keepass Datei enthält (falls diese mit einer Schlüsseldatei geschützt ist). Wenn keine Keypass Schlüsseldatei angegeben wird, wird der Name der aus dem Namen der Keepass Datei gebildet indem die Erweiterung durch .key ersetzt wird.
+</p>
+<p>
+        Alternativ kann der Wert des Parameters in der Url mit ?keyfile= angegeben werden.
+</p>
+        </note>
+        <note language="en">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+        
+        <title>Location of the Credential Store file</title>
+          <p>
+            The name of the keepass key file that contains the key for the credentials for the access to the database (if a key file is assigned to the keepass file). When no keepass key file is given, the file name is build with the name of the keepass file with changing the extension to .key.
+          </p>
+          <p>
+            Alternatively it is possible to specify the value in the url with ?keyfile=
+          </p>
+          </div>
+        </note>
+      </param>
+	  
+    <param name="credential_store_entry_path" required="false">
+        <note language="de">
+        <title>Pfad für die Einträge in der Keepass Datei</title>
+<p>
+	     Der Pfad der die Entries in der Keepass Datei enthält. Dient dazu die Angabe der Werte zu vereinfachen indem der Pfad nur einmal angegeben werden muss.
+</p>
+<p>
+        Alternativ kann der Wert des Parameters in der Url mit ?entry_path= angegeben werden.
+</p>
+        </note>
+        <note language="en">
+        <div xmlns="http://www.w3.org/1999/xhtml">        
+        <title>Path for the entries in the keepass file</title>
+          <p>
+           To speciy a path for all entries. This makes the values for e.g. the password shorter.
+		   Example: 
+		 
+		   credential_store_entry_path=/sos/scheduler
+		   value for password: cs://mydb
+		   In the keepass file you find the entry in /sos/scheduler/mydb
+		   
+          </p>
+          <p>
+            Alternatively it is possible to specify the value in the url with ?entry_path=
+          </p>
+          </div>
+        </note>
+      </param>
+         
       </params>
    </configuration>
    <documentation xmlns:xhtml="http://www.w3.org/1999/xhtml"

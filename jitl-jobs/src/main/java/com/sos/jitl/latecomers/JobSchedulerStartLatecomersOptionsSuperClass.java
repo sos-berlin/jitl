@@ -3,6 +3,9 @@ package com.sos.jitl.latecomers;
 
 import java.util.HashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Annotations.JSOptionClass;
 import com.sos.JSHelper.Annotations.JSOptionDefinition;
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
@@ -14,6 +17,7 @@ import com.sos.JSHelper.Options.SOSOptionString;
 @JSOptionClass(name = "JobSchedulerStartLatecomersOptionsSuperClass", description = "JobSchedulerStartLatecomersOptionsSuperClass")
 public class JobSchedulerStartLatecomersOptionsSuperClass extends JSOptionsClass {
 	private static final String CLASSNAME = "JobSchedulerStartLatecomersOptionsSuperClass";
+	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerStartLatecomersOptionsSuperClass.class);
 
 	public JobSchedulerStartLatecomersOptionsSuperClass() {
 		objParentClass = this.getClass();
@@ -27,6 +31,90 @@ public class JobSchedulerStartLatecomersOptionsSuperClass extends JSOptionsClass
 	public JobSchedulerStartLatecomersOptionsSuperClass(HashMap<String, String> jsSettings) throws Exception {
 		this();
 		this.setAllOptions(jsSettings);
+	}
+
+	@JSOptionDefinition(name = "credential_store_file", description = "", key = "credential_store_file", type = "SOSOptionString", mandatory = false)
+	public SOSOptionString credential_store_file = new SOSOptionString(this, conClassName + ".credential_store_file",
+			"", "", "", false);
+
+	public SOSOptionString getcredential_store_file() {
+		return credential_store_file;
+	}
+
+	public void setcredential_store_file(final SOSOptionString p_credential_store_file) {
+		credential_store_file = p_credential_store_file;
+	}
+
+	@JSOptionDefinition(name = "credential_store_key_file", description = "", key = "credential_store_key_file", type = "SOSOptionString", mandatory = false)
+	public SOSOptionString credential_store_key_file = new SOSOptionString(this,
+			conClassName + ".credential_store_key_file", "", "", "", false);
+
+	public SOSOptionString getcredential_store_key_file() {
+		return credential_store_key_file;
+	}
+
+	public void setcredential_store_key_file(final SOSOptionString p_credential_store_key_file) {
+		credential_store_key_file = p_credential_store_key_file;
+	}
+
+	@JSOptionDefinition(name = "credential_store_password", description = "", key = "credential_store_password", type = "SOSOptionString", mandatory = false)
+	public SOSOptionString credential_store_password = new SOSOptionString(this,
+			conClassName + ".credential_store_password", "", "", "", false);
+
+	public SOSOptionString getcredential_store_password() {
+		return credential_store_password;
+	}
+
+	public void setcredential_store_password(final SOSOptionString p_credential_store_password) {
+		credential_store_password = p_credential_store_password;
+	}
+
+	@JSOptionDefinition(name = "credential_store_entry_path", description = "", key = "credential_store_entry_path", type = "SOSOptionString", mandatory = false)
+	public SOSOptionString credential_store_entry_path = new SOSOptionString(this,
+			conClassName + ".credential_store_entry_path", "", "", "", false);
+
+	public SOSOptionString getcredential_store_entry_path() {
+		return credential_store_entry_path;
+	}
+
+	public void setcredential_store_entry_path(final SOSOptionString p_credential_store_entry_path) {
+		credential_store_entry_path = p_credential_store_entry_path;
+	}
+
+	@JSOptionDefinition(name = "joc_url", description = "The url of JOC Webservices.", key = "joc_url", type = "SOSOptionString", mandatory = false)
+	public SOSOptionString jocUrl = new SOSOptionString(this, conClassName + ".joc_url", "The url of JOC Webservices.",
+			"", "", false);
+
+	public SOSOptionString getJocUrl() {
+		return jocUrl;
+	}
+
+	public void setJocUrl(SOSOptionString jocUrl) {
+		this.jocUrl = jocUrl;
+	}
+
+	@JSOptionDefinition(name = "user", description = "User for the Webservice", key = "user", type = "SOSOptionString", mandatory = false)
+	public SOSOptionString user = new SOSOptionString(this, conClassName + ".user", "User for the Webservice", "", "",
+			false);
+
+	public SOSOptionString getUser() {
+		return user;
+	}
+
+	public void setUser(SOSOptionString user) {
+		this.user = user;
+	}
+
+	@JSOptionDefinition(name = "password", description = "Password for the Webservice", key = "password", type = "SOSOptionString", mandatory = false)
+	public SOSOptionString password = new SOSOptionString(this, conClassName + ".password",
+			"Password for the Webservice", "", "", false);
+
+	public SOSOptionString getPassword() {
+		return password;
+	}
+
+	public void setPassword(SOSOptionString password) {
+		this.password = password;
 	}
 
 	@JSOptionDefinition(name = "day_offset", description = "Specify the number of days to look in the past. Example: 10d looks te", key = "day_offset", type = "SOSOptionString", mandatory = false)

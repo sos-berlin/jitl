@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.exception.SOSException;
+import com.sos.keepass.SOSKeePassResolver;
 import com.typesafe.config.ConfigException;
 
 import sos.spooler.Spooler;
@@ -14,22 +15,17 @@ import sos.util.SOSPrivateConf;
 
 public class AccessTokenProvider {
 
-    private static final String DEFAULT_PRIVATE_CONF_FILENAME = "config/private/private.conf";
     private static final String JOC_URL = "joc_url";
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessTokenProvider.class);
     private static final String X_ACCESS_TOKEN = "X-Access-Token";
     private static final int MAX_WAIT_TIME_FOR_ACCESS_TOKEN = 30;
     private String jocUrl;
     private String profileFileName;
+    private JobSchedulerCredentialStoreJOCParameters jobSchedulerCredentialStoreParameters;
 
-    public AccessTokenProvider() {
+    public AccessTokenProvider(JobSchedulerCredentialStoreJOCParameters options) {
         super();
-        profileFileName = DEFAULT_PRIVATE_CONF_FILENAME;
-    }
-
-    public AccessTokenProvider(String profileFileName) {
-        super();
-        this.profileFileName = profileFileName;
+        this.jobSchedulerCredentialStoreParameters = options;
     }
 
     private void setSpoolerVariable(Spooler spooler, String name, String value) {
@@ -48,7 +44,7 @@ public class AccessTokenProvider {
 
     }
 
-    public WebserviceCredentials getAccessToken(Spooler spooler) throws InterruptedException, SOSException, URISyntaxException,
+    public WebserviceCredentials getAccessToken(Spooler spooler) throws SOSException, URISyntaxException, InterruptedException,
             UnsupportedEncodingException {
 
         String schedulerId = "";
@@ -98,24 +94,66 @@ public class AccessTokenProvider {
         return jocUrl;
     }
 
-    private String executeLogin() throws UnsupportedEncodingException, SOSException, URISyntaxException {
-        SOSPrivateConf sosPrivateConf;
-        sosPrivateConf = new SOSPrivateConf(profileFileName);
+    private String executeLogin() throws SOSException, URISyntaxException, UnsupportedEncodingException {
 
-        try {
-            jocUrl = sosPrivateConf.getValue("joc.webservice.jitl", "joc.url");
-        } catch (ConfigException e) {
-            jocUrl = sosPrivateConf.getValue("joc.url");
+        String userEncodedAccount = "";
+        String jocApiUser = "";
+        String jocApiPassword = "";
+
+        if (jobSchedulerCredentialStoreParameters != null && !jobSchedulerCredentialStoreParameters.getCredentialStoreFile().isEmpty()) {
+            SOSKeePassResolver r = new SOSKeePassResolver(jobSchedulerCredentialStoreParameters.getCredentialStoreFile(),
+                    jobSchedulerCredentialStoreParameters.getCredentialStoreKeyFile(), jobSchedulerCredentialStoreParameters
+                            .getCredentialStorePassword());
+            r.setEntryPath(jobSchedulerCredentialStoreParameters.getCredentialStoreEntryPath());
+
+            try {
+                jocUrl = r.resolve(jobSchedulerCredentialStoreParameters.getJocUrl());
+
+                jocApiUser = r.resolve(jobSchedulerCredentialStoreParameters.getUser());
+                jocApiPassword = r.resolve(jobSchedulerCredentialStoreParameters.getPassword());
+            } catch (Exception e) {
+                throw new SOSException(e);
+            }
+            LOGGER.debug(jobSchedulerCredentialStoreParameters.getCredentialStoreFile());
+            LOGGER.debug(jobSchedulerCredentialStoreParameters.getCredentialStoreKeyFile());
+            LOGGER.debug(jobSchedulerCredentialStoreParameters.getCredentialStoreEntryPath());
+
+            LOGGER.debug("JOCUrl: " + jocUrl);
+            LOGGER.debug("User: " + jocApiUser);
+            LOGGER.debug("Password: " + "********");
+        } else {
+            jocUrl = jobSchedulerCredentialStoreParameters.getJocUrl();
+            jocApiUser = jobSchedulerCredentialStoreParameters.getUser();
+            jocApiPassword = jobSchedulerCredentialStoreParameters.getPassword();
         }
+
+        if (!jocApiUser.isEmpty() && !jocApiPassword.isEmpty()) {
+            userEncodedAccount = jocApiUser + ":" + jocApiPassword;
+        }
+
+        if (jocUrl.isEmpty() || (jocApiUser.isEmpty() && jocApiPassword.isEmpty())) {
+            SOSPrivateConf sosPrivateConf;
+            sosPrivateConf = new SOSPrivateConf(profileFileName);
+
+            if (jocUrl.isEmpty()) {
+                try {
+                    jocUrl = sosPrivateConf.getValue("joc.webservice.jitl", "joc.url");
+                } catch (ConfigException e) {
+                    jocUrl = sosPrivateConf.getValue("joc.url");
+                }
+            }
+
+            if (userEncodedAccount.isEmpty()) {
+                try {
+                    userEncodedAccount = sosPrivateConf.getDecodedValue("joc.webservice.jitl", "joc.account");
+                } catch (ConfigException e) {
+                    userEncodedAccount = sosPrivateConf.getDecodedValue("joc.account");
+                }
+            }
+        }
+
         jocUrl = jocUrl + "/joc/api";
         LOGGER.debug("jocUrl: " + jocUrl);
-
-        String userEncodedAccount;
-        try {
-            userEncodedAccount = sosPrivateConf.getDecodedValue("joc.webservice.jitl", "joc.account");
-        } catch (ConfigException e) {
-            userEncodedAccount = sosPrivateConf.getDecodedValue("joc.account");
-        }
 
         ApiAccessToken apiAccessToken = new ApiAccessToken(jocUrl);
         boolean sessionIsValid;
@@ -124,18 +162,18 @@ public class AccessTokenProvider {
         int cnt = 0;
         while (cnt < MAX_WAIT_TIME_FOR_ACCESS_TOKEN && !apiAccessToken.isValidAccessToken(xAccessToken)) {
             LOGGER.debug("check session");
-            cnt++;
+
             try {
                 sessionIsValid = apiAccessToken.isValidUserAccount(userEncodedAccount);
             } catch (Exception e) {
                 sessionIsValid = false;
             }
             if (!sessionIsValid || xAccessToken.isEmpty()) {
-                LOGGER.debug("... execute login");
+                LOGGER.debug("... execute login"); 
                 try {
                     xAccessToken = apiAccessToken.login(userEncodedAccount);
                 } catch (Exception e) {
-                    LOGGER.warn("... login failed with " + sosPrivateConf.getValue("joc.webservice.jitl", "joc.account") + " at " + jocUrl);
+                    LOGGER.warn("... login failed with " + userEncodedAccount + " at " + jocUrl);
                     try {
                         java.lang.Thread.sleep(1_000);
                     } catch (InterruptedException e1) {
