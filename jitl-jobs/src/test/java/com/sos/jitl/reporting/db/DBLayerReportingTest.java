@@ -42,7 +42,7 @@ public class DBLayerReportingTest {
 
     @Ignore
     @Test
-    public void testOrderInventoryInfo() throws Exception {
+    public void testInventoryInfo() throws Exception {
 
         try {
             DBLayerReporting layer = new DBLayerReporting(session);
@@ -54,7 +54,19 @@ public class DBLayerReportingTest {
             int schedulerHttpPort = 40444;
             String orderId = "Cleanup";
             String jobChainName = "/sos/notification/CleanupNotifications";
+            String jobName = "/sos/notification/CleanupNotifications";
+            String stepState = "cleanup";
 
+            LOGGER.info("--- getInventoryJobChainStartCause --- ");
+            LOGGER.info(layer.getInventoryJobChainStartCause(schedulerId, schedulerHostname, schedulerHttpPort, jobChainName).toString());
+
+            LOGGER.info("--- getInventoryJobInfoByJobChain --- ");
+            LOGGER.info(layer.getInventoryJobInfoByJobChain(schedulerId, schedulerHostname, schedulerHttpPort, jobChainName, stepState).toString());
+
+            LOGGER.info("--- getInventoryJobInfoByJobName --- ");
+            LOGGER.info(layer.getInventoryJobInfoByJobName(schedulerId, schedulerHostname, schedulerHttpPort, jobName).toString());
+
+            LOGGER.info("--- getInventoryOrderInfoByJobChain --- ");
             LOGGER.info(layer.getInventoryOrderInfoByJobChain(schedulerId, schedulerHostname, schedulerHttpPort, orderId, jobChainName).toString());
 
             session.commit();
