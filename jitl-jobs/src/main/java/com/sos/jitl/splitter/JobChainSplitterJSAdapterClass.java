@@ -29,7 +29,7 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
     }
 
     private void doProcessing() throws Exception {
-        if (isOrderJob()) {
+        if (spooler_task.job().order_queue() != null) {
             JobChainSplitterOptions jobChainSplitterOptions = new JobChainSplitterOptions();
             jobChainSplitterOptions.setCurrentNodeName(this.getCurrentNodeName());
             jobChainSplitterOptions.setAllOptions(getSchedulerParameterAsProperties());

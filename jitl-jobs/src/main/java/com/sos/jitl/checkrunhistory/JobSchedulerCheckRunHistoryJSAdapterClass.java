@@ -24,7 +24,7 @@ public class JobSchedulerCheckRunHistoryJSAdapterClass extends JobSchedulerJobAd
         jobSchedulerCheckRunHistory.setJSCommands(this);
         jobSchedulerCheckRunHistory.setPathOfJob(spooler_job.folder_path());
         jobSchedulerCheckRunHistory.Execute();
-        if (this.isOrderJob()) {
+        if (spooler_task.job().order_queue() != null) {
             spooler_task.order().params().set_var("check_run_history_result", jobSchedulerCheckRunHistoryOptions.result.getValue());
             spooler_task.order().params().set_var("check_run_history_number_of_starts", jobSchedulerCheckRunHistoryOptions.numberOfStarts.getValue());
             spooler_task.order().params().set_var("check_run_history_number_of_completed",

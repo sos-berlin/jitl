@@ -37,13 +37,14 @@ public class JobSchedulerDequeueMailJobJSAdapterClass extends JobSchedulerJobAda
         }
 
         String schedulerFilePathName = "";
-        if (isJobchain()) {
+        boolean isJobChain = spooler_task.order() != null;
+        if (isJobChain) {
             schedulerFilePathName = spooler_task.order().params().value("scheduler_file_path");
         }
 
         if (!schedulerFilePathName.isEmpty()) {
             File schedulerFilePath = new File(schedulerFilePathName);
-            jobSchedulerDequeueMailJobOptions.fileWatching.value(this.isJobchain());
+            jobSchedulerDequeueMailJobOptions.fileWatching.value(isJobChain);
             jobSchedulerDequeueMailJobOptions.queueDirectory.setValue(schedulerFilePath.getParent());
             jobSchedulerDequeueMailJobOptions.emailFileName.setValue(schedulerFilePathName);
             LOGGER.debug("Running in a job chain with a file order source.");

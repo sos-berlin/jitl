@@ -3,7 +3,6 @@ package com.sos.jitl.agentbatchinstaller;
 import java.util.HashMap;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
-import sos.spooler.Variable_set;
 
 public class JSUniversalAgentBatchInstallerJSAdapterClass extends JobSchedulerJobAdapter {
 
@@ -16,7 +15,7 @@ public class JSUniversalAgentBatchInstallerJSAdapterClass extends JobSchedulerJo
     public boolean spooler_process() throws Exception {
         super.spooler_process();
         doProcessing();
-        return this.isOrderJob();
+        return spooler_task.job().order_queue() != null;
     } // spooler_process
 
     @Override

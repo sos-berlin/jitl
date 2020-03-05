@@ -29,7 +29,7 @@ public class JobSchedulerCheckHistoryJSAdapterClass extends JobSchedulerJobAdapt
         try {
             jobSchedulerCheckRunHistory.execute();
         } finally {
-            if (this.isOrderJob()) {
+            if (spooler_task.job().order_queue() != null) {
                 spooler_task.order().params().set_var("check_run_history_result", jobSchedulerCheckHistoryOptions.result.getValue());
             } else {
                 spooler_task.params().set_var("check_run_history_result", jobSchedulerCheckHistoryOptions.result.getValue());
