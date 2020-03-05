@@ -76,7 +76,7 @@ public class JSExistsFileJSAdapterClass extends JobSchedulerJobAdapter {
         String strOrderJobChainName = null;
         boolean flgCreateOrders4AllFiles = false;
         boolean count_files = objO.count_files.value();
-        if (isJobchain()) {
+        if (spooler_task.order() != null) {
             if (count_files) {
                 setOrderParameter(objO.count_files.getKey(), String.valueOf(intNoOfHitsInResultSet));
             }
@@ -150,7 +150,7 @@ public class JSExistsFileJSAdapterClass extends JobSchedulerJobAdapter {
             return signalSuccess();
         } else {
             if (!rc1 && objO.gracious.isGraciousTrue()) {
-                if (isJobchain()) {
+                if (spooler_task.order() != null) {
                     return conJobChainFailure;
                 }
                 return conJobSuccess;

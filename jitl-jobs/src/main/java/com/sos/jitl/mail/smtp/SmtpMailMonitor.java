@@ -10,7 +10,7 @@ public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
         try {
             super.spooler_process();
             CreateOptions("task_after");
-            if (!isOrderJob()) {
+            if (spooler_task.job().order_queue() == null) {
                 if (spooler_task.exit_code() != 0) {
                     if (objO.MailOnError()) {
                         objR.Execute(objO.getOptions(enuMailClasses.MailOnError));
@@ -31,7 +31,7 @@ public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
         try {
             super.spooler_process();
             CreateOptions("task_before");
-            if (!isOrderJob() && objO.MailOnJobStart()) {
+            if (spooler_task.job().order_queue() == null && objO.MailOnJobStart()) {
                 objR.Execute(objO.getOptions(enuMailClasses.MailOnJobStart));
             }
         } catch (Exception e) {
@@ -45,7 +45,7 @@ public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
         try {
             super.spooler_process();
             CreateOptions("process_after");
-            if (isOrderJob()) {
+            if (spooler_task.job().order_queue() != null) {
                 if (!spooler_process_return_code) {
                     if (objO.MailOnError() && objO.MailOnError()) {
                         objR.Execute(objO.getOptions(enuMailClasses.MailOnError));
@@ -67,7 +67,7 @@ public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
         try {
             super.spooler_process();
             CreateOptions("process_before");
-            if (isOrderJob() && objO.MailOnJobStart()) {
+            if (spooler_task.job().order_queue() != null && objO.MailOnJobStart()) {
                 objR.Execute(objO.getOptions(enuMailClasses.MailOnJobStart));
             }
         } catch (Exception e) {

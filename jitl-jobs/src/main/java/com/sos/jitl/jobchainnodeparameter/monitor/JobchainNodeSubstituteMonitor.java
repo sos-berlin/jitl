@@ -31,7 +31,7 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter implem
     public boolean spooler_process_after(final boolean rc) throws Exception {
         try {
             Variable_set resultParameters = spooler.create_variable_set();
-            if (isOrderJob()) {
+            if (spooler_task.job().order_queue() != null) {
                 String[] parameterNames = spooler_task.order().params().names().split(";");
                 for (String paramName : parameterNames) {
                     if (!"".equals(paramName) && jobchainNodeSubstitute.getJobchainNodeConfiguration().getJobchainNodeParameterValue(
@@ -57,7 +57,8 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter implem
 
         Variable_set v = spooler.create_variable_set();
         v.merge(spooler_task.params());
-        if (this.isJobchain()) {
+        boolean isJobChain = spooler_task.order() != null;
+        if (isJobChain) {
             v.merge(spooler_task.order().params());
         }
         if (!"".equals(v.value("configurationMonitor_configuration_path"))) {
@@ -68,7 +69,7 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter implem
             configurationMonitorOptions.configurationMonitorConfigurationFile.setValue(v.value("configurationMonitor_configuration_file"));
         }
 
-        if (this.isJobchain()) {
+        if (isJobChain) {
             LOGGER.debug("Setting job_chain_name: " + spooler_task.order().job_chain().path());
             configurationMonitorOptions.setCurrentNodeName(this.getCurrentNodeName());
             jobchainNodeSubstitute.setOrderId(spooler_task.order().id());
@@ -86,7 +87,7 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter implem
 
         jobchainNodeSubstitute.execute();
 
-        if (this.isJobchain() && !"".equals(jobchainNodeSubstitute.getFileContent())) {
+        if (isJobChain && !"".equals(jobchainNodeSubstitute.getFileContent())) {
             spooler_task.order().set_xml_payload(jobchainNodeSubstitute.getFileContent());
         }
 
@@ -100,7 +101,7 @@ public class JobchainNodeSubstituteMonitor extends JobSchedulerJobAdapter implem
             }
         }
 
-        if (this.isJobchain()) {
+        if (isJobChain) {
             for (Entry<String, String> entry : jobchainNodeSubstitute.getJobchainNodeConfiguration().getListOfOrderParameters().entrySet()) {
                 String paramName = entry.getKey();
                 String paramValue = entry.getValue();

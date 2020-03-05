@@ -360,7 +360,7 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
 			flags |= SOSFileSystemOperations.REMOVE_DIR;
 		}
 		countFiles = getParamBoolean(PARAMETER_COUNT_FILES, false);
-		if (countFiles && !isJobchain()) {
+		if (countFiles && spooler_task.order() == null) {
 			JSJ_E_0120.toLog(PARAMETER_COUNT_FILES);
 		}
 		replacing = getParamValue(PARAMETER_REPLACING, EMPTY_STRING);
@@ -426,7 +426,7 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
 				strResultSetFileList += objFile.getAbsolutePath() + ";";
 			}
 		}
-		if (isJobchain()) {
+		if (spooler_task.order() != null) {
 			if (countFiles) {
 				setOrderParameter(ORDER_PARAMETER_SCHEDULER_SOS_FILE_OPERATIONS_FILE_COUNT,
 						String.valueOf(noOfHitsInResultSet));
@@ -566,7 +566,7 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
 		final String methodName = "JobSchedulerFileOperationBase::createOrder";
 		Order objOrder = spooler.create_order();
 		Variable_set objOrderParams = spooler.create_variable_set();
-		if (flgMergeOrderParameter && isOrderJob()) {
+		if (flgMergeOrderParameter && spooler_task.job().order_queue() != null) {
 			objOrderParams.merge(getOrderParams());
 		}
 		objOrderParams.set_value(ORDER_PARAMETER_SCHEDULER_FILE_PATH, pstrOrder4FileName);

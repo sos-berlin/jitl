@@ -45,8 +45,8 @@ public class SetSpecialParameters extends JobSchedulerJobAdapter {
 			specialParams.put("SCHEDULER_ID", spooler.id());
 			specialParams.put("SCHEDULER_DIRECTORY", spooler.directory());
 			specialParams.put("SCHEDULER_CONFIGURATION_DIRECTORY", spooler.configuration_directory());
-			if (isJobchain()) {
-				Order order = getOrder();
+			Order order = spooler_task.order();
+			if (order != null) {
 				Job_chain jobChain = order.job_chain();
 				Job_chain_node jobChainNode = order.job_chain_node();
 				specialParams.put("SCHEDULER_JOB_CHAIN_NAME", jobChain.name());

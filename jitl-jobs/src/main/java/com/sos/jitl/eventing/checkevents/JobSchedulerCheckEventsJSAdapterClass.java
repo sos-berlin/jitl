@@ -33,7 +33,7 @@ public class JobSchedulerCheckEventsJSAdapterClass extends JobSchedulerJobAdapte
 		jobSchedulerCheckEventsOptions.checkMandatory();
 		jobSchedulerCheckEvents.setJSJobUtilites(this);
 		jobSchedulerCheckEvents.Execute();
-		if (isJobchain()) {
+		if (spooler_task.order() != null) {
 			if (jobSchedulerCheckEvents.exist) {
 				spooler_log.debug3("EventExistResult=true");
 				spooler_task.order().params().set_var("event_exist_result", "true");
