@@ -3,13 +3,12 @@ package sos.scheduler.job;
 import java.io.File;
 import java.util.HashMap;
 
-import sos.scheduler.command.SOSSchedulerCommand;
-import sos.spooler.Supervisor_client;
-import sos.spooler.Variable_set;
-import sos.xml.SOSXMLXPath;
-
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.JSHelper.io.Files.JSCsvFile;
+
+import sos.scheduler.command.SOSSchedulerCommand;
+import sos.spooler.Supervisor_client;
+import sos.xml.SOSXMLXPath;
 
 /** @author andreas pueschel */
 public class JobSchedulerDequeueEventsJob extends JobSchedulerJobAdapter {
@@ -39,11 +38,12 @@ public class JobSchedulerDequeueEventsJob extends JobSchedulerJobAdapter {
             } catch (Exception e1) {
             }
             try {
-                if (getTaskParams() != null) {
-                    this.getParameters().putAll(getTaskParams());
+                HashMap<String, String> taskParams = getTaskParams(spooler_task.params()); 
+                if (taskParams != null) {
+                    this.getParameters().putAll(taskParams);
                 }
                 if (spooler_job.order_queue() != null) {
-                    this.getParameters().putAll(convertVariableSet2HashMap(getOrderParams()));
+                    this.getParameters().putAll(convertVariableSet2HashMap(spooler_task.order().params()));
                 }
                 if (isNotEmpty(this.getParameters().get("event_file"))) {
                     this.setEventFilename(this.getParameters().get("event_file"));

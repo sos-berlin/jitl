@@ -51,7 +51,7 @@ public class StoreResultsJobJSAdapterClass extends JobSchedulerJobAdapter {
             }
         }
 
-        HashMap<String, String> params = this.getParameters();
+        HashMap<String, String> params = getJobOrOrderParameters();
         if (params != null && params.size() > 0) {
             init();
 
