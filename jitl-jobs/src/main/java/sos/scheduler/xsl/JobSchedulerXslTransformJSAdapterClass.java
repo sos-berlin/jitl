@@ -1,6 +1,5 @@
 package sos.scheduler.xsl;
 
-
 import sos.scheduler.job.JobSchedulerJobAdapter;
 
 import org.slf4j.Logger;
@@ -38,7 +37,7 @@ public class JobSchedulerXslTransformJSAdapterClass extends JobSchedulerJobAdapt
             super.spooler_process();
             doProcessing();
         } catch (Exception e) {
-            LOGGER.error(stackTrace2String(e));
+            logger.error(e.toString(), e);
             throw new JobSchedulerException(e);
         } finally {
         } // finally
