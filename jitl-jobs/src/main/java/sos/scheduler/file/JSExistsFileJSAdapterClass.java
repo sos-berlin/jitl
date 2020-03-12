@@ -148,18 +148,15 @@ public class JSExistsFileJSAdapterClass extends JobSchedulerJobAdapter {
     public boolean setReturnResult(final boolean pflgResult) {
         boolean rc1 = pflgResult;
         if (!rc1 && objO.gracious.isGraciousAll()) {
-            return signalSuccess();
+            return getSpoolerProcess().getSuccess();
         } else {
             if (!rc1 && objO.gracious.isGraciousTrue()) {
-                if (spooler_task.order() != null) {
-                    return conJobChainFailure;
-                }
-                return conJobSuccess;
+                return false;
             } else {
                 if (rc1) {
-                    return signalSuccess();
+                    return getSpoolerProcess().getSuccess();
                 } else {
-                    return signalFailure();
+                    return false;
                 }
             }
         }

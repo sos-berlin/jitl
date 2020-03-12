@@ -20,7 +20,7 @@ public class JobSchedulerCheckEventsMonitor extends JobSchedulerCheckEventsJSAda
         } catch (Exception e) {
             throw new JobSchedulerException(e.getMessage(), e);
         }
-        return continue_with_task;
+        return true;
     }
 
     @Override
@@ -40,7 +40,7 @@ public class JobSchedulerCheckEventsMonitor extends JobSchedulerCheckEventsJSAda
         } catch (Exception e) {
             throw new JobSchedulerException(e.getMessage(), e);
         }
-        return continue_with_spooler_process;
+        return true;
     }
 
 }

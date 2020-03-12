@@ -16,17 +16,17 @@ public class JobSchedulerTextProcessorJSAdapterClass extends JobSchedulerJobAdap
         try {
             super.spooler_process();
             doProcessing();
+            return getSpoolerProcess().getSuccess();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
         }
-        return signalSuccess();
     }
 
     private void doProcessing() throws Exception {
         JobSchedulerTextProcessor jobSchedulerTextProcessor = new JobSchedulerTextProcessor();
         JobSchedulerTextProcessorOptions jobSchedulerTextProcessorOptions = jobSchedulerTextProcessor.getOptions();
-        jobSchedulerTextProcessorOptions.setCurrentNodeName(this.getCurrentNodeName());
-        jobSchedulerTextProcessorOptions.setAllOptions(getSchedulerParameterAsProperties());
+        jobSchedulerTextProcessorOptions.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(),true));
+        jobSchedulerTextProcessorOptions.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
         jobSchedulerTextProcessorOptions.checkMandatory();
         jobSchedulerTextProcessor.setJSJobUtilites(this);
         if (spooler_job.order_queue() != null) {

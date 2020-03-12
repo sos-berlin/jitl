@@ -15,7 +15,7 @@ public class CreateApiAccessToken extends JobSchedulerJobAdapter implements IMon
         LOGGER.debug("Starting spooler_process_before");
         AccessTokenProvider accessTokenProvider = new AccessTokenProvider(null);
         accessTokenProvider.getAccessToken(spooler);
-        return continue_with_spooler_process;
+        return true;
     }
 
 }

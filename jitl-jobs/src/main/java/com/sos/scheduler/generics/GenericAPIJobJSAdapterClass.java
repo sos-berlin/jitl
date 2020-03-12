@@ -34,17 +34,17 @@ public class GenericAPIJobJSAdapterClass extends JobSchedulerJobAdapter {
         try {
             super.spooler_process();
             doProcessing();
+            return getSpoolerProcess().getSuccess();
         } catch (Exception e) {
             throw e;
         }
-        return signalSuccess();
     }
 
     private void doProcessing() throws Exception {
         GenericAPIJob objR = new GenericAPIJob();
         objO = objR.getOptions();
-        objO.setCurrentNodeName(getCurrentNodeName());
-        objO.setAllOptions(getSchedulerParameterAsProperties());
+        objO.setCurrentNodeName(getCurrentNodeName(getSpoolerProcess().getOrder(), false));
+        objO.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
         objO.checkMandatory();
         if (objLoadedClasses == null) {
             objLoadedClasses = new HashMap<String, Job_impl>();

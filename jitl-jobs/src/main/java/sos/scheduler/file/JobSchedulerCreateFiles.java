@@ -41,7 +41,7 @@ public class JobSchedulerCreateFiles extends JobSchedulerFileOperationBase {
                     populateFile(new JSFile(strFileName2Create), fileSize, fileAge);
                 }
             }
-            return signalSuccess();
+            return signalSuccess(spooler_task.order());
         } catch (Exception e) {
             String strM = JSJ_F_0010.params(CLASSNAME, e.getMessage());
             LOGGER.error(strM);

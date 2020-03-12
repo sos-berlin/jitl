@@ -1,18 +1,23 @@
 package sos.scheduler.file;
 
-import com.sos.JSHelper.Exceptions.JobSchedulerException;
-import com.sos.JSHelper.Options.SOSOptionFileAge;
-import com.sos.JSHelper.Options.SOSOptionTime;
-import com.sos.JSHelper.io.Files.JSTextFile;
-import com.sos.JSHelper.io.SOSFileSystemOperations;
-import com.sos.i18n.annotation.I18NResourceBundle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import sos.scheduler.job.JobSchedulerJobAdapter;
-import sos.spooler.Job_chain;
-import sos.spooler.Order;
-import sos.spooler.Variable_set;
-import sos.util.SOSSchedulerLogger;
+import static com.sos.scheduler.messages.JSMessages.JSJ_D_0044;
+import static com.sos.scheduler.messages.JSMessages.JSJ_E_0017;
+import static com.sos.scheduler.messages.JSMessages.JSJ_E_0020;
+import static com.sos.scheduler.messages.JSMessages.JSJ_E_0040;
+import static com.sos.scheduler.messages.JSMessages.JSJ_E_0041;
+import static com.sos.scheduler.messages.JSMessages.JSJ_E_0042;
+import static com.sos.scheduler.messages.JSMessages.JSJ_E_0110;
+import static com.sos.scheduler.messages.JSMessages.JSJ_E_0120;
+import static com.sos.scheduler.messages.JSMessages.JSJ_E_0130;
+import static com.sos.scheduler.messages.JSMessages.JSJ_F_0080;
+import static com.sos.scheduler.messages.JSMessages.JSJ_F_0090;
+import static com.sos.scheduler.messages.JSMessages.JSJ_I_0017;
+import static com.sos.scheduler.messages.JSMessages.JSJ_I_0018;
+import static com.sos.scheduler.messages.JSMessages.JSJ_I_0019;
+import static com.sos.scheduler.messages.JSMessages.JSJ_I_0040;
+import static com.sos.scheduler.messages.JSMessages.JSJ_I_0090;
+import static com.sos.scheduler.messages.JSMessages.JSJ_T_0010;
+import static com.sos.scheduler.messages.JSMessages.JSJ_W_0043;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,10 +32,25 @@ import java.util.List;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
-import static com.sos.scheduler.messages.JSMessages.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sos.JSHelper.Exceptions.JobSchedulerException;
+import com.sos.JSHelper.Options.SOSOptionFileAge;
+import com.sos.JSHelper.Options.SOSOptionTime;
+import com.sos.JSHelper.io.SOSFileSystemOperations;
+import com.sos.JSHelper.io.Files.JSTextFile;
+import com.sos.i18n.annotation.I18NResourceBundle;
+
+import sos.scheduler.job.JobSchedulerJobAdapter;
+import sos.spooler.Job_chain;
+import sos.spooler.Order;
+import sos.spooler.Variable_set;
 
 @I18NResourceBundle(baseName = "com_sos_scheduler_messages", defaultLocale = "en")
 public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerFileOperationBase.class);
 
     public static final String ORDER_PARAMETER_SCHEDULER_SOS_FILE_OPERATIONS_RESULT_SET = "scheduler_SOSFileOperations_ResultSet";
     public static final String ORDEDR_PARAMETER_SCHEDULER_SOS_FILE_OPERATIONS_RESULT_SET_SIZE = "scheduler_SOSFileOperations_ResultSetSize";
@@ -82,13 +102,11 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
     private static final String PARAMETER_ORDER_JOBCHAIN_NAME = "order_jobchain_name";
     private static final String PARAMETER_CREATE_ORDER = "create_order";
     private static final String PARAMETER_MERGE_ORDER_PARAMETER = "merge_order_parameter";
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerFileOperationBase.class);
 
     protected final int isCaseInsensitive = Pattern.CASE_INSENSITIVE;
     protected String filePath = System.getProperty(PROPERTY_JAVA_IO_TMPDIR);
     protected long lngFileAge = 86400000;
     protected int warningFileLimit = 0;
-    protected SOSSchedulerLogger objSOSLogger = null;
     protected boolean flgOperationWasSuccessful = false;
 
     protected String name = null;
@@ -134,29 +152,6 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
 
     public JobSchedulerFileOperationBase() {
         super();
-    }
-
-    @Override
-    public boolean spooler_init() {
-        final String methodName = "JobSchedulerFileOperationBase::spooler_init";
-        boolean flgReturn = super.spooler_init();
-        try {
-            try {
-                objSOSLogger = new SOSSchedulerLogger(spooler_log);
-            } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
-                throw new JobSchedulerException(JSJ_F_0015.params("SOSSchedulerLogger ", e.getMessage()), e);
-            }
-            return flgReturn;
-        } catch (Exception e) {
-            try {
-                if (isNotNull(objSOSLogger)) {
-                    objSOSLogger.error(JSJ_F_0016.params(methodName, e.getMessage()));
-                }
-            } catch (Exception x) {
-            }
-            return false;
-        }
     }
 
     private void resetVariables() {
@@ -423,7 +418,8 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
             }
         }
         if (spooler_task.order() != null) {
-            Variable_set orderParams = spooler_task.order().params();
+            Order order = spooler_task.order();
+            Variable_set orderParams = order.params();
             if (orderParams != null) {
                 if (countFiles) {
                     orderParams.set_var(ORDER_PARAMETER_SCHEDULER_SOS_FILE_OPERATIONS_FILE_COUNT, String.valueOf(noOfHitsInResultSet));
@@ -434,7 +430,7 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
             }
             if (isNotEmpty(onEmptyResultSet) && noOfHitsInResultSet <= 0) {
                 JSJ_I_0090.toLog(onEmptyResultSet);
-                setNextNodeState(onEmptyResultSet);
+                order.set_state(onEmptyResultSet);
             }
         }
         if (isNotEmpty(resultList2File) && isNotEmpty(strResultSetFileList)) {
@@ -606,19 +602,19 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
         params = pobjparams;
     }
 
-    public boolean setReturnResult(final boolean pflgResult) {
+    public boolean setReturnResult(Order order, final boolean pflgResult) {
         boolean rc1 = pflgResult;
         rc1 = createResultListParam(pflgResult);
         if (!rc1 && isGraciousAll()) {
-            return signalSuccess();
+            return signalSuccess(order);
         } else {
             if (!rc1 && isGraciousTrue()) {
-                return signalFailureNoLog();
+                return false;
             } else {
                 if (rc1) {
-                    return signalSuccess();
+                    return signalSuccess(order);
                 } else {
-                    return signalFailure();
+                    return false;
                 }
             }
         }
@@ -663,12 +659,12 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
 
     public Variable_set getParams() {
         final String methodName = "JSFileOperationBase::getParams";
-        throw new JobSchedulerException(Messages.getMsg(JSJ_F_0110, methodName));
+        throw new JobSchedulerException(getMessages().getMsg(JSJ_F_0110, methodName));
     }
 
     public void setParams(final Variable_set params1) {
         final String methodName = "JSFileOperationBase::setParams";
-        throw new JobSchedulerException(Messages.getMsg(JSJ_F_0110, methodName));
+        throw new JobSchedulerException(getMessages().getMsg(JSJ_F_0110, methodName));
     }
 
     class FileDescriptor {

@@ -9,16 +9,16 @@ public class JobSchedulerManagedDBReportJobJSAdapterClass extends JobSchedulerJo
         try {
             super.spooler_process();
             doProcessing();
+            return getSpoolerProcess().getSuccess();
         } catch (Exception e) {
             return false;
         }
-        return spooler_task.job().order_queue() != null;
     }
 
     private void doProcessing() throws Exception {
         JobSchedulerManagedDBReportJob objR = new JobSchedulerManagedDBReportJob();
         JobSchedulerManagedDBReportJobOptions objO = objR.Options();
-        objO.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
+        objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters(getSpoolerProcess().getOrder())));
         objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();

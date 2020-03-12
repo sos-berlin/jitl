@@ -8,8 +8,6 @@ import sos.util.SOSString;
 
 public class InventoryJobJSAdapterClass extends JobSchedulerJobAdapter {
 
-    private static final String GET_STATE = 
-            "<show_state subsystems=\"folder\" what=\"folders cluster no_subfolders\" path=\"/any/path/that/does/not/exists\" />";
     private static final String FULL_COMMAND = "<show_state what=\"cluster source job_chains job_chain_orders schedules\" />";
 
     @Override
@@ -20,8 +18,8 @@ public class InventoryJobJSAdapterClass extends JobSchedulerJobAdapter {
             super.spooler_process();
 
             InventoryJobOptions options = job.getOptions();
-            options.setCurrentNodeName(this.getCurrentNodeName());
-            options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
+            options.setCurrentNodeName(getCurrentNodeName(getSpoolerProcess().getOrder(), false));
+            options.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters(getSpoolerProcess().getOrder())));
             job.setJSJobUtilites(this);
             job.setJSCommands(this);
 
@@ -34,27 +32,27 @@ public class InventoryJobJSAdapterClass extends JobSchedulerJobAdapter {
             if (SOSString.isEmpty(options.current_scheduler_hostname.getValue())) {
                 options.current_scheduler_hostname.setValue(spooler.hostname());
             }
-            
+
             int httpPort = SOSSchedulerCommand.getHTTPPortFromScheduler(spooler);
             if (SOSString.isEmpty(options.current_scheduler_port.getValue())) {
                 if (httpPort > 0) {
                     options.current_scheduler_port.value(httpPort);
-                } 
+                }
             }
             job.getOptions(options);
             job.setAnswerXml(executeXml());
             job.init();
             job.execute();
+            return getSpoolerProcess().getSuccess();
         } catch (Exception e) {
             throw new SOSException("Fatal Error:" + e.getMessage(), e);
         } finally {
             job.exit();
         }
-        return signalSuccess();
     }
 
-    private String executeXml () {
+    private String executeXml() {
         return spooler.execute_xml(FULL_COMMAND);
     }
-    
+
 }

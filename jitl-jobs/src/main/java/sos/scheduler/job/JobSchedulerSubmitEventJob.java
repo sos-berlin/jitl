@@ -49,9 +49,9 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
 		} catch (Exception e) {
 			LOGGER.error("Error occured in event job: " + e.getMessage(), e);
 			spooler_log.warn("Error occured in event job: " + e);
-			return signalFailure();
+			return false;
 		}
-		return signalSuccess();
+		return signalSuccess(spooler_task.order());
 	}
 
 	protected static void processEvent(final Spooler spooler, final Job spooler_job, final Task spooler_task,

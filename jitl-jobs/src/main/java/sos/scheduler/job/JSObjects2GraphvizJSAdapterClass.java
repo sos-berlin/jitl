@@ -1,12 +1,11 @@
 package sos.scheduler.job;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.graphviz.main.JSObjects2Graphviz;
 import com.sos.graphviz.main.JSObjects2GraphvizOptions;
-
 
 public class JSObjects2GraphvizJSAdapterClass extends JobSchedulerJobAdapter {
 
@@ -38,11 +37,10 @@ public class JSObjects2GraphvizJSAdapterClass extends JobSchedulerJobAdapter {
         try {
             super.spooler_process();
             doProcessing();
+            return getSpoolerProcess().getSuccess();
         } catch (Exception e) {
-            return signalFailure();
-        } finally {
-        } // finally
-        return signalSuccess();
+            throw new JobSchedulerException(e);
+        }
 
     } // spooler_process
 
@@ -62,7 +60,7 @@ public class JSObjects2GraphvizJSAdapterClass extends JobSchedulerJobAdapter {
         JSObjects2Graphviz objR = new JSObjects2Graphviz();
         JSObjects2GraphvizOptions objO = objR.getOptions();
         objO.setAllOptions(getSchedulerParameterAsProperties());
-        objO.setCurrentNodeName(this.getCurrentNodeName());
+        objO.setCurrentNodeName(getCurrentNodeName(getSpoolerProcess().getOrder(), true));
         objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.execute();

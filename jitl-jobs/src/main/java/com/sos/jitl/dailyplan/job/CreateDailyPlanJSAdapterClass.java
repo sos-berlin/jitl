@@ -15,14 +15,14 @@ public class CreateDailyPlanJSAdapterClass extends JobSchedulerJobAdapter {
 	@Override
 	public boolean spooler_init() {
 		final String conMethodName = CLASSNAME + "::spooler_init";
-		LOGGER.debug(String.format(Messages.getMsg("JSJ-I-110"), conMethodName));
+		LOGGER.debug(String.format(getMessages().getMsg("JSJ-I-110"), conMethodName));
 		return super.spooler_init();
 	}
 
 	@Override
 	public boolean spooler_process() throws Exception {
 		final String conMethodName = CLASSNAME + "::spooler_process";
-		LOGGER.debug(String.format(Messages.getMsg("JSJ-I-110"), conMethodName));
+		LOGGER.debug(String.format(getMessages().getMsg("JSJ-I-110"), conMethodName));
 		try {
 			super.spooler_process();
 			doProcessing();
@@ -37,7 +37,7 @@ public class CreateDailyPlanJSAdapterClass extends JobSchedulerJobAdapter {
 
 	private void doProcessing() throws Exception {
 		final String conMethodName = CLASSNAME + "::doProcessing";
-		LOGGER.debug(String.format(Messages.getMsg("JSJ-I-110"), conMethodName));
+		LOGGER.debug(String.format(getMessages().getMsg("JSJ-I-110"), conMethodName));
 		CreateDailyPlan createDailyPlan = new CreateDailyPlan();
 		CreateDailyPlanOptions createDailyPlanOptions = createDailyPlan.getOptions();
 		createDailyPlanOptions.setAllOptions(getSchedulerParameterAsProperties());

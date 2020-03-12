@@ -17,8 +17,6 @@ public class SystemNotifierJobJSAdapterClass extends JobSchedulerJobAdapter {
         try {
             job = new SystemNotifierJob();
             SystemNotifierJobOptions options = job.getOptions();
-            options.setCurrentNodeName(this.getCurrentNodeName());
-            options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
             job.setJSJobUtilites(this);
             job.setJSCommands(this);
 
@@ -52,18 +50,17 @@ public class SystemNotifierJobJSAdapterClass extends JobSchedulerJobAdapter {
             super.spooler_process();
 
             SystemNotifierJobOptions options = job.getOptions();
-            options.setCurrentNodeName(this.getCurrentNodeName());
-            options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
+            options.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(), true));
+            options.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters(getSpoolerProcess().getOrder())));
 
             job.openSession();
             job.execute();
+            return getSpoolerProcess().getSuccess();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.toString(), e);
         } finally {
             job.closeSession();
         }
-        return signalSuccess();
-
     }
 
     @Override

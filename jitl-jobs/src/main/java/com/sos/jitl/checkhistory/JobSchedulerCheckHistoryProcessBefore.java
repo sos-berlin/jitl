@@ -7,7 +7,7 @@ public class JobSchedulerCheckHistoryProcessBefore extends JobSchedulerCheckHist
         try {
             super.spooler_process_before();
             doProcessing();
-            return continueWithProcess;
+            return true;
         } catch (Exception e) {
             return false;
         }

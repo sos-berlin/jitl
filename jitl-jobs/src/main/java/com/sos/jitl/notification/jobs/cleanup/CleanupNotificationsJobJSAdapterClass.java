@@ -14,8 +14,6 @@ public class CleanupNotificationsJobJSAdapterClass extends JobSchedulerJobAdapte
         try {
             job = new CleanupNotificationsJob();
             CleanupNotificationsJobOptions options = job.getOptions();
-            options.setCurrentNodeName(this.getCurrentNodeName());
-            options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
             job.setJSJobUtilites(this);
             job.setJSCommands(this);
 
@@ -37,17 +35,17 @@ public class CleanupNotificationsJobJSAdapterClass extends JobSchedulerJobAdapte
             super.spooler_process();
 
             CleanupNotificationsJobOptions options = job.getOptions();
-            options.setCurrentNodeName(this.getCurrentNodeName());
-            options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
+            options.setCurrentNodeName(getCurrentNodeName(getSpoolerProcess().getOrder(), false));
+            options.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters(getSpoolerProcess().getOrder())));
 
             job.openSession();
             job.execute();
+            return getSpoolerProcess().getSuccess();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.toString(), e);
         } finally {
             job.closeSession();
         }
-        return signalSuccess();
     }
 
     @Override

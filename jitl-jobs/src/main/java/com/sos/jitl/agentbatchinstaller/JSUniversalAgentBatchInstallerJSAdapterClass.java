@@ -15,7 +15,7 @@ public class JSUniversalAgentBatchInstallerJSAdapterClass extends JobSchedulerJo
     public boolean spooler_process() throws Exception {
         super.spooler_process();
         doProcessing();
-        return spooler_task.job().order_queue() != null;
+        return getSpoolerProcess().getSuccess();
     } // spooler_process
 
     @Override
@@ -26,7 +26,7 @@ public class JSUniversalAgentBatchInstallerJSAdapterClass extends JobSchedulerJo
     private void doProcessing() throws Exception {
         JSUniversalAgentBatchInstaller jsUniversalAgentBatchInstaller = new JSUniversalAgentBatchInstaller();
         JSUniversalAgentBatchInstallerOptions jsUniversalAgentBatchInstallerOptions = jsUniversalAgentBatchInstaller.options();
-        HashMap<String, String> parameters = getParameters();
+        HashMap<String, String> parameters = getJobOrOrderParameters(getSpoolerProcess().getOrder());
 
         jsUniversalAgentBatchInstallerOptions.setAllOptions(getSchedulerParameterAsProperties(parameters));
         jsUniversalAgentBatchInstallerOptions.checkMandatory();
