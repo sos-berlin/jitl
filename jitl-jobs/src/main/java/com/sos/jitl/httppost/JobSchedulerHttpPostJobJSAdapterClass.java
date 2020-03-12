@@ -11,17 +11,17 @@ public class JobSchedulerHttpPostJobJSAdapterClass extends JobSchedulerJobAdapte
         try {
             super.spooler_process();
             doProcessing();
+            return getSpoolerProcess().getSuccess();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
         }
-        return signalSuccess();
     }
 
     private void doProcessing() throws Exception {
         JobSchedulerHttpPostJob objR = new JobSchedulerHttpPostJob();
         JobSchedulerHttpPostJobOptions objO = objR.getOptions();
-        objO.setCurrentNodeName(this.getCurrentNodeName());
-        objO.setAllOptions(getSchedulerParameterAsProperties());
+        objO.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(), true));
+        objO.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
         objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();

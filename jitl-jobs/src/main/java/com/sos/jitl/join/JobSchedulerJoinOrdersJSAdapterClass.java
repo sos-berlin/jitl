@@ -36,10 +36,10 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
         try {
             super.spooler_process();
             doProcessing();
+            return getSpoolerProcess().getSuccess();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
         }
-        return signalSuccess();
     }
 
     private void suspendOrder() {

@@ -9,17 +9,17 @@ public class JobSchedulerCheckRunHistoryJSAdapterClass extends JobSchedulerJobAd
         try {
             super.spooler_process();
             doProcessing();
+            return getSpoolerProcess().getSuccess();
         } catch (Exception e) {
             return false;
         }
-        return spooler_task.job().order_queue() != null;
     }
 
     protected void doProcessing() throws Exception {
         JobSchedulerCheckRunHistory jobSchedulerCheckRunHistory = new JobSchedulerCheckRunHistory();
         JobSchedulerCheckRunHistoryOptions jobSchedulerCheckRunHistoryOptions = jobSchedulerCheckRunHistory.options();
-        jobSchedulerCheckRunHistoryOptions.setCurrentNodeName(getCurrentNodeName());
-        jobSchedulerCheckRunHistoryOptions.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
+        jobSchedulerCheckRunHistoryOptions.setCurrentNodeName(getCurrentNodeName(getSpoolerProcess().getOrder(), true));
+        jobSchedulerCheckRunHistoryOptions.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters(getSpoolerProcess().getOrder())));
         jobSchedulerCheckRunHistory.setJSJobUtilites(this);
         jobSchedulerCheckRunHistory.setJSCommands(this);
         jobSchedulerCheckRunHistory.setPathOfJob(spooler_job.folder_path());
@@ -27,8 +27,8 @@ public class JobSchedulerCheckRunHistoryJSAdapterClass extends JobSchedulerJobAd
         if (spooler_task.job().order_queue() != null) {
             spooler_task.order().params().set_var("check_run_history_result", jobSchedulerCheckRunHistoryOptions.result.getValue());
             spooler_task.order().params().set_var("check_run_history_number_of_starts", jobSchedulerCheckRunHistoryOptions.numberOfStarts.getValue());
-            spooler_task.order().params().set_var("check_run_history_number_of_completed",
-                    jobSchedulerCheckRunHistoryOptions.numberOfCompleted.getValue());
+            spooler_task.order().params().set_var("check_run_history_number_of_completed", jobSchedulerCheckRunHistoryOptions.numberOfCompleted
+                    .getValue());
             spooler_task.order().params().set_var("check_run_history_number_of_completed_with_error",
                     jobSchedulerCheckRunHistoryOptions.numberOfCompletedWithError.getValue());
             spooler_task.order().params().set_var("check_run_history_number_of_completed_successful",

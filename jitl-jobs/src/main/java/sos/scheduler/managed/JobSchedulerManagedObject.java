@@ -2,16 +2,19 @@ package sos.scheduler.managed;
 
 import java.util.HashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import sos.connection.SOSConnection;
 import sos.spooler.Job_chain;
 import sos.spooler.Job_impl;
 import sos.spooler.Order;
 import sos.spooler.Variable_set;
-import sos.util.SOSLogger;
-import sos.util.SOSSchedulerLogger;
 
 /** @author Andreas Püschel */
 public class JobSchedulerManagedObject {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerManagedObject.class);
 
     private static final String PARAMETER_DATABASE_CONNECTION = "database_connection";
     private static final String PARAMETER_SCHEDULER_MANAGED_JOBS_VERSION = "scheduler_managed_jobs_version";
@@ -137,9 +140,8 @@ public class JobSchedulerManagedObject {
         }
         try {
             job.spooler_log.debug6("..creating local connection object");
-            localConnection =
-                    SOSConnection.createInstance(result.get("class").toString(), result.get("driver").toString(), result.get("url").toString(),
-                            result.get("username").toString(), result.get("password").toString()/*, new SOSSchedulerLogger(job.spooler_log)*/);
+            localConnection = SOSConnection.createInstance(result.get("class").toString(), result.get("driver").toString(), result.get("url")
+                    .toString(), result.get("username").toString(), result.get("password").toString()/* , new SOSSchedulerLogger(job.spooler_log) */);
         } catch (Exception e) {
             throw new Exception("error occurred establishing database connection: " + e.getMessage());
         }
@@ -227,15 +229,9 @@ public class JobSchedulerManagedObject {
         return substringAfter(orderId, prefix);
     }
 
-    public static String replaceVariablesInCommand(final String command, final Variable_set vars) throws Exception {
-        return replaceVariablesInCommand(command, vars, null);
-    }
-
-    public static String replaceVariablesInCommand(String command, final Variable_set vars, final SOSLogger log) throws Exception {
+    public static String replaceVariablesInCommand(String command, final Variable_set vars) throws Exception {
         String[] keys = vars.names().split(";");
-        if (log != null) {
-            log.debug3("doing replacements for " + keys.length + " parameters.");
-        }
+        LOGGER.debug("doing replacements for " + keys.length + " parameters.");
         for (String parameterName : keys) {
             String parameterValue = vars.var(parameterName).replaceAll("\\\\", "\\\\\\\\");
             command = command.replaceAll("(?i)(\\$|§)\\{" + parameterName + "\\}", parameterValue.replaceAll("\\[quot\\]", "'"));

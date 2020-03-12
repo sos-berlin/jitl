@@ -15,17 +15,17 @@ public class JobSchedulerDequeueMailJobJSAdapterClass extends JobSchedulerJobAda
         try {
             super.spooler_process();
             doProcessing();
+            return getSpoolerProcess().getSuccess();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
         }
-        return signalSuccess();
     }
 
     private void doProcessing() throws Exception {
         JobSchedulerDequeueMailJob jobSchedulerDequeueMailJob = new JobSchedulerDequeueMailJob();
         JobSchedulerDequeueMailJobOptions jobSchedulerDequeueMailJobOptions = jobSchedulerDequeueMailJob.getOptions();
 
-        jobSchedulerDequeueMailJobOptions.setCurrentNodeName(this.getCurrentNodeName());
+        jobSchedulerDequeueMailJobOptions.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(),true));
         jobSchedulerDequeueMailJobOptions.setAllOptions(getSchedulerParameterAsProperties());
 
         if (jobSchedulerDequeueMailJobOptions.smtpHost.isNotDirty()) {

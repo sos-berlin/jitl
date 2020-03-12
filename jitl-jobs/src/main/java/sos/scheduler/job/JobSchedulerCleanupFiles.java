@@ -10,17 +10,21 @@ import static com.sos.scheduler.messages.JSMessages.JSJ_F_0010;
 import java.io.File;
 import java.util.Vector;
 
-import sos.scheduler.file.JobSchedulerFileOperationBase;
-import sos.util.SOSFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.JSHelper.io.SOSFileSystemOperationsImpl;
 import com.sos.i18n.annotation.I18NResourceBundle;
 
+import sos.scheduler.file.JobSchedulerFileOperationBase;
+import sos.util.SOSFile;
+
 /** @author andreas pueschel */
 @I18NResourceBundle(baseName = "com_sos_scheduler_messages", defaultLocale = "en")
 public class JobSchedulerCleanupFiles extends JobSchedulerFileOperationBase {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCleanupFiles.class);
     private final static String conClassName = "JobSchedulerCleanupFiles";
 
     @Override
@@ -51,30 +55,30 @@ public class JobSchedulerCleanupFiles extends JobSchedulerFileOperationBase {
                 if (flgPathAndSpecHasSameNumberOfItems) {
                     fileSpec = fileSpecs[i];
                 }
-                logger.debug(JFO_I_0019.params(filePath));
+                LOGGER.debug(JFO_I_0019.params(filePath));
                 Vector<File> filelist = SOSFile.getFolderlist(filePath, fileSpec, 0);
                 if (filelist.isEmpty()) {
-                    logger.info(JFO_I_0020.params(fileSpec));
+                    LOGGER.info(JFO_I_0020.params(fileSpec));
                 }
                 if (warningFileLimit > 0 && filelist.size() >= warningFileLimit) {
-                    logger.error(JFO_E_0016.params(filelist.size(), filePath, warningFileLimit, PARAMETER_WARNING_FILE_LIMIT));
+                    LOGGER.error(JFO_E_0016.params(filelist.size(), filePath, warningFileLimit, PARAMETER_WARNING_FILE_LIMIT));
                 }
                 for (File tempFile : filelist) {
                     long interval = System.currentTimeMillis() - tempFile.lastModified();
                     if (interval > lngFileAge) {
                         counter += SOSFile.deleteFile(tempFile);
-                        logger.info(JFO_I_0014.params(tempFile.getAbsolutePath()));
+                        LOGGER.info(JFO_I_0014.params(tempFile.getAbsolutePath()));
                     }
                 }
                 if (counter > 0) {
                     String strT = filePath;
-                    logger.info(JFO_I_0015.params(counter, strT));
+                    LOGGER.info(JFO_I_0015.params(counter, strT));
                 }
             }
+            return signalSuccess(spooler_task.order());
         } catch (Exception e) {
             throw new JobSchedulerException(JSJ_F_0010.params(conClassName, e.getMessage()), e);
         }
-        return signalSuccess();
     }
 
 }

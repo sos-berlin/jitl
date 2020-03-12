@@ -1,6 +1,5 @@
 package sos.scheduler.misc;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,17 +14,17 @@ public class CopyJob2OrderParameterJSAdapterClass extends JobSchedulerJobAdapter
         try {
             super.spooler_process();
             doProcessing();
+            return getSpoolerProcess().getSuccess();
         } catch (Exception e) {
             LOGGER.error(e.toString(), e);
             return false;
         }
-        return signalSuccess();
     }
 
     private void doProcessing() throws Exception {
         CopyJob2OrderParameter objR = new CopyJob2OrderParameter();
         CopyJob2OrderParameterOptions objO = objR.Options();
-        objO.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
+        objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters(getSpoolerProcess().getOrder())));
         objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();

@@ -14,7 +14,7 @@ import com.sos.i18n.annotation.I18NResourceBundle;
 public class JobSchedulerCanWrite extends JobSchedulerFileOperationBase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCanWrite.class);
-	private static final String CLASSNAME = "JobSchedulerCanWrite";
+    private static final String CLASSNAME = "JobSchedulerCanWrite";
 
     @Override
     public boolean spooler_process() {
@@ -23,16 +23,11 @@ public class JobSchedulerCanWrite extends JobSchedulerFileOperationBase {
             sosFileOperations = new SOSFileSystemOperationsImpl();
             checkMandatoryFile();
             flgOperationWasSuccessful = sosFileOperations.canWrite(file, fileSpec, isCaseInsensitive);
-            return setReturnResult(flgOperationWasSuccessful);
+            return setReturnResult(spooler_task.order(), flgOperationWasSuccessful);
         } catch (Exception e) {
-            try {
-                LOGGER.error(e.getMessage(), e);
-                String strM = JSJ_F_0010.params(CLASSNAME, e.getMessage());
-                logger.fatal(strM);
-                throw new JobSchedulerException(strM, e);
-            } catch (Exception x) {
-            }
-            return signalFailure();
+            String msg = JSJ_F_0010.params(CLASSNAME, e.toString());
+            LOGGER.error(msg, e);
+            throw new JobSchedulerException(msg, e);
         }
     }
 

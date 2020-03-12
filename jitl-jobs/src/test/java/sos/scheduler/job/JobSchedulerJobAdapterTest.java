@@ -1,7 +1,5 @@
 package sos.scheduler.job;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,20 +15,6 @@ public class JobSchedulerJobAdapterTest {
 
     @Test
     public final void testDeleteCurrentNodeNameFromKeys() {
-        JobSchedulerJobAdapter jobschedulerAdapter = new JobSchedulerJobAdapter();
-        HashMap<String, String> parameterSet = new HashMap<String, String>();
-
-        parameterSet.put("order_state_for_test/testparam1", "value_of_test_param1");
-        HashMap<String, String> newParameterSet = jobschedulerAdapter.testDeleteCurrentNodeNameFromKeys(parameterSet);
-        assertEquals("testDeleteCurrentNodeNameFromKeys", "value_of_test_param1", newParameterSet.get("testparam1"));
-
-        parameterSet.put("job::job_name_for_test.order_state_for_test/testparam2", "value_of_test_param2");
-        newParameterSet = jobschedulerAdapter.testDeleteCurrentNodeNameFromKeys(parameterSet);
-        assertEquals("testDeleteCurrentNodeNameFromKeys", "value_of_test_param2", newParameterSet.get("testparam2"));
-        
-        parameterSet.put("job::job_name_for_test/testparam3", "value_of_test_param3");
-        newParameterSet = jobschedulerAdapter.testDeleteCurrentNodeNameFromKeys(parameterSet);
-        assertEquals("testDeleteCurrentNodeNameFromKeys", "value_of_test_param3", newParameterSet.get("testparam3"));
     }
 
     @Test
@@ -92,15 +76,6 @@ public class JobSchedulerJobAdapterTest {
         valuesMap.put("target", "hallo$p");
         String templateString = " ${java.version], ${os.name}";
         LOGGER.info(StrSubstitutor.replaceSystemProperties(templateString));
-    } 
-
-    private HashMap<String, String> fillHash(int count) {
-        HashMap<String, String> h = new HashMap<String, String>();
-        for (int i = 0; i < count; i++) {
-            h.put("name_" + i, "value_" + i);
-        }
-        return h;
     }
-
 
 }

@@ -3,6 +3,9 @@ package sos.scheduler.managed;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import sos.spooler.Order;
 import sos.spooler.Subprocess;
 import sos.spooler.Variable_set;
@@ -10,6 +13,8 @@ import sos.spooler.Variable_set;
 /** @author andreas pueschel */
 public class JobSchedulerManagedExecutableJob extends JobSchedulerManagedJob {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerManagedExecutableJob.class);
+    
     private final String strOrderParamPrefix = "scheduler_order_";
     private String[][] inputParameterAliases = { { strOrderParamPrefix + "ignore_stderr", "ignore_stderr" },
             { strOrderParamPrefix + "ignore_error", "ignore_error" }, { strOrderParamPrefix + "ignore_signal", "ignore_signal" },
@@ -49,7 +54,7 @@ public class JobSchedulerManagedExecutableJob extends JobSchedulerManagedJob {
             String command = "";
             try {
                 String commandScript = getJobScript();
-                getLogger().debug9("setting 'command_script' value from script tag of job: " + commandScript);
+                LOGGER.trace("setting 'command_script' value from script tag of job: " + commandScript);
                 if (orderJob) {
                     command = JobSchedulerManagedObject.getOrderCommand(this, commandScript);
                     order = spooler_task.order();
@@ -64,7 +69,7 @@ public class JobSchedulerManagedExecutableJob extends JobSchedulerManagedJob {
             } catch (Exception e) {
                 throw new Exception("no executable command found for order:" + e);
             }
-            getLogger().debug3("command before replacements:\n" + command);
+            LOGGER.debug("command before replacements:\n" + command);
             boolean ignoreError = false;
             boolean ignoreSignal = false;
             boolean ignoreStderr = false;
@@ -132,13 +137,13 @@ public class JobSchedulerManagedExecutableJob extends JobSchedulerManagedJob {
             }
             // replace parameters
             if (orderPayload != null) {
-                command = JobSchedulerManagedObject.replaceVariablesInCommand(command, orderPayload, getLogger());
+                command = JobSchedulerManagedObject.replaceVariablesInCommand(command, orderPayload);
             }
             // replace newlines
             command = command.replaceAll("\r\n", "\n");
-            getLogger().debug3("Command after replacements:\n" + command);
+            LOGGER.debug("Command after replacements:\n" + command);
             String[] commands = command.split("\n");
-            getLogger().debug6("Found " + commands.length + " commands.");
+            LOGGER.debug("Found " + commands.length + " commands.");
             for (int i = 0; i < commands.length && !timedOut; i++) {
                 Subprocess subProc = spooler_task.create_subprocess();
                 subProc.set_own_process_group(ownProcessGroup);
@@ -286,7 +291,7 @@ public class JobSchedulerManagedExecutableJob extends JobSchedulerManagedJob {
             proc.set_environment("SCHEDULER_TRIGGER_FILE", vars.value("scheduler_file_path"));
         }
         if (vars.value("scheduler_order_additional_envvars") != null && !vars.value("scheduler_order_additional_envvars").isEmpty()) {
-            getLogger().debug3("Setting additional envvars.");
+            LOGGER.debug("Setting additional envvars.");
             String[] envVarKeys = vars.value("scheduler_order_additional_envvars").split(";");
             for (int i = 0; i < envVarKeys.length; i++) {
                 String key = envVarKeys[i];

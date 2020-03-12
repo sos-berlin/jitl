@@ -3,6 +3,9 @@ package sos.scheduler.file;
 import static com.sos.scheduler.messages.JSMessages.JSJ_F_0010;
 import static com.sos.scheduler.messages.JSMessages.JSJ_F_0011;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.JSHelper.io.SOSFileSystemOperationsCopy;
 import com.sos.i18n.annotation.I18NResourceBundle;
@@ -11,6 +14,7 @@ import com.sos.i18n.annotation.I18NResourceBundle;
 @I18NResourceBundle(baseName = "com_sos_scheduler_messages", defaultLocale = "en")
 public class JobSchedulerCopyFile extends JobSchedulerFileOperationBase {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCopyFile.class);
     private static final String CLASSNAME = "JobSchedulerCopyFile";
 
     private void doFileOperation(final String strSource, final String strTarget) throws Exception {
@@ -31,7 +35,7 @@ public class JobSchedulerCopyFile extends JobSchedulerFileOperationBase {
                 fileTarget = target.split(";");
                 if (fileSource.length != fileTarget.length) {
                     String strM = JSJ_F_0011.params(fileSource.length, fileTarget.length);
-                    logger.error(strM);
+                    LOGGER.error(strM);
                     throw new JobSchedulerException(strM);
                 }
             }
@@ -50,10 +54,10 @@ public class JobSchedulerCopyFile extends JobSchedulerFileOperationBase {
                 doFileOperation(strSource, strTarget);
             }
             flgOperationWasSuccessful = noOfHitsInResultSet > 0;
-            return setReturnResult(flgOperationWasSuccessful);
+            return setReturnResult(spooler_task.order(), flgOperationWasSuccessful);
         } catch (Exception e) {
             String strM = JSJ_F_0010.params(CLASSNAME, e.getMessage());
-            logger.error(strM + "\n" + e.toString(), e);
+            LOGGER.error(strM + "\n" + e.toString(), e);
             throw new JobSchedulerException(strM, e);
         }
     }

@@ -11,19 +11,19 @@ public class JobSchedulerRotateLogJSAdapterClass extends JobSchedulerJobAdapter 
         try {
             super.spooler_process();
             doProcessing();
+            return getSpoolerProcess().getSuccess();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
         }
-        return signalSuccess();
     }
 
     private void doProcessing() throws Exception {
         JobSchedulerRotateLog rotateLogExecuter = new JobSchedulerRotateLog();
         JobSchedulerRotateLogOptions rotateLogOptions = rotateLogExecuter.getOptions();
-        rotateLogOptions.setCurrentNodeName(this.getCurrentNodeName());
+        rotateLogOptions.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(), true));
         rotateLogOptions.jobSchedulerID.setValue(spooler.id());
         rotateLogOptions.jobSchedulerLogFilesPath.setValue(spooler.log_dir());
-        rotateLogOptions.setAllOptions(getSchedulerParameterAsProperties());
+        rotateLogOptions.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
         rotateLogOptions.checkMandatory();
         rotateLogExecuter.setJSJobUtilites(this);
         try {

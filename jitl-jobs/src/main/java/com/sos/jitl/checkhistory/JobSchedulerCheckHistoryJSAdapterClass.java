@@ -11,17 +11,17 @@ public class JobSchedulerCheckHistoryJSAdapterClass extends JobSchedulerJobAdapt
         try {
             super.spooler_process();
             doProcessing();
+            return getSpoolerProcess().getSuccess();
         } catch (JobSchedulerException e) {
             return false;
         }
-        return this.signalSuccess();
     }
 
-    protected void doProcessing() throws Exception  {
+    protected void doProcessing() throws Exception {
         JobSchedulerCheckHistory jobSchedulerCheckRunHistory = new JobSchedulerCheckHistory();
         JobSchedulerCheckHistoryOptions jobSchedulerCheckHistoryOptions = jobSchedulerCheckRunHistory.options();
-        jobSchedulerCheckHistoryOptions.setCurrentNodeName(getCurrentNodeName());
-        jobSchedulerCheckHistoryOptions.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
+        jobSchedulerCheckHistoryOptions.setCurrentNodeName(getCurrentNodeName(getSpoolerProcess().getOrder(), true));
+        jobSchedulerCheckHistoryOptions.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters(getSpoolerProcess().getOrder())));
         jobSchedulerCheckRunHistory.setJSJobUtilites(this);
         jobSchedulerCheckRunHistory.setJSCommands(this);
         jobSchedulerCheckRunHistory.setPathOfJob(spooler_job.folder_path());
@@ -30,7 +30,7 @@ public class JobSchedulerCheckHistoryJSAdapterClass extends JobSchedulerJobAdapt
             jobSchedulerCheckRunHistory.execute();
         } finally {
             if (spooler_task.job().order_queue() != null) {
-                spooler_task.order().params().set_var("check_run_history_result", jobSchedulerCheckHistoryOptions.result.getValue());
+                getSpoolerProcess().getOrder().params().set_var("check_run_history_result", jobSchedulerCheckHistoryOptions.result.getValue());
             } else {
                 spooler_task.params().set_var("check_run_history_result", jobSchedulerCheckHistoryOptions.result.getValue());
             }

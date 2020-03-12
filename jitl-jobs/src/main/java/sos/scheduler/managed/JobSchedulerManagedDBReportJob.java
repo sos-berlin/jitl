@@ -5,6 +5,9 @@ import java.io.FileOutputStream;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import sos.connection.SOSConnection;
 import sos.spooler.Order;
 import sos.xml.SOSXMLTransformer;
@@ -12,6 +15,7 @@ import sos.xml.SOSXMLTransformer;
 /** @author Andreas Liebert */
 public class JobSchedulerManagedDBReportJob extends JobSchedulerManagedDatabaseJob {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerManagedDBReportJob.class);
     private static final String PARAMETER_SCHEDULER_ORDER_REPORT_STYLESHEET = "scheduler_order_report_stylesheet";
     private String xml;
     private String sql;
@@ -24,7 +28,7 @@ public class JobSchedulerManagedDBReportJob extends JobSchedulerManagedDatabaseJ
             reporter = new ManagedReporter(this);
         } catch (Exception e) {
             try {
-                getLogger().warn("Failed to initialize Job: " + e);
+                LOGGER.warn("Failed to initialize Job: " + e);
             } catch (Exception ex) {
             }
             rc = false;
@@ -43,7 +47,7 @@ public class JobSchedulerManagedDBReportJob extends JobSchedulerManagedDatabaseJ
             conn.executeStatements(command);
             Map<String, String> results = conn.get();
             if (results == null) {
-                getLogger().info("No results found for query: " + command);
+                LOGGER.info("No results found for query: " + command);
                 return;
             }
             reporter.setHasResult(!results.isEmpty());
@@ -77,25 +81,25 @@ public class JobSchedulerManagedDBReportJob extends JobSchedulerManagedDatabaseJ
             xml += "  </rows>\n";
             xml += " </table>\n";
             xml += "</report>";
-            getLogger().debug3("Xml generated.");
+            LOGGER.debug("Xml generated.");
             reporter.addReplacement("\\[xml\\]", xml);
             File attach = reporter.getReportFile();
-            if (getOrderPayload() != null && getOrderPayload().var(PARAMETER_SCHEDULER_ORDER_REPORT_STYLESHEET) != null
-                    && !getOrderPayload().var(PARAMETER_SCHEDULER_ORDER_REPORT_STYLESHEET).isEmpty()) {
+            if (getOrderPayload() != null && getOrderPayload().var(PARAMETER_SCHEDULER_ORDER_REPORT_STYLESHEET) != null && !getOrderPayload().var(
+                    PARAMETER_SCHEDULER_ORDER_REPORT_STYLESHEET).isEmpty()) {
                 debugParamter(getOrderPayload(), PARAMETER_SCHEDULER_ORDER_REPORT_STYLESHEET);
                 File stylesheet = new File(getOrderPayload().var(PARAMETER_SCHEDULER_ORDER_REPORT_STYLESHEET));
-                getLogger().debug9("Calling stylesheet.canRead() ");
+                LOGGER.trace("Calling stylesheet.canRead() ");
                 if (!stylesheet.canRead()) {
                     throw new Exception("Could not read stylesheet: " + stylesheet.getAbsolutePath());
                 } else {
-                    getLogger().debug3("Doing xslt transformation...");
+                    LOGGER.debug("Doing xslt transformation...");
                     try {
-                        getLogger().debug6("attach:" + attach.getAbsolutePath());
+                        LOGGER.debug("attach:" + attach.getAbsolutePath());
                         SOSXMLTransformer.transform(xml, stylesheet, attach);
                     } catch (Exception e) {
                         throw new Exception("Error occured during transformation: " + e);
                     }
-                    getLogger().debug3("Xslt transformation done.");
+                    LOGGER.debug("Xslt transformation done.");
                 }
             } else {
                 FileOutputStream fos = new FileOutputStream(attach);
@@ -106,9 +110,8 @@ public class JobSchedulerManagedDBReportJob extends JobSchedulerManagedDatabaseJ
             reporter.report();
         } catch (Exception e) {
             Order order = spooler_task.order();
-            getLogger().warn(
-                    "An error occured creating database report"
-                            + (order != null ? "  [Job Chain: " + order.job_chain().name() + ", Order:" + order.id() + "]" : "") + ": " + e);
+            LOGGER.warn("An error occured creating database report" + (order != null ? "  [Job Chain: " + order.job_chain().name() + ", Order:"
+                    + order.id() + "]" : "") + ": " + e);
             spooler_task.end();
         }
     }
@@ -119,7 +122,7 @@ public class JobSchedulerManagedDBReportJob extends JobSchedulerManagedDatabaseJ
             target = text.replaceAll("[^A-Za-z_0-9]", "_");
         } catch (Exception e) {
             try {
-                getLogger().warn("An error occured replacing characters in element name \"" + text + "\"");
+                LOGGER.warn("An error occured replacing characters in element name \"" + text + "\"");
             } catch (Exception ex) {
             }
             return text;

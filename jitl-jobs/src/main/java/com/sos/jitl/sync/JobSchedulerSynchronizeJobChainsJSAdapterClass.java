@@ -6,15 +6,15 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.JSHelper.Basics.IJSCommands;
+import com.sos.JSHelper.Exceptions.JobSchedulerException;
+
 import sos.scheduler.job.JobSchedulerJobAdapter;
 import sos.spooler.Job_chain;
 import sos.spooler.Job_chain_node;
 import sos.spooler.Order;
 import sos.spooler.Spooler;
 import sos.spooler.Variable_set;
-
-import com.sos.JSHelper.Basics.IJSCommands;
-import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
 public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobSchedulerJobAdapter {
 
@@ -39,12 +39,12 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
             }
             super.spooler_process();
             boolean syncReady = false;
-            if (spooler_task.order().params().value(PARAMETER_SCHEDULER_SYNC_READY) != null) {
+            if (getSpoolerProcess().getOrder().params().value(PARAMETER_SCHEDULER_SYNC_READY) != null) {
                 syncReady = "true".equals(spooler_task.order().params().value(PARAMETER_SCHEDULER_SYNC_READY));
             }
             if (syncReady) {
                 spooler_log.debug("js-461: Sync skipped");
-                Order o = spooler_task.order();
+                Order o = getSpoolerProcess().getOrder();
                 Variable_set resultParameters = spooler.create_variable_set();
                 String[] parameterNames = o.params().names().split(";");
                 for (int i = 0; i < parameterNames.length; i++) {
@@ -53,13 +53,13 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
                     }
                 }
                 o.set_params(resultParameters);
-                return signalSuccess();
+                return getSpoolerProcess().getSuccess();
             }
             doProcessing();
         } catch (Exception e) {
             throw new JobSchedulerException("--- Fatal Error: " + e.getMessage(), e);
         }
-        return signalSuccess();
+        return getSpoolerProcess() == null ? signalSuccess(spooler_task.order()) : getSpoolerProcess().getSuccess();
     }
 
     private void setSetback(JobSchedulerSynchronizeJobChainsOptions objO) {
@@ -82,7 +82,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
         JobSchedulerSynchronizeJobChainsOptions objO = objR.getOptions();
         objR.setJSJobUtilites(this);
         objO.setCurrentNodeName(this.getCurrentNodeName());
-        
+
         objO.setAllOptions(getSchedulerParameterAsProperties());
         setSetback(objO);
         objO.checkMandatory();
@@ -95,12 +95,12 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
         objO.orders_answer.setValue(answer);
         LOGGER.debug("Checking option ignore_stopped_jobchain");
         if (!objO.ignore_stopped_jobchains.isDirty()) {
-            LOGGER.debug(String.format("Value of %s=%s", objO.ignore_stopped_jobchains.getShortKey(),
-                    spooler.var(objO.ignore_stopped_jobchains.getShortKey())));
-            if (spooler.var(objO.ignore_stopped_jobchains.getShortKey()) != null
-                    && !spooler.var(objO.ignore_stopped_jobchains.getShortKey()).trim().isEmpty()) {
-                LOGGER.debug(String.format("set ignore_stopped_jobchains=%s from scheduler-variables",
-                        spooler.var(objO.ignore_stopped_jobchains.getShortKey())));
+            LOGGER.debug(String.format("Value of %s=%s", objO.ignore_stopped_jobchains.getShortKey(), spooler.var(objO.ignore_stopped_jobchains
+                    .getShortKey())));
+            if (spooler.var(objO.ignore_stopped_jobchains.getShortKey()) != null && !spooler.var(objO.ignore_stopped_jobchains.getShortKey()).trim()
+                    .isEmpty()) {
+                LOGGER.debug(String.format("set ignore_stopped_jobchains=%s from scheduler-variables", spooler.var(objO.ignore_stopped_jobchains
+                        .getShortKey())));
                 objO.ignore_stopped_jobchains.setValue(spooler.var(objO.ignore_stopped_jobchains.getShortKey()));
             }
         } else {
@@ -110,7 +110,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
         Object objSp = objJSCommands.getSpoolerObject();
         Spooler objSpooler = (Spooler) objSp;
         objO.jobpath.setValue("/" + spooler_task.job().name());
-        for (final Map.Entry<String, String> element : schedulerParameters.entrySet()) {
+        for (final Map.Entry<String, String> element : getSchedulerParameters().entrySet()) {
             final String strMapKey = element.getKey().toString();
             String strTemp = "";
             if (element.getValue() != null) {
@@ -121,7 +121,7 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
             }
             LOGGER.debug("Key = " + strMapKey + " --> " + strTemp);
         }
-        objR.setSchedulerParameters(schedulerParameters);
+        objR.setSchedulerParameters(getSchedulerParameters());
         objR.setOrderId(spooler_task.order().id());
         objR.setJobChain(spooler_task.order().job_chain().path());
         objR.Execute();
@@ -145,20 +145,17 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
                     }
                     String strJSCommand = "";
                     if (objO.setback_type.getValue().equalsIgnoreCase(SYNC_METHOD_SETBACK)) {
-                        strJSCommand =
-                                String.format("<modify_order job_chain='%s' order='%s' setback='no'>" + "<params><param name='scheduler_sync_ready' "
-                                        + "value='true'></param></params></modify_order>", objSyncNode.getSyncNodeJobchainPath(),
-                                        objWaitingOrder.getId());
+                        strJSCommand = String.format("<modify_order job_chain='%s' order='%s' setback='no'>"
+                                + "<params><param name='scheduler_sync_ready' " + "value='true'></param></params></modify_order>", objSyncNode
+                                        .getSyncNodeJobchainPath(), objWaitingOrder.getId());
                     } else {
                         if (next_n.job() == null || strNextState.equals(objCurrentNode.state())) {
-                            strJSCommand =
-                                    String.format("<modify_order job_chain='%s' order='%s' suspended='no' %s >"
-                                            + "<params><param name='scheduler_sync_ready' " + "value='true'></param></params></modify_order>",
-                                            objSyncNode.getSyncNodeJobchainPath(), objWaitingOrder.getId(), strEndState);
+                            strJSCommand = String.format("<modify_order job_chain='%s' order='%s' suspended='no' %s >"
+                                    + "<params><param name='scheduler_sync_ready' " + "value='true'></param></params></modify_order>", objSyncNode
+                                            .getSyncNodeJobchainPath(), objWaitingOrder.getId(), strEndState);
                         } else {
-                            strJSCommand =
-                                    String.format("<modify_order job_chain='%s' order='%s' state='%s' suspended='no' %s />",
-                                            objSyncNode.getSyncNodeJobchainPath(), objWaitingOrder.getId(), strNextState, strEndState);
+                            strJSCommand = String.format("<modify_order job_chain='%s' order='%s' state='%s' suspended='no' %s />", objSyncNode
+                                    .getSyncNodeJobchainPath(), objWaitingOrder.getId(), strNextState, strEndState);
                         }
                     }
                     LOGGER.debug(strJSCommand);
@@ -170,9 +167,8 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
             SyncNode sn = objR.syncNodeContainer.getNode(spooler_task.order().job_chain().name(), spooler_task.order().state());
             String stateText = "";
             if (sn != null) {
-                stateText =
-                        String.format("%s required: %s, waiting: %s", objR.syncNodeContainer.getShortSyncNodeContext(), sn.getRequired(),
-                                sn.getSyncNodeWaitingOrderList().size());
+                stateText = String.format("%s required: %s, waiting: %s", objR.syncNodeContainer.getShortSyncNodeContext(), sn.getRequired(), sn
+                        .getSyncNodeWaitingOrderList().size());
                 if (sn.isReleased()) {
                     SyncNode notReleased = objR.syncNodeContainer.getFirstNotReleasedNode();
                     String etc = "";
@@ -180,9 +176,8 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
                         etc = "...";
                     }
                     if (notReleased != null) {
-                        stateText =
-                                String.format("%s --> released. waiting for %s/%s %s", stateText, notReleased.getSyncNodeJobchainName(),
-                                        notReleased.getSyncNodeState(), etc);
+                        stateText = String.format("%s --> released. waiting for %s/%s %s", stateText, notReleased.getSyncNodeJobchainName(),
+                                notReleased.getSyncNodeState(), etc);
                     } else {
                         stateText = String.format("%s --> released", stateText);
                     }

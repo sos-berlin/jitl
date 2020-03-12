@@ -15,15 +15,15 @@ public class MessageProducerJobJSAdapter extends JobSchedulerJobAdapter {
         try {
             super.spooler_process();
             MessageProducerOptions options = job.getOptions();
-            HashMap<String, String> map = getSchedulerParameterAsProperties(getParameters());
+            HashMap<String, String> map = getSchedulerParameterAsProperties(getJobOrOrderParameters(getSpoolerProcess().getOrder()));
             job.setJSJobUtilites(this);
             options.setAllOptions(map);
             job.setAllParams(map);
             job.execute();
+            return getSpoolerProcess().getSuccess();
         } catch (Exception e) {
             throw new JobSchedulerException("Error occured in spooler_process of MessageProducerJob:" + e.getMessage(), e);
         }
-        return signalSuccess();
     }
 
 }

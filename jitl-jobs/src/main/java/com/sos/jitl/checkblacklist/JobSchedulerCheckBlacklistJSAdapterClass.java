@@ -47,15 +47,15 @@ public class JobSchedulerCheckBlacklistJSAdapterClass extends JobSchedulerJobAda
         try {
             super.spooler_process();
             doProcessing();
+            return getSpoolerProcess().getSuccess();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
         }
-        return signalSuccess();
     }
 
     private void doProcessing() throws Exception {
         jobSchedulerCheckBlacklistOptions = new JobSchedulerCheckBlacklistOptions();
-        jobSchedulerCheckBlacklistOptions.setCurrentNodeName(this.getCurrentNodeName());
+        jobSchedulerCheckBlacklistOptions.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(), true));
         jobSchedulerCheckBlacklistOptions.setAllOptions(getSchedulerParameterAsProperties());
         jobSchedulerCheckBlacklistOptions.checkMandatory();
         checkBlacklist();
@@ -112,8 +112,8 @@ public class JobSchedulerCheckBlacklistJSAdapterClass extends JobSchedulerJobAda
                     b.created = order.getAttribute("created");
                     execute("Blacklist found for job_chain:" + b.job_chain + " file=" + b.id + "; created:" + b.created, b);
                 } else {
-                    execute(blacklistOrders.getLength() + " order found in Blacklist for job_chain:"
-                            + jobSchedulerCheckBlacklistOptions.job_chain.getValue(), b);
+                    execute(blacklistOrders.getLength() + " order found in Blacklist for job_chain:" + jobSchedulerCheckBlacklistOptions.job_chain
+                            .getValue(), b);
                     break;
                 }
             }

@@ -13,17 +13,17 @@ public class SOSSQLPlusJobJSAdapterClass extends JobSchedulerJobAdapter {
         try {
             super.spooler_process();
             doProcessing();
+            return getSpoolerProcess().getSuccess();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
         }
-        return signalSuccess();
     }
 
     private void doProcessing() throws Exception {
         SOSSQLPlusJob objR = new SOSSQLPlusJob();
         SOSSQLPlusJobOptions objO = objR.getOptions();
-        objO.setCurrentNodeName(this.getCurrentNodeName());
-        HashMap<String, String> jobOrOrderParameters = getJobOrOrderParameters();
+        objO.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(), true));
+        HashMap<String, String> jobOrOrderParameters = getJobOrOrderParameters(getSpoolerProcess().getOrder());
         String[] ignoreParams = new String[] { "ignore_sp2_messages", "ignore_ora_messages" };
         for (String ignoreParam : ignoreParams) {
             String value = jobOrOrderParameters.get(ignoreParam);
@@ -31,7 +31,7 @@ public class SOSSQLPlusJobJSAdapterClass extends JobSchedulerJobAdapter {
                 jobOrOrderParameters.put(ignoreParam, value + ";");
             }
         }
-        objO.setAllOptions(getSchedulerParameterAsProperties());
+        objO.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
         if (objO.command_script_file.isNotDirty()) {
             String strS = getJobScript();
             if (isNotEmpty(strS)) {
