@@ -187,8 +187,8 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
     private void doProcessing() throws Exception {
         jobSchedulerJoinOrders = new JobSchedulerJoinOrders();
         jobSchedulerJoinOrdersOptions = jobSchedulerJoinOrders.getOptions();
-        jobSchedulerJoinOrdersOptions.setCurrentNodeName(this.getCurrentNodeName());
-        jobSchedulerJoinOrdersOptions.setAllOptions(getSchedulerParameterAsProperties());
+        jobSchedulerJoinOrdersOptions.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(),false));
+        jobSchedulerJoinOrdersOptions.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
         jobSchedulerJoinOrdersOptions.checkMandatory();
         jobSchedulerJoinOrders.setJSJobUtilites(this);
 

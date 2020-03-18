@@ -230,11 +230,6 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
         logger.debug("objJSJobUtilities = " + objJSJobUtilities.getClass().getName());
     }
 
-    @Override
-    public String getCurrentNodeName() {
-        return null;
-    }
-
     public boolean existsFile(final SOSOptionFileName objFile, final SOSOptionRegExp fileSpec1, final SOSOptionTime minFileAge1,
             final SOSOptionTime maxFileAge1, final SOSOptionFileSize minFileSize1, final SOSOptionFileSize maxFileSize1,
             final SOSOptionInteger skipFirstFiles1, final SOSOptionInteger skipLastFiles1, final int minNumOfFiles, final int maxNumOfFiles)

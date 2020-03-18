@@ -91,12 +91,6 @@ public class JSReportAllParameters extends JSToolBox implements JSJobUtilities {
     }
 
     @Override
-    public String getCurrentNodeName() {
-        // TO DO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public void setStateText(final String pstrStateText) {
         // TO DO Auto-generated method stub
     }

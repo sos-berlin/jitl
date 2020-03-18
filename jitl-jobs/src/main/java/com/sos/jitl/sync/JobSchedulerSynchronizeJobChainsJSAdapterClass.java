@@ -81,9 +81,9 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
         JobSchedulerSynchronizeJobChains objR = new JobSchedulerSynchronizeJobChains();
         JobSchedulerSynchronizeJobChainsOptions objO = objR.getOptions();
         objR.setJSJobUtilites(this);
-        objO.setCurrentNodeName(this.getCurrentNodeName());
+        objO.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(),false));
 
-        objO.setAllOptions(getSchedulerParameterAsProperties());
+        objO.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
         setSetback(objO);
         objO.checkMandatory();
         String jobName = spooler_task.job().name();

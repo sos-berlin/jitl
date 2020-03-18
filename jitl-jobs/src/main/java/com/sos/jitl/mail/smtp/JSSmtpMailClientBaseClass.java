@@ -1,6 +1,7 @@
 package com.sos.jitl.mail.smtp;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
+import sos.spooler.Order;
 
 public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
 
@@ -9,19 +10,19 @@ public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
     protected JSSmtpMailClient objR = null;
     protected JSSmtpMailOptions objO = null;
 
-    protected void CreateOptions(final String pstrEntryPointName) throws Exception {
-        initializeLog4jAppenderClass();
+    protected void createOptions(Order order, final String pstrEntryPointName) throws Exception {
         objR = new JSSmtpMailClient();
         objO = objR.getOptions();
         objR.setJSJobUtilites(this);
         objR.setJSCommands(this);
-        String strStepName = this.getCurrentNodeName();
-        objO.setCurrentNodeName(strStepName).setCurrentJobName(this.getJobName()).setCurrentJobId(this.getJobId()).setCurrentJobFolder(this.getJobFolder());
-        objO.setAllOptions(getSchedulerParameterAsProperties());
+        String strStepName = this.getCurrentNodeName(order, false);
+        objO.setCurrentNodeName(strStepName).setCurrentJobName(this.getJobName()).setCurrentJobId(this.getJobId()).setCurrentJobFolder(this
+                .getJobFolder());
+        objO.setAllOptions(getSchedulerParameterAsProperties(order));
     }
 
-    protected void doProcessing() throws Exception {
-        CreateOptions("");
+    protected void doProcessing(Order order) throws Exception {
+        createOptions(order, "");
         objR.Execute();
     }
 

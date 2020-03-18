@@ -12,11 +12,10 @@ public class CleanupNotificationsJobJSAdapterClass extends JobSchedulerJobAdapte
     @Override
     public boolean spooler_init() {
         try {
+            super.spooler_init();
+
             job = new CleanupNotificationsJob();
             CleanupNotificationsJobOptions options = job.getOptions();
-            job.setJSJobUtilites(this);
-            job.setJSCommands(this);
-
             if (SOSString.isEmpty(options.hibernate_configuration_file_reporting.getValue())) {
                 options.hibernate_configuration_file_reporting.setValue(getHibernateConfigurationReporting().toString());
             }

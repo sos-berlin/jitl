@@ -234,11 +234,6 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
     }
 
     @Override
-    public String getCurrentNodeName() {
-        return null;
-    }
-
-    @Override
     public Object getSpoolerObject() {
         return null;
     }

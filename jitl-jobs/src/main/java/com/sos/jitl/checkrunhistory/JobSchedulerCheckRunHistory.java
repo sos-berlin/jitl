@@ -215,12 +215,7 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
             LOGGER.debug("pobjJSCommands = " + pobjJSCommands.getClass().getName());
         }
     }
-
-    @Override
-    public String getCurrentNodeName() {
-        return null;
-    }
-
+  
     @Override
     public Object getSpoolerObject() {
         return null;
