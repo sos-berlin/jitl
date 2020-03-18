@@ -75,7 +75,7 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
         try {
             Order order = spooler_task.order();
             jsEventsClientOptions.setCurrentNodeName(this.getCurrentNodeName(order,false));
-            jsEventsClientOptions.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters(order)));
+            jsEventsClientOptions.setAllOptions(getSchedulerParameterAsProperties(order));
         } catch (Exception e) {
             throw new JobSchedulerException("error " + e.getMessage(), e);
         }

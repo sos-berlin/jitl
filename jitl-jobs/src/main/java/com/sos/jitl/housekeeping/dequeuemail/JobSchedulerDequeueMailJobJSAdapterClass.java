@@ -26,7 +26,7 @@ public class JobSchedulerDequeueMailJobJSAdapterClass extends JobSchedulerJobAda
         JobSchedulerDequeueMailJobOptions jobSchedulerDequeueMailJobOptions = jobSchedulerDequeueMailJob.getOptions();
 
         jobSchedulerDequeueMailJobOptions.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(),true));
-        jobSchedulerDequeueMailJobOptions.setAllOptions(getSchedulerParameterAsProperties());
+        jobSchedulerDequeueMailJobOptions.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
 
         if (jobSchedulerDequeueMailJobOptions.smtpHost.isNotDirty()) {
             if (!"-queue".equalsIgnoreCase(spooler_log.mail().smtp())) {

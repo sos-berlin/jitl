@@ -55,8 +55,8 @@ public class JobSchedulerCheckBlacklistJSAdapterClass extends JobSchedulerJobAda
 
     private void doProcessing() throws Exception {
         jobSchedulerCheckBlacklistOptions = new JobSchedulerCheckBlacklistOptions();
-        jobSchedulerCheckBlacklistOptions.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(), true));
-        jobSchedulerCheckBlacklistOptions.setAllOptions(getSchedulerParameterAsProperties());
+        jobSchedulerCheckBlacklistOptions.setCurrentNodeName(getCurrentNodeName(getSpoolerProcess().getOrder(), true));
+        jobSchedulerCheckBlacklistOptions.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
         jobSchedulerCheckBlacklistOptions.checkMandatory();
         checkBlacklist();
     }

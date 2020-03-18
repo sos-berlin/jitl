@@ -21,7 +21,7 @@ public class JSBatchInstallerJSAdapterClass extends JobSchedulerJobAdapter {
         JSBatchInstaller objR = new JSBatchInstaller();
         JSBatchInstallerOptions objO = objR.Options();
         HashMap<String, String> hshT = null;
-        hshT = getSchedulerParameterAsProperties(getJobOrOrderParameters(getSpoolerProcess().getOrder()));
+        hshT = getSchedulerParameterAsProperties(getSpoolerProcess().getOrder());
         objO.setAllOptions(hshT);
         objO.checkMandatory();
         objR.setJSJobUtilites(this);

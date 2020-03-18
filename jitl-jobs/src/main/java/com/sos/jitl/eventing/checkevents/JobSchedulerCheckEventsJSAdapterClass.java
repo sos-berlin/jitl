@@ -29,7 +29,7 @@ public class JobSchedulerCheckEventsJSAdapterClass extends JobSchedulerJobAdapte
 
         jobSchedulerCheckEventsOptions.configuration_file.setValue(configurationFile);
         jobSchedulerCheckEventsOptions.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(), true));
-        jobSchedulerCheckEventsOptions.setAllOptions(getSchedulerParameterAsProperties());
+        jobSchedulerCheckEventsOptions.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
         jobSchedulerCheckEventsOptions.checkMandatory();
         jobSchedulerCheckEvents.setJSJobUtilites(this);
         jobSchedulerCheckEvents.Execute();

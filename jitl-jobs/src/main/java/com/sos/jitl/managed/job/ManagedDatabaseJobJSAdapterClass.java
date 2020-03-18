@@ -37,7 +37,7 @@ public class ManagedDatabaseJobJSAdapterClass extends JobSchedulerJobAdapter {
 
             ManagedDatabaseJobOptions options = job.getOptions();
             options.setCurrentNodeName(getCurrentNodeName(getSpoolerProcess().getOrder(), true));
-            options.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters(getSpoolerProcess().getOrder())));
+            options.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
 
             if (SOSString.isEmpty(options.command.getValue())) {
                 LOGGER.debug("\"command\" parameter is empty. set command from job script...");

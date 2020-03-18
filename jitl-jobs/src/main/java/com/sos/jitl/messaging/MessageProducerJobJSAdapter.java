@@ -15,7 +15,7 @@ public class MessageProducerJobJSAdapter extends JobSchedulerJobAdapter {
         try {
             super.spooler_process();
             MessageProducerOptions options = job.getOptions();
-            HashMap<String, String> map = getSchedulerParameterAsProperties(getJobOrOrderParameters(getSpoolerProcess().getOrder()));
+            HashMap<String, String> map = getSchedulerParameterAsProperties(getSpoolerProcess().getOrder());
             job.setJSJobUtilites(this);
             options.setAllOptions(map);
             job.setAllParams(map);

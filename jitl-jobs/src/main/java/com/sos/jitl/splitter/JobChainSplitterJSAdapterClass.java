@@ -32,7 +32,7 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
         if (spooler_task.job().order_queue() != null) {
             JobChainSplitterOptions jobChainSplitterOptions = new JobChainSplitterOptions();
             jobChainSplitterOptions.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(), true));
-            jobChainSplitterOptions.setAllOptions(getSchedulerParameterAsProperties());
+            jobChainSplitterOptions.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
             jobChainSplitterOptions.checkMandatory();
             Order currentOrder = getSpoolerProcess().getOrder();
             Variable_set orderParams = currentOrder.params();

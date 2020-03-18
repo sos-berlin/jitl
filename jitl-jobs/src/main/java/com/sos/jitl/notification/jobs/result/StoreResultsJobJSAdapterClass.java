@@ -22,7 +22,7 @@ public class StoreResultsJobJSAdapterClass extends JobSchedulerJobAdapter {
 
         job = new StoreResultsJob();
         options = job.getOptions();
-        options.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters(order)));
+        options.setAllOptions(getSchedulerParameterAsProperties(order));
         job.setJSJobUtilites(this);
 
         if (SOSString.isEmpty(options.scheduler_notification_hibernate_configuration_file.getValue())) {

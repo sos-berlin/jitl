@@ -26,9 +26,8 @@ public class JSUniversalAgentBatchInstallerJSAdapterClass extends JobSchedulerJo
     private void doProcessing() throws Exception {
         JSUniversalAgentBatchInstaller jsUniversalAgentBatchInstaller = new JSUniversalAgentBatchInstaller();
         JSUniversalAgentBatchInstallerOptions jsUniversalAgentBatchInstallerOptions = jsUniversalAgentBatchInstaller.options();
-        HashMap<String, String> parameters = getJobOrOrderParameters(getSpoolerProcess().getOrder());
-
-        jsUniversalAgentBatchInstallerOptions.setAllOptions(getSchedulerParameterAsProperties(parameters));
+        
+        jsUniversalAgentBatchInstallerOptions.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
         jsUniversalAgentBatchInstallerOptions.checkMandatory();
         jsUniversalAgentBatchInstaller.setJSJobUtilites(this);
         jsUniversalAgentBatchInstaller.setJSCommands(this);

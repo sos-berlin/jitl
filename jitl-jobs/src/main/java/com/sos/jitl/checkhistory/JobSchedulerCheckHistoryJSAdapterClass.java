@@ -21,7 +21,7 @@ public class JobSchedulerCheckHistoryJSAdapterClass extends JobSchedulerJobAdapt
         JobSchedulerCheckHistory jobSchedulerCheckRunHistory = new JobSchedulerCheckHistory();
         JobSchedulerCheckHistoryOptions jobSchedulerCheckHistoryOptions = jobSchedulerCheckRunHistory.options();
         jobSchedulerCheckHistoryOptions.setCurrentNodeName(getCurrentNodeName(getSpoolerProcess().getOrder(), true));
-        jobSchedulerCheckHistoryOptions.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters(getSpoolerProcess().getOrder())));
+        jobSchedulerCheckHistoryOptions.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
         jobSchedulerCheckRunHistory.setJSJobUtilites(this);
         jobSchedulerCheckRunHistory.setJSCommands(this);
         jobSchedulerCheckRunHistory.setPathOfJob(spooler_job.folder_path());
