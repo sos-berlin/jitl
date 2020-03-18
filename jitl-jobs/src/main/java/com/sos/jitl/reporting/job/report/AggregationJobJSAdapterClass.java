@@ -25,7 +25,7 @@ public class AggregationJobJSAdapterClass extends JobSchedulerJobAdapter {
 
             job = new AggregationJob();
             AggregationJobOptions options = job.getOptions();
-            options.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
+            options.setAllOptions(getSchedulerParameterAsProperties(spooler_task.order()));
             job.setJSJobUtilites(this);
             job.setJSCommands(this);
             options.current_scheduler_http_port.setValue(String.valueOf(Integer.parseInt(stateElement.getAttribute("http_port"))));
@@ -48,7 +48,7 @@ public class AggregationJobJSAdapterClass extends JobSchedulerJobAdapter {
 
             AggregationJobOptions options = job.getOptions();
             options.setCurrentNodeName(getCurrentNodeName(getSpoolerProcess().getOrder(), true));
-            options.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters(getSpoolerProcess().getOrder())));
+            options.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
 
             job.openSession();
             job.execute();

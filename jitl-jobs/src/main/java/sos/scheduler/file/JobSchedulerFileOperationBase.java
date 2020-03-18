@@ -276,7 +276,7 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
         try {
             super.spooler_process();
             params = null;
-            params = getSchedulerParameterAsProperties();
+            params = getSchedulerParameterAsProperties(getSpoolerProcess().getOrder());
             getParametersFromHashMap();
         } catch (Exception e) {
             LOGGER.error("Error during initializing", e);

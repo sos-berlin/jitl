@@ -24,7 +24,7 @@ public class CopyJob2OrderParameterJSAdapterClass extends JobSchedulerJobAdapter
     private void doProcessing() throws Exception {
         CopyJob2OrderParameter objR = new CopyJob2OrderParameter();
         CopyJob2OrderParameterOptions objO = objR.Options();
-        objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters(getSpoolerProcess().getOrder())));
+        objO.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
         objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();

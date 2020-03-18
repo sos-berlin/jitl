@@ -15,7 +15,7 @@ public class ResultSet2CSVJobJSAdapterClass extends JobSchedulerJobAdapter {
 
             ResultSet2CSVJobOptions options = job.getOptions();
             options.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(), true));
-            options.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters(getSpoolerProcess().getOrder())));
+            options.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
             job.setJSJobUtilites(this);
             job.setJSCommands(this);
 

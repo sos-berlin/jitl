@@ -18,7 +18,7 @@ public class JobSchedulerManagedDBReportJobJSAdapterClass extends JobSchedulerJo
     private void doProcessing() throws Exception {
         JobSchedulerManagedDBReportJob objR = new JobSchedulerManagedDBReportJob();
         JobSchedulerManagedDBReportJobOptions objO = objR.Options();
-        objO.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters(getSpoolerProcess().getOrder())));
+        objO.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
         objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();

@@ -51,7 +51,7 @@ public class SystemNotifierJobJSAdapterClass extends JobSchedulerJobAdapter {
 
             SystemNotifierJobOptions options = job.getOptions();
             options.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(), true));
-            options.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters(getSpoolerProcess().getOrder())));
+            options.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
 
             job.openSession();
             job.execute();

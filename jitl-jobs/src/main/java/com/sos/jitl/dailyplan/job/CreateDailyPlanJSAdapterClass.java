@@ -40,7 +40,7 @@ public class CreateDailyPlanJSAdapterClass extends JobSchedulerJobAdapter {
 		LOGGER.debug(String.format(getMessages().getMsg("JSJ-I-110"), conMethodName));
 		CreateDailyPlan createDailyPlan = new CreateDailyPlan();
 		CreateDailyPlanOptions createDailyPlanOptions = createDailyPlan.getOptions();
-		createDailyPlanOptions.setAllOptions(getSchedulerParameterAsProperties());
+		createDailyPlanOptions.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
 
 		if (createDailyPlanOptions.dayOffset.isNotDirty()) {
 			createDailyPlanOptions.dayOffset.value(DEFAULT_DAYS_OFFSET);
