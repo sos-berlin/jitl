@@ -103,12 +103,6 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
 	}
 
 	@Override
-	public String getCurrentNodeName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public void setStateText(final String pstrStateText) {
 		// TODO Auto-generated method stub
 	}

@@ -53,7 +53,7 @@ public class SetSpecialParameters extends JobSchedulerJobAdapter {
 				specialParams.put("SCHEDULER_JOB_CHAIN_TITLE", jobChain.title());
 				specialParams.put("SCHEDULER_JOB_CHAIN_PATH", jobChain.path());
 				specialParams.put("SCHEDULER_ORDER_ID", order.id());
-				specialParams.put("SCHEDULER_NODE_NAME", getCurrentNodeName(false));
+				specialParams.put("SCHEDULER_NODE_NAME", getCurrentNodeName(order,false));
 				specialParams.put("SCHEDULER_NEXT_NODE_NAME", jobChainNode.next_state());
 				specialParams.put("SCHEDULER_NEXT_ERROR_NODE_NAME", jobChainNode.error_state());
 			}

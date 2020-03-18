@@ -80,12 +80,7 @@ public class JSUniversalAgentBatchInstaller extends JSToolBox implements JSJobUt
         LOGGER.debug("objJSJobUtilities = " + objJSJobUtilities.getClass().getName());
     }
 
-    @Override
-    public String getCurrentNodeName() {
-        return null;
-    }
-
-    public void setJSCommands(final IJSCommands pobjJSCommands) {
+   public void setJSCommands(final IJSCommands pobjJSCommands) {
         if (pobjJSCommands == null) {
             objJSCommands = this;
         } else {

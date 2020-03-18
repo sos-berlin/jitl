@@ -82,13 +82,7 @@ public class JSBatchInstaller extends JSToolBox implements JSJobUtilities, IJSCo
         LOGGER.debug("objJSJobUtilities = " + objJSJobUtilities.getClass().getName());
     }
 
-    @Override
-    public String getCurrentNodeName() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public void setJSCommands(final IJSCommands pobjJSCommands) {
+   public void setJSCommands(final IJSCommands pobjJSCommands) {
         if (pobjJSCommands == null) {
             objJSCommands = this;
         } else {

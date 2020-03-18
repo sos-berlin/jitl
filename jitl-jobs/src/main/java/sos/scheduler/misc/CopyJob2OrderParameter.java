@@ -77,13 +77,7 @@ public class CopyJob2OrderParameter extends JSToolBox implements JSJobUtilities 
         }
         LOGGER.debug("objJSJobUtilities = " + objJSJobUtilities.getClass().getName());
     }
-
-    @Override
-    public String getCurrentNodeName() {
-        // TO DO Auto-generated method stub
-        return null;
-    }
-
+   
     @Override
     public void setStateText(final String pstrStateText) {
         // TO DO Auto-generated method stub
