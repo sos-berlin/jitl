@@ -1,5 +1,6 @@
 package com.sos.jitl.restclient;
 
+import org.apache.commons.codec.binary.Base64;
 
 public class WebserviceCredentials {
 
@@ -7,6 +8,24 @@ public class WebserviceCredentials {
     private String user = "";
     private String password = "";
     private String accessToken = "";
+	private String userDecodedAccount="";
+    private String jocUrl;
+
+    public String getUserDecodedAccount() {
+		return userDecodedAccount;
+	}
+
+	public void setUserDecodedAccount(String userDecodedAccount) {
+		this.userDecodedAccount = userDecodedAccount;
+	}
+
+	public String getJocUrl() {
+		return jocUrl;
+	}
+
+	public void setJocUrl(String jocUrl) {
+		this.jocUrl = jocUrl;
+	}
 
     public WebserviceCredentials(String schedulerId, String user, String password, String accessToken) {
         super();
@@ -53,5 +72,13 @@ public class WebserviceCredentials {
         }
     }
     
+    public String getUserEncodedAccount() {
+    	byte[] authEncBytes = Base64.encodeBase64(userDecodedAccount.getBytes());
+		return new String(authEncBytes);
+    }
+
+	public String getUser() {
+		return user;
+	}
  
 }
