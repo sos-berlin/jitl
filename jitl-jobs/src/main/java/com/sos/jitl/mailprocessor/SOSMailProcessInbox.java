@@ -89,7 +89,7 @@ public class SOSMailProcessInbox extends JSJobUtilitiesClass<SOSMailProcessInbox
 	}
 
 	@Override
-	public void setJSParam(String pstrKey, StringBuffer pstrValue) {
+	public void setJSParam(String pstrKey, StringBuilder pstrValue) {
 	}
 
 	public void setJSJobUtilites(JSJobUtilities pobjJSJobUtilities) {

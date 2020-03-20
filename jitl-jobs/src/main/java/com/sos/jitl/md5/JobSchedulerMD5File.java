@@ -127,7 +127,7 @@ public class JobSchedulerMD5File extends JSJobUtilitiesClass<JobSchedulerMD5File
     }
 
     @Override
-    public void setJSParam(String pstrKey, StringBuffer pstrValue) {
+    public void setJSParam(String pstrKey, StringBuilder pstrValue) {
 
     }
 

@@ -89,7 +89,7 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
 	}
 
 	@Override
-	public void setJSParam(final String pstrKey, final StringBuffer pstrValue) {
+	public void setJSParam(final String pstrKey, final StringBuilder pstrValue) {
 	}
 
 	@Override
