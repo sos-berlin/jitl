@@ -55,7 +55,7 @@ public class SystemNotifierJobJSAdapterClass extends JobSchedulerJobAdapter {
 
             job.openSession();
             job.execute();
-            return getSpoolerProcess().getSuccess();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.toString(), e);
         } finally {

@@ -47,7 +47,7 @@ public class JobSchedulerCheckBlacklistJSAdapterClass extends JobSchedulerJobAda
         try {
             super.spooler_process();
             doProcessing();
-            return getSpoolerProcess().getSuccess();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
         }

@@ -14,7 +14,7 @@ public class CopyJob2OrderParameterJSAdapterClass extends JobSchedulerJobAdapter
         try {
             super.spooler_process();
             doProcessing();
-            return getSpoolerProcess().getSuccess();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             LOGGER.error(e.toString(), e);
             return false;

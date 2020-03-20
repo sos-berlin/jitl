@@ -20,7 +20,7 @@ public class CSV2CSVJobJSAdapterClass extends JobSchedulerJobAdapter {
             job.setJSCommands(this);
 
             job.execute();
-            return getSpoolerProcess().getSuccess();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
         }

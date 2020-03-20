@@ -16,7 +16,7 @@ public class JobSchedulerCheckEventsJSAdapterClass extends JobSchedulerJobAdapte
         doProcessing();
 
         if (success) {
-            return getSpoolerProcess().getSuccess();
+            return getSpoolerProcess().isOrderJob();
         } else {
             return false;
         }

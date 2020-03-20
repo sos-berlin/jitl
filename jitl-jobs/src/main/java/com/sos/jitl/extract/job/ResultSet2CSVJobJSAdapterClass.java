@@ -21,7 +21,7 @@ public class ResultSet2CSVJobJSAdapterClass extends JobSchedulerJobAdapter {
 
             job.init();
             job.execute();
-            return getSpoolerProcess().getSuccess();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
         } finally {

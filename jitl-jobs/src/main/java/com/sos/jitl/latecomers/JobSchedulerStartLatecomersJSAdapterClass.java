@@ -14,7 +14,7 @@ public class JobSchedulerStartLatecomersJSAdapterClass extends JobSchedulerJobAd
 		try {
 			super.spooler_process();
 			doProcessing();
-			return getSpoolerProcess().getSuccess();
+			return getSpoolerProcess().isOrderJob();
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage(), e);
 			throw(e);

@@ -12,7 +12,7 @@ public class JSSmtpMailClientAdapterClass extends JSSmtpMailClientBaseClass {
         try {
             super.spooler_process();
             doProcessing(getSpoolerProcess().getOrder());
-            return getSpoolerProcess().getSuccess();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
             throw e;
