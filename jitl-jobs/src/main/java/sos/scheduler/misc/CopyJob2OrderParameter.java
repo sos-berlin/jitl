@@ -64,7 +64,7 @@ public class CopyJob2OrderParameter extends JSToolBox implements JSJobUtilities 
     }
 
     @Override
-    public void setJSParam(final String pstrKey, final StringBuffer pstrValue) {
+    public void setJSParam(final String pstrKey, final StringBuilder pstrValue) {
 
     }
 

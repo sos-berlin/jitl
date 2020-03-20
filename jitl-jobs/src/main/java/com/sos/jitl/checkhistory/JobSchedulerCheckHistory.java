@@ -211,7 +211,7 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
     }
 
     @Override
-    public void setJSParam(final String pstrKey, final StringBuffer pstrValue) {
+    public void setJSParam(final String pstrKey, final StringBuilder pstrValue) {
     }
 
     @Override

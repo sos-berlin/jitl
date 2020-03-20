@@ -77,7 +77,7 @@ public class JobSchedulerTextProcessor extends JSJobUtilitiesClass<JobSchedulerT
     }
 
     @Override
-    public void setJSParam(String pstrKey, StringBuffer pstrValue) {
+    public void setJSParam(String pstrKey, StringBuilder pstrValue) {
 
     }
 

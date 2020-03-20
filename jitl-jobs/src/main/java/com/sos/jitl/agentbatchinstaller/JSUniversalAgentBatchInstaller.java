@@ -67,7 +67,7 @@ public class JSUniversalAgentBatchInstaller extends JSToolBox implements JSJobUt
     }
 
     @Override
-    public void setJSParam(final String pstrKey, final StringBuffer pstrValue) {
+    public void setJSParam(final String pstrKey, final StringBuilder pstrValue) {
     }
 
     @Override
