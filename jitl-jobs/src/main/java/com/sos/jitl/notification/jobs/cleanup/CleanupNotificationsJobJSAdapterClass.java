@@ -39,7 +39,7 @@ public class CleanupNotificationsJobJSAdapterClass extends JobSchedulerJobAdapte
 
             job.openSession();
             job.execute();
-            return getSpoolerProcess().getSuccess();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.toString(), e);
         } finally {

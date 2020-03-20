@@ -53,13 +53,13 @@ public class JobSchedulerSynchronizeJobChainsJSAdapterClass extends JobScheduler
                     }
                 }
                 o.set_params(resultParameters);
-                return getSpoolerProcess().getSuccess();
+                return getSpoolerProcess().isOrderJob();
             }
             doProcessing();
         } catch (Exception e) {
             throw new JobSchedulerException("--- Fatal Error: " + e.getMessage(), e);
         }
-        return getSpoolerProcess() == null ? signalSuccess(spooler_task.order()) : getSpoolerProcess().getSuccess();
+        return getSpoolerProcess() == null ? signalSuccess(spooler_task.order()) : getSpoolerProcess().isOrderJob();
     }
 
     private void setSetback(JobSchedulerSynchronizeJobChainsOptions objO) {

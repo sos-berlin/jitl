@@ -20,7 +20,7 @@ public class MessageProducerJobJSAdapter extends JobSchedulerJobAdapter {
             options.setAllOptions(map);
             job.setAllParams(map);
             job.execute();
-            return getSpoolerProcess().getSuccess();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             throw new JobSchedulerException("Error occured in spooler_process of MessageProducerJob:" + e.getMessage(), e);
         }

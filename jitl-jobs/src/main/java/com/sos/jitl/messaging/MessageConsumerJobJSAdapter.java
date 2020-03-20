@@ -26,7 +26,7 @@ public class MessageConsumerJobJSAdapter extends JobSchedulerJobAdapter {
             if (options.getExecuteXml().value()) {
                 executeXmlForAllTargets(job.getMessageXml());
             }
-            return getSpoolerProcess().getSuccess();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             throw new JobSchedulerException("Error occured in spooler_process of MessageConsumerJob: ", e);
         }

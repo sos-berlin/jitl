@@ -53,7 +53,7 @@ public class AggregationJobJSAdapterClass extends JobSchedulerJobAdapter {
             job.openSession();
             job.execute();
 
-            return getSpoolerProcess().getSuccess();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
         } finally {

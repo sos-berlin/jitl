@@ -43,7 +43,7 @@ public class InventoryJobJSAdapterClass extends JobSchedulerJobAdapter {
             job.setAnswerXml(executeXml());
             job.init();
             job.execute();
-            return getSpoolerProcess().getSuccess();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             throw new SOSException("Fatal Error:" + e.getMessage(), e);
         } finally {

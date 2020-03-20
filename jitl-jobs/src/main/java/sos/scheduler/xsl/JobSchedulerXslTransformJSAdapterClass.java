@@ -38,7 +38,7 @@ public class JobSchedulerXslTransformJSAdapterClass extends JobSchedulerJobAdapt
         try {
             super.spooler_process();
             doProcessing();
-            return getSpoolerProcess().getSuccess();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             LOGGER.error(e.toString(), e);
             throw new JobSchedulerException(e);

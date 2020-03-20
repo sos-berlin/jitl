@@ -12,7 +12,7 @@ public class JSEventsClientJSAdapterClass extends JSEventsClientBaseClass {
         try {
             super.spooler_process();
             doProcessing();
-            return getSpoolerProcess().getSuccess();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
             throw e;

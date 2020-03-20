@@ -62,7 +62,7 @@ public class ManagedDatabaseJobJSAdapterClass extends JobSchedulerJobAdapter {
             if (job.getModel().getWarning() != null) {
                 spooler_log.warn(job.getModel().getWarning());
             }
-            return getSpoolerProcess().getSuccess();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             throw new JobSchedulerException(String.format("Exception: %s", e.toString()), e);
         }

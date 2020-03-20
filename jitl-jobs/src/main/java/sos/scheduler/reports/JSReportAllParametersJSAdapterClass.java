@@ -49,7 +49,7 @@ public class JSReportAllParametersJSAdapterClass extends JobSchedulerJobAdapter 
         try {
             super.spooler_process();
             doProcessing();
-            return getSpoolerProcess().getSuccess();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             return false;
         }

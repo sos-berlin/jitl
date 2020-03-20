@@ -1,7 +1,5 @@
 package com.sos.jitl.agentbatchinstaller;
 
-import java.util.HashMap;
-
 import sos.scheduler.job.JobSchedulerJobAdapter;
 
 public class JSUniversalAgentBatchInstallerJSAdapterClass extends JobSchedulerJobAdapter {
@@ -15,7 +13,7 @@ public class JSUniversalAgentBatchInstallerJSAdapterClass extends JobSchedulerJo
     public boolean spooler_process() throws Exception {
         super.spooler_process();
         doProcessing();
-        return getSpoolerProcess().getSuccess();
+        return getSpoolerProcess().isOrderJob();
     } // spooler_process
 
     @Override

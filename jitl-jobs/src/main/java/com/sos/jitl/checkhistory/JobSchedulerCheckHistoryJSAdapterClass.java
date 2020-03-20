@@ -11,7 +11,7 @@ public class JobSchedulerCheckHistoryJSAdapterClass extends JobSchedulerJobAdapt
         try {
             super.spooler_process();
             doProcessing();
-            return getSpoolerProcess().getSuccess();
+            return getSpoolerProcess().isOrderJob();
         } catch (JobSchedulerException e) {
             return false;
         }
