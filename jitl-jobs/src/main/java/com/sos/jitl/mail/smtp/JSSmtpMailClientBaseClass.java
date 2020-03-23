@@ -15,9 +15,8 @@ public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
         objO = objR.getOptions();
         objR.setJSJobUtilites(this);
         objR.setJSCommands(this);
-        String strStepName = this.getCurrentNodeName(order, false);
-        objO.setCurrentNodeName(strStepName).setCurrentJobName(this.getJobName()).setCurrentJobId(this.getJobId()).setCurrentJobFolder(this
-                .getJobFolder());
+        String strStepName = getCurrentNodeName(order, false);
+        objO.setCurrentJobId(getJobId()).setCurrentJobName(getJobName()).setCurrentJobFolder(getJobFolder()).setCurrentNodeName(strStepName);
         objO.setAllOptions(getSchedulerParameterAsProperties(order));
     }
 
