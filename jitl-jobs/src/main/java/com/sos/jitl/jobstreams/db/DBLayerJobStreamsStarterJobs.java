@@ -83,11 +83,6 @@ public class DBLayerJobStreamsStarterJobs {
 
     public Integer deleteCascading(FilterJobStreamStarterJobs filter) throws SOSHibernateException {
 
-        DBLayerJobStreamJobParameters dbLayerJobStreamJobParameters = new DBLayerJobStreamJobParameters(sosHibernateSession);
-        FilterJobStreamJobParameters filterJobStreamJobParameters = new FilterJobStreamJobParameters();
-        filterJobStreamJobParameters.setJobId(filter.getId());
-        dbLayerJobStreamJobParameters.delete(filterJobStreamJobParameters);
-
         int row = 0;
         String hql = "";
 

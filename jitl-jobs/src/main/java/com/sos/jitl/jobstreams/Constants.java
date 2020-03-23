@@ -47,10 +47,6 @@ public class Constants {
     public static final String JOB_STREAM_NODE_TABLE_SEQUENCE = "JSTREAM_NODE_ID_SEQ";
     public static final String JOB_STREAM_NODE_TABLE = "JSTREAM_NODES";
 
-    public static final String DBItemJobStreamJobParameter = com.sos.jitl.jobstreams.db.DBItemJobStreamJobParameter.class.getSimpleName();
-    public static final String JOB_STREAM_JOB_PARAMETER_TABLE_SEQUENCE = "JSTREAM_JOB_PARAMETER_ID_SEQ";
-    public static final String JOB_STREAM_JOB_PARAMETER_TABLE = "JSTREAM_JOB_PARAMETERS";
-
     public static final String DBItemJobStreamParameter = com.sos.jitl.jobstreams.db.DBItemJobStreamParameter.class.getSimpleName();
     public static final String JOB_STREAM_PARAMETER_TABLE_SEQUENCE = "JSTREAM_PARAMETER_ID_SEQ";
     public static final String JOB_STREAM_PARAMETER_TABLE = "JSTREAM_PARAMETERS";
@@ -88,7 +84,6 @@ public class Constants {
 
         cl.add(com.sos.jitl.jobstreams.db.DBItemJobStream.class);
         cl.add(com.sos.jitl.jobstreams.db.DBItemJobStreamHistory.class);
-        cl.add(com.sos.jitl.jobstreams.db.DBItemJobStreamJobParameter.class);
         cl.add(com.sos.jitl.jobstreams.db.DBItemJobStreamStarterJob.class);
         cl.add(com.sos.jitl.jobstreams.db.DBItemJobStreamStarter.class);
         cl.add(com.sos.jitl.jobstreams.db.DBItemJobStreamTaskContext.class);
