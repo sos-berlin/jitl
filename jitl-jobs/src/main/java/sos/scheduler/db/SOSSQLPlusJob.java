@@ -52,7 +52,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
             if (objOptions.command_script_file.isDirty()) {
                 strCommandParams += " @" + strTempFileName;
             }
-            HashMap<String, String> objSettings = objOptions.getSettings4StepName();
+            HashMap<String, String> objSettings = getSettings4StepName();
             JSTextFile objTF = new JSTextFile(strTempFileName);
             for (final Object element : objSettings.entrySet()) {
                 final Map.Entry<String, String> mapItem = (Map.Entry<String, String>) element;
@@ -160,6 +160,27 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
         return this;
     }
 
+    private HashMap<String, String> getSettings4StepName() {
+        HashMap<String, String> objS = new HashMap<String, String>();
+        int intStartPos = objOptions.getCurrentNodeName().length() + 1;
+        for (Map.Entry<String, String> mapItem : objOptions.settings().entrySet()) {
+            String strMapKey = mapItem.getKey();
+            String strValue = mapItem.getValue();
+            if (strMapKey.indexOf("/") != -1) {
+                if (strMapKey.startsWith(objOptions.getCurrentNodeName() + "/")) {
+                    strMapKey = strMapKey.substring(intStartPos);
+                } else {
+                    strValue = null;
+                }
+            }
+            if (strValue != null) {
+                LOGGER.debug(strMapKey + " = " + strValue);
+                objS.put(strMapKey, strValue);
+            }
+        }
+        return objS;
+    }
+    
     public String sqlPlusVariableName(String s) {
         if (s.length() > 30) {
             s = s.substring(0, 29) + "_";
