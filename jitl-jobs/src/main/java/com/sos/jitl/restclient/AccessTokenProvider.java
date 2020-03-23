@@ -15,7 +15,8 @@ import sos.util.SOSPrivateConf;
 
 public class AccessTokenProvider {
 
-	private static final String JOC_URL = "joc_url";
+	private static final String DEFAULT_PRIVATE_CONF_FILENAME = "config/private/private.conf";
+    private static final String JOC_URL = "joc_url";
 	private static final Logger LOGGER = LoggerFactory.getLogger(AccessTokenProvider.class);
 	private static final String X_ACCESS_TOKEN = "X-Access-Token";
 	private static final int MAX_WAIT_TIME_FOR_ACCESS_TOKEN = 30;
@@ -25,9 +26,16 @@ public class AccessTokenProvider {
 
 	public AccessTokenProvider(JobSchedulerCredentialStoreJOCParameters options) {
 		super();
+		profileFileName = DEFAULT_PRIVATE_CONF_FILENAME;
 		this.jobSchedulerCredentialStoreParameters = options;
 	}
 
+	public AccessTokenProvider(JobSchedulerCredentialStoreJOCParameters options, String profileName) {
+		super();
+		this.profileFileName = profileName;
+		this.jobSchedulerCredentialStoreParameters = options;
+	}
+	
 	private void setSpoolerVariable(Spooler spooler, String name, String value) {
 		if (spooler != null) {
 			spooler.variables().set_value(name, value);
