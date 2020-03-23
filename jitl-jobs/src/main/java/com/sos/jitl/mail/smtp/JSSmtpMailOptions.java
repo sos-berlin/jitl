@@ -5,8 +5,6 @@ import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sos.net.mail.options.SOSSmtpMailOptions;
-
 import com.sos.JSHelper.Annotations.JSOptionClass;
 import com.sos.JSHelper.Annotations.JSOptionDefinition;
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
@@ -17,6 +15,8 @@ import com.sos.JSHelper.Options.SOSOptionBoolean;
 import com.sos.JSHelper.Options.SOSOptionHostName;
 import com.sos.JSHelper.Options.SOSOptionPortNumber;
 
+import sos.net.mail.options.SOSSmtpMailOptions;
+
 @JSOptionClass(name = "JSSmtpMailOptions", description = "Launch and observe any given job or job chain")
 public class JSSmtpMailOptions extends SOSSmtpMailOptions {
 
@@ -26,6 +26,9 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
     public JSSmtpMailOptions objMailOnError = null;
     public JSSmtpMailOptions objMailOnSuccess = null;
     public JSSmtpMailOptions objMailOnJobStart = null;
+    private String currentJobFolder = "";
+    private String currentJobName = "";
+    private int currentJobId = 0;
 
     public enum enuMailClasses {
         MailDefault, MailOnError, MailOnSuccess, MailOnJobStart;
@@ -127,8 +130,7 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
         }
     }
 
-    @JSOptionDefinition(name = "tasklog_to_body", description = "add task log to body", key = "tasklog_to_body", type = "SOSOptionBoolean",
-            mandatory = false)
+    @JSOptionDefinition(name = "tasklog_to_body", description = "add task log to body", key = "tasklog_to_body", type = "SOSOptionBoolean", mandatory = false)
     public SOSOptionBoolean tasklog_to_body = new SOSOptionBoolean(this, "tasklog_to_body", "add task log to body", "false", "false", false);
 
     public SOSOptionBoolean gettasklog_to_body() {
@@ -163,8 +165,7 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
         job_id = p_job_id;
     }
 
-    @JSOptionDefinition(name = "scheduler_host", description = "jobscheduler hostname", key = "scheduler_host", type = "SOSOptionHostName",
-            mandatory = false)
+    @JSOptionDefinition(name = "scheduler_host", description = "jobscheduler hostname", key = "scheduler_host", type = "SOSOptionHostName", mandatory = false)
     public SOSOptionHostName scheduler_host = new SOSOptionHostName(this, "scheduler_host", "jobscheduler hostname", "localhost", "localhost", false);
 
     public SOSOptionHostName getscheduler_host() {
@@ -175,8 +176,7 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
         scheduler_host = p_scheduler_host;
     }
 
-    @JSOptionDefinition(name = "scheduler_port", description = "jobscheduler port", key = "scheduler_port", type = "SOSOptionPortNumber",
-            mandatory = false)
+    @JSOptionDefinition(name = "scheduler_port", description = "jobscheduler port", key = "scheduler_port", type = "SOSOptionPortNumber", mandatory = false)
     public SOSOptionPortNumber scheduler_port = new SOSOptionPortNumber(this, "scheduler_port", "jobscheduler port", "", "", false);
 
     public SOSOptionPortNumber getscheduler_port() {
@@ -185,6 +185,33 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
 
     public void setscheduler_port(final SOSOptionPortNumber p_scheduler_port) {
         scheduler_port = p_scheduler_port;
+    }
+
+    public JSSmtpMailOptions setCurrentJobFolder(final String val) throws Exception {
+        currentJobFolder = val;
+        return this;
+    }
+
+    public String getCurrentJobFolder() {
+        return currentJobFolder;
+    }
+
+    public JSSmtpMailOptions setCurrentJobId(final int val) throws Exception {
+        currentJobId = val;
+        return this;
+    }
+
+    public int getCurrentJobId() {
+        return currentJobId;
+    }
+
+    public JSSmtpMailOptions setCurrentJobName(final String val) throws Exception {
+        currentJobName = val;
+        return this;
+    }
+
+    public String getCurrentJobName() {
+        return currentJobName;
     }
 
 }
