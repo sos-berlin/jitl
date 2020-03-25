@@ -60,7 +60,7 @@ public class JSEventsClient extends JSJobUtilitiesClass<JSEventsClientOptions> {
                 if (objOptions.EventParameter.isDirty() == true) {
                     eventParameters.put(objOptions.EventParameter.getShortKey(), objOptions.EventParameter.getValue());
                     String[] strEP = objOptions.EventParameter.getValue().split(";");
-                    HashMap<String, String> objH = objOptions.settings();
+                    HashMap<String, String> objH = objOptions.getSettings();
                     for (String strParamName : strEP) {
                         strParamName = strParamName.trim();
                         String strValue = objH.get(strParamName);

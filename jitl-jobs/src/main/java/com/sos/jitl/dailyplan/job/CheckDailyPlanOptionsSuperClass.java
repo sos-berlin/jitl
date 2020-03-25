@@ -17,8 +17,7 @@ public class CheckDailyPlanOptionsSuperClass extends JSOptionsClass {
     private static final long serialVersionUID = 1L;
     private final String conClassName = "CheckDailyScheduleOptionsSuperClass";
 
-    @JSOptionDefinition(name = "configuration_file", description = "Die Datei mit den Einstellungen f? Datenbank. Beispiel: <?xml v",
-            key = "configuration_file", type = "SOSOptionString", mandatory = false)
+    @JSOptionDefinition(name = "configuration_file", description = "Die Datei mit den Einstellungen f? Datenbank. Beispiel: <?xml v", key = "configuration_file", type = "SOSOptionString", mandatory = false)
     public SOSOptionString configuration_file = new SOSOptionString(this, conClassName + ".configuration_file",
             "Die Datei mit den Einstellungen f? Datenbank. Beispiel: <?xml v", " ", " ", false);
 
@@ -52,10 +51,9 @@ public class CheckDailyPlanOptionsSuperClass extends JSOptionsClass {
         this.scheduler_id = p_scheduler_id;
     }
 
-    @JSOptionDefinition(name = "check_all_jobscheduler_instances", description = "", key = "check_all_jobscheduler_instances",
-            type = "SOSOptionBool", mandatory = false)
-    public SOSOptionBoolean check_all_jobscheduler_instances = new SOSOptionBoolean(this, conClassName + ".check_all_jobscheduler_instances", "",
-            "", "", false);
+    @JSOptionDefinition(name = "check_all_jobscheduler_instances", description = "", key = "check_all_jobscheduler_instances", type = "SOSOptionBool", mandatory = false)
+    public SOSOptionBoolean check_all_jobscheduler_instances = new SOSOptionBoolean(this, conClassName + ".check_all_jobscheduler_instances", "", "",
+            "", false);
 
     public SOSOptionBoolean getcheck_all_jobscheduler_instances() {
         return check_all_jobscheduler_instances;
@@ -79,10 +77,9 @@ public class CheckDailyPlanOptionsSuperClass extends JSOptionsClass {
         this.setAllOptions(JSSettings);
     }
 
-    public void setAllOptions(HashMap<String, String> pobjJSSettings) {
-        objSettings = pobjJSSettings;
-        super.setAllOptions(pobjJSSettings);
- 
+    public void setAllOptions(HashMap<String, String> settings) {
+        super.setAllOptions(settings);
+
     } // public void setAllOptions (HashMap <String, String> JSSettings)
 
     @Override
@@ -97,7 +94,7 @@ public class CheckDailyPlanOptionsSuperClass extends JSOptionsClass {
     @Override
     public void commandLineArgs(String[] pstrArgs) {
         super.commandLineArgs(pstrArgs);
-        this.setAllOptions(super.objSettings);
+        this.setAllOptions(super.getSettings());
     }
 
 }
