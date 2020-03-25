@@ -13,7 +13,7 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.VirtualFileSystem.Factory.VFSFactory;
 import com.sos.VirtualFileSystem.Interfaces.ISOSVFSHandler;
 import com.sos.VirtualFileSystem.JMS.SOSVfsJms;
-import com.sos.VirtualFileSystem.Options.SOSConnection2OptionsAlternate;
+import com.sos.VirtualFileSystem.Options.SOSDestinationOptions;
 
 public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptions> {
 
@@ -110,7 +110,7 @@ public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptio
     }
 
     public MessageProducerJob connect() {
-        SOSConnection2OptionsAlternate alternateOptions = getAlternateOptions();
+        SOSDestinationOptions alternateOptions = getAlternateOptions();
         try {
             getOptions().checkMandatory();
             vfsHandler.connect(alternateOptions);
@@ -121,8 +121,8 @@ public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptio
         return this;
     }
 
-    public SOSConnection2OptionsAlternate getAlternateOptions() {
-        SOSConnection2OptionsAlternate alternateOptions = new SOSConnection2OptionsAlternate();
+    public SOSDestinationOptions getAlternateOptions() {
+        SOSDestinationOptions alternateOptions = new SOSDestinationOptions();
         alternateOptions.host.setValue(objOptions.getMessagingServerHostName().getValue());
         alternateOptions.port.value(objOptions.getMessagingServerPort().value());
         return alternateOptions;
