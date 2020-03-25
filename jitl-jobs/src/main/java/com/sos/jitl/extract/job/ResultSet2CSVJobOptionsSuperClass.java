@@ -156,7 +156,6 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     public void setAllOptions(HashMap<String, String> settings) {
-        objSettings = settings;
         super.setAllOptions(settings);
     }
 
@@ -172,7 +171,7 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
     @Override
     public void commandLineArgs(String[] args) {
         super.commandLineArgs(args);
-        this.setAllOptions(super.objSettings);
+        this.setAllOptions(super.getSettings());
     }
 
 }

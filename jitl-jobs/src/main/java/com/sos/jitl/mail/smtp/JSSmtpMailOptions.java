@@ -69,7 +69,7 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
     public boolean MailOnJobStart() {
         boolean flgR = false;
         if (objMailOnJobStart == null) {
-            objMailOnJobStart = new JSSmtpMailOptions(settings(), "MailOnJobStart_");
+            objMailOnJobStart = new JSSmtpMailOptions(getSettings(), "MailOnJobStart_");
             mergeDefaultSettings(objMailOnJobStart);
         }
         flgR = objMailOnJobStart.to.isDirty();
@@ -79,7 +79,7 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
     public boolean MailOnError() {
         boolean flgR = false;
         if (objMailOnError == null) {
-            objMailOnError = new JSSmtpMailOptions(settings(), "MailOnError_");
+            objMailOnError = new JSSmtpMailOptions(getSettings(), "MailOnError_");
             mergeDefaultSettings(objMailOnError);
         }
         flgR = objMailOnError.to.isDirty();
@@ -89,7 +89,7 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
     public boolean MailOnSuccess() {
         boolean flgR = false;
         if (objMailOnSuccess == null) {
-            objMailOnSuccess = new JSSmtpMailOptions(settings(), "MailOnSuccess_");
+            objMailOnSuccess = new JSSmtpMailOptions(getSettings(), "MailOnSuccess_");
             mergeDefaultSettings(objMailOnSuccess);
         }
         flgR = objMailOnSuccess.to.isDirty();

@@ -43,7 +43,7 @@ public class JSReportAllParameters extends JSToolBox implements JSJobUtilities {
             LOGGER.info(conSVNVersion);
             LOGGER.info(VersionInfo.VERSION_STRING);
             LOGGER.debug(Options().toString());
-            HashMap<String, String> objSettings = Options().settings();
+            HashMap<String, String> objSettings = Options().getSettings();
             for (final Object element : objSettings.entrySet()) {
                 final Map.Entry mapItem = (Map.Entry) element;
                 final String strMapKey = mapItem.getKey().toString();

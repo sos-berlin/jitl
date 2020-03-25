@@ -234,9 +234,8 @@ public class StoreResultsJobOptionsSuperClass extends JSOptionsClass {
 	}
 
 	public void setAllOptions(HashMap<String, String> settings) {
-		objSettings = settings;
-		super.setAllOptions(settings);
-	}
+        super.setAllOptions(settings);
+    }
 
 	@Override
 	public void checkMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
@@ -250,6 +249,6 @@ public class StoreResultsJobOptionsSuperClass extends JSOptionsClass {
 	@Override
 	public void commandLineArgs(String[] args) {
 		super.commandLineArgs(args);
-		this.setAllOptions(super.objSettings);
+		this.setAllOptions(super.getSettings());
 	}
 }

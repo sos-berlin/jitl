@@ -33,7 +33,7 @@ public class StoreResultsModel extends NotificationModel implements INotificatio
     public void process() throws Exception {
         ArrayList<String> resultParamsAsList = getResultParamsAsArrayList(options.scheduler_notification_result_parameters.getValue());
         boolean hasResultParams = !resultParamsAsList.isEmpty();
-        HashMap<String, String> hm = options.settings();
+        HashMap<String, String> hm = options.getSettings();
         HashMap<String, String> hmInsert = new HashMap<String, String>();
         if (hm != null) {
             for (String name : hm.keySet()) {

@@ -163,7 +163,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
     private HashMap<String, String> getSettings4StepName() {
         HashMap<String, String> objS = new HashMap<String, String>();
         int intStartPos = objOptions.getCurrentNodeName().length() + 1;
-        for (Map.Entry<String, String> mapItem : objOptions.settings().entrySet()) {
+        for (Map.Entry<String, String> mapItem : objOptions.getSettings().entrySet()) {
             String strMapKey = mapItem.getKey();
             String strValue = mapItem.getValue();
             if (strMapKey.indexOf("/") != -1) {

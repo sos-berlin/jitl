@@ -78,7 +78,7 @@ public class NotificationMail {
 
     public static SOSMail createMail(JSMailOptions mailOptions, boolean queueMailOnError) throws Exception {
 
-        HashMap<String, String> settings = mailOptions.settings();
+        HashMap<String, String> settings = mailOptions.getSettings();
         SOSMail mail = new SOSMail(settings.get(MailServerKeyName.SMTP_HOST));
         mail.setQueueMailOnError(queueMailOnError);
         if (settings.containsKey(MailServerKeyName.QUEUE_DIR)) {
