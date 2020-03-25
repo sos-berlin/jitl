@@ -8,14 +8,10 @@ import javax.jms.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.jitl.messaging.options.MessageConsumerOptions;
-
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
-import com.sos.JSHelper.Exceptions.JobSchedulerException;
-import com.sos.VirtualFileSystem.Factory.VFSFactory;
-import com.sos.VirtualFileSystem.Interfaces.ISOSVFSHandler;
 import com.sos.VirtualFileSystem.JMS.SOSVfsJms;
 import com.sos.VirtualFileSystem.Options.SOSDestinationOptions;
+import com.sos.jitl.messaging.options.MessageConsumerOptions;
 
 public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptions> {
 
@@ -23,22 +19,13 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
     private static final String DEFAULT_QUEUE_NAME = "JobChainQueue";
     private static final String DEFAULT_PROTOCOL = "tcp";
     private String messageXml;
-    private ISOSVFSHandler vfsHandler;
+    private SOSVfsJms handler;
 
     public MessageConsumerJob() {
         super(new MessageConsumerOptions());
-        getVFS();
+        handler = new SOSVfsJms();
     }
-
-    public ISOSVFSHandler getVFS() {
-        try {
-            vfsHandler = VFSFactory.getHandler("mq");
-        } catch (Exception e) {
-            throw new JobSchedulerException("SOS-VFS-E-0010: unable to initialize VFS", e);
-        }
-        return vfsHandler;
-    }
-
+    
     public MessageConsumerJob execute() throws Exception {
         String protocol = objOptions.getMessagingProtocol().getValue();
         if (protocol == null || (protocol != null && protocol.isEmpty())) {
@@ -53,15 +40,15 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
         if (queueName == null || (queueName != null && queueName.isEmpty())) {
             queueName = DEFAULT_QUEUE_NAME;
         }
-        String connectionUrl = ((SOSVfsJms) vfsHandler).createConnectionUrl(protocol, messageHost, messagePort);
-        if (!vfsHandler.isConnected()) {
+        String connectionUrl = handler.createConnectionUrl(protocol, messageHost, messagePort);
+        if (!handler.isConnected()) {
             this.connect();
         }
-        Connection jmsConnection = ((SOSVfsJms) vfsHandler).createConnection(connectionUrl);
+        Connection jmsConnection = handler.createConnection(connectionUrl);
         if (executeXml) {
-            messageXml = ((SOSVfsJms) vfsHandler).read(jmsConnection, queueName, lastConsumer);
+            messageXml = handler.read(jmsConnection, queueName, lastConsumer);
         } else if (jobParams) {
-            String message = ((SOSVfsJms) vfsHandler).read(jmsConnection, queueName, lastConsumer);
+            String message = handler.read(jmsConnection, queueName, lastConsumer);
             if (message != null && !message.isEmpty()) {
                 logReceivedParams(message);
             }
@@ -104,7 +91,7 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
         SOSDestinationOptions alternateOptions = getAlternateOptions();
         try {
             getOptions().checkMandatory();
-            vfsHandler.connect(alternateOptions);
+            handler.connect(alternateOptions);
             LOGGER.debug("connection established");
         } catch (Exception e) {
             LOGGER.error("Error occurred trying to connect to VFS: ", e);
