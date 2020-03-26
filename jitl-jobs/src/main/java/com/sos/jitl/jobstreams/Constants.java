@@ -83,6 +83,7 @@ public class Constants {
         cl.add(com.sos.jitl.jobstreams.db.DBItemEvent.class);
 
         cl.add(com.sos.jitl.jobstreams.db.DBItemJobStream.class);
+        cl.add(com.sos.jitl.jobstreams.db.DBItemJobStreamParameter.class);
         cl.add(com.sos.jitl.jobstreams.db.DBItemJobStreamHistory.class);
         cl.add(com.sos.jitl.jobstreams.db.DBItemJobStreamStarterJob.class);
         cl.add(com.sos.jitl.jobstreams.db.DBItemJobStreamStarter.class);
