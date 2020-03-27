@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.vfs.jms.SOSJMS;
-import com.sos.vfs.common.options.SOSDestinationOptions;
+import com.sos.vfs.common.options.SOSProviderOptions;
 import com.sos.jitl.messaging.options.MessageProducerOptions;
 
 public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptions> {
@@ -97,7 +97,7 @@ public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptio
     }
 
     public MessageProducerJob connect() {
-        SOSDestinationOptions alternateOptions = getAlternateOptions();
+        SOSProviderOptions alternateOptions = getAlternateOptions();
         try {
             getOptions().checkMandatory();
             handler.connect(alternateOptions);
@@ -108,8 +108,8 @@ public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptio
         return this;
     }
 
-    public SOSDestinationOptions getAlternateOptions() {
-        SOSDestinationOptions alternateOptions = new SOSDestinationOptions();
+    public SOSProviderOptions getAlternateOptions() {
+        SOSProviderOptions alternateOptions = new SOSProviderOptions();
         alternateOptions.host.setValue(objOptions.getMessagingServerHostName().getValue());
         alternateOptions.port.value(objOptions.getMessagingServerPort().value());
         return alternateOptions;
