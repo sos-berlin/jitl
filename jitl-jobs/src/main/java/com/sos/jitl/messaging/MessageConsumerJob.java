@@ -9,8 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
-import com.sos.VirtualFileSystem.JMS.SOSVfsJms;
-import com.sos.VirtualFileSystem.Options.SOSDestinationOptions;
+import com.sos.vfs.jms.SOSJMS;
+import com.sos.vfs.common.options.SOSDestinationOptions;
 import com.sos.jitl.messaging.options.MessageConsumerOptions;
 
 public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptions> {
@@ -19,11 +19,11 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
     private static final String DEFAULT_QUEUE_NAME = "JobChainQueue";
     private static final String DEFAULT_PROTOCOL = "tcp";
     private String messageXml;
-    private SOSVfsJms handler;
+    private SOSJMS handler;
 
     public MessageConsumerJob() {
         super(new MessageConsumerOptions());
-        handler = new SOSVfsJms();
+        handler = new SOSJMS();
     }
     
     public MessageConsumerJob execute() throws Exception {

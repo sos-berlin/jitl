@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
-import com.sos.VirtualFileSystem.JMS.SOSVfsJms;
-import com.sos.VirtualFileSystem.Options.SOSDestinationOptions;
+import com.sos.vfs.jms.SOSJMS;
+import com.sos.vfs.common.options.SOSDestinationOptions;
 import com.sos.jitl.messaging.options.MessageProducerOptions;
 
 public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptions> {
@@ -19,11 +19,11 @@ public class MessageProducerJob extends JSJobUtilitiesClass<MessageProducerOptio
     private static final String DEFAULT_PROTOCOL = "tcp";
     private boolean sentSuccesfull = false;
     private Map<String, String> allParams = new HashMap<String, String>();
-    private SOSVfsJms handler;
+    private SOSJMS handler;
 
     public MessageProducerJob() {
         super(new MessageProducerOptions());
-        handler = new SOSVfsJms();
+        handler = new SOSJMS();
     }
 
     public MessageProducerJob execute() throws Exception {
