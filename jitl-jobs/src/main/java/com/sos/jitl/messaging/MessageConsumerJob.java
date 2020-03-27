@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.vfs.jms.SOSJMS;
-import com.sos.vfs.common.options.SOSDestinationOptions;
+import com.sos.vfs.common.options.SOSProviderOptions;
 import com.sos.jitl.messaging.options.MessageConsumerOptions;
 
 public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptions> {
@@ -25,7 +25,7 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
         super(new MessageConsumerOptions());
         handler = new SOSJMS();
     }
-    
+
     public MessageConsumerJob execute() throws Exception {
         String protocol = objOptions.getMessagingProtocol().getValue();
         if (protocol == null || (protocol != null && protocol.isEmpty())) {
@@ -88,7 +88,7 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
     }
 
     public MessageConsumerJob connect() {
-        SOSDestinationOptions alternateOptions = getAlternateOptions();
+        SOSProviderOptions alternateOptions = getAlternateOptions();
         try {
             getOptions().checkMandatory();
             handler.connect(alternateOptions);
@@ -99,8 +99,8 @@ public class MessageConsumerJob extends JSJobUtilitiesClass<MessageConsumerOptio
         return this;
     }
 
-    public SOSDestinationOptions getAlternateOptions() {
-        SOSDestinationOptions alternateOptions = new SOSDestinationOptions();
+    public SOSProviderOptions getAlternateOptions() {
+        SOSProviderOptions alternateOptions = new SOSProviderOptions();
         alternateOptions.host.setValue(objOptions.getMessagingServerHostName().getValue());
         alternateOptions.port.value(objOptions.getMessagingServerPort().value());
         return alternateOptions;
