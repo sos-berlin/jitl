@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.JSHelper.io.Files.JSTextFile;
-import com.sos.VirtualFileSystem.shell.CmdShell;
+import com.sos.vfs.shell.SOSShell;
 
 public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
 
@@ -33,7 +33,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
         try {
             getOptions().checkMandatory();
             LOGGER.debug(objOptions.dirtyString());
-            CmdShell objShell = new CmdShell();
+            SOSShell objShell = new SOSShell();
             String strCommand = objOptions.shell_command.getOptionalQuotedValue();
             if (objShell.isWindows()) {
                 strCommand = "echo 1 | " + strCommand;

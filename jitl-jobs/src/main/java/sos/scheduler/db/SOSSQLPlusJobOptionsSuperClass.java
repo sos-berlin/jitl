@@ -21,10 +21,10 @@ import com.sos.JSHelper.Options.SOSOptionStringValueList;
 import com.sos.JSHelper.Options.SOSOptionTransferType;
 import com.sos.JSHelper.Options.SOSOptionUrl;
 import com.sos.JSHelper.Options.SOSOptionUserName;
-import com.sos.VirtualFileSystem.Interfaces.ISOSCmdShellOptions;
+import com.sos.vfs.common.interfaces.ISOSShellOptions;
 
 @JSOptionClass(name = "SOSSQLPlusJobOptionsSuperClass", description = "SOSSQLPlusJobOptionsSuperClass")
-public class SOSSQLPlusJobOptionsSuperClass extends JSOptionsClass implements ISOSCmdShellOptions, ISOSCredentialStoreOptionsBridge {
+public class SOSSQLPlusJobOptionsSuperClass extends JSOptionsClass implements ISOSShellOptions, ISOSCredentialStoreOptionsBridge {
 
     protected SOSCredentialStoreImpl objCredentialStore = null;
     private static final long serialVersionUID = 7532723066179760236L;
