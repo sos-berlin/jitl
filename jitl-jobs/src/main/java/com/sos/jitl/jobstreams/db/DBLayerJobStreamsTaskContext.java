@@ -82,7 +82,7 @@ public class DBLayerJobStreamsTaskContext {
     }
 
     public Integer delete(FilterJobStreamTaskContext filter) throws SOSHibernateException {
-         int row = 0;
+        int row = 0;
         String hql = "";
 
         hql = "delete from " + DBItemJobStreamTaskContext + getWhere(filter);

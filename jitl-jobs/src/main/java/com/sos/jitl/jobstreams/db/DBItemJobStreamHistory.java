@@ -21,7 +21,10 @@ import com.sos.jitl.jobstreams.Constants;
 public class DBItemJobStreamHistory {
 
     private Long id;
+    private Long jobStream;
     private Long jobStreamStarter;
+    private Boolean running;
+    private String contextId;
     private Date started;
     private Date ended;
     private Date created;
@@ -43,7 +46,14 @@ public class DBItemJobStreamHistory {
         this.id = id;
     }
 
-    
+    @Column(name = "[JOBSTREAM]", nullable = true)
+    public Long getJobStream() {
+        return jobStream;
+    }
+
+    public void setJobStream(Long jobStream) {
+        this.jobStream= jobStream;
+    }
 
     @Column(name = "[JOBSTREAM_STARTER]", nullable = true)
     public Long getJobStreamStarter() {
@@ -52,6 +62,24 @@ public class DBItemJobStreamHistory {
 
     public void setJobStreamStarter(Long jobStreamStarter) {
         this.jobStreamStarter = jobStreamStarter;
+    }
+
+    @Column(name = "[CONTEXT_ID]", nullable = false)
+    public String getContextId() {
+        return contextId;
+    }
+
+    public void setContextId(String contextId) {
+        this.contextId = contextId;
+    }
+
+    @Column(name = "[RUNNING]", nullable = true)
+    public Boolean getRunning() {
+        return running;
+    }
+
+    public void setRunning(Boolean running) {
+        this.running = running;
     }
 
     @Temporal(TemporalType.TIMESTAMP)

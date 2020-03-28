@@ -3,6 +3,8 @@ package com.sos.jitl.jobstreams.classes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import sos.util.SOSString;
+
 public class JSEventKey {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JSEventKey.class);
@@ -24,6 +26,11 @@ public class JSEventKey {
                     LOGGER.debug("!!!!!!! NPE in JSEventKey");
                 }
             }
+            LOGGER.debug ("--------------------------");
+            LOGGER.debug (SOSString.toString(jsEventKey));
+            LOGGER.debug (SOSString.toString(this));
+            LOGGER.debug ("--------------------------");
+            
             return this.globalEvent.equals(jsEventKey.globalEvent) && session.equals(jsEventKey.session) && event.equals(jsEventKey.event)
                     && jobStream.equals(jsEventKey.jobStream) && schedulerId.equals(jsEventKey.schedulerId);
         }
