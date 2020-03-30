@@ -32,7 +32,7 @@ public class DBLayerJobStreams {
         FilterJobStreams filter = new FilterJobStreams();
         filter.setJobStream("");
         filter.setStatus("");
-        ;
+        
         return filter;
     }
 
@@ -56,6 +56,11 @@ public class DBLayerJobStreams {
             where += and + " jobStream  = :jobStream";
             and = " and ";
         }
+        
+        if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
+            where += and + " folder  = :folder";
+            and = " and ";
+        }
 
         if (!"".equals(where.trim())) {
             where = " where " + where;
@@ -69,6 +74,9 @@ public class DBLayerJobStreams {
         }
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
             query.setParameter("jobStream", filter.getJobStream());
+        }
+        if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
+            query.setParameter("folder", filter.getFolder());
         }
         if (filter.getStatus() != null && !"".equals(filter.getStatus())) {
             query.setParameter("status", filter.getStatus());

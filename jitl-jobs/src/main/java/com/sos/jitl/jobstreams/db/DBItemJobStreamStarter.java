@@ -22,6 +22,7 @@ public class DBItemJobStreamStarter {
 
     private Long id;
     private Long jobStream;
+    private String title;
     private String state;
     private String runTime;
     private Date created;
@@ -51,6 +52,15 @@ public class DBItemJobStreamStarter {
 
     public void setState(String state) {
         this.state = state;
+    }    
+   
+    @Column(name = "[TITLE]", nullable = false)
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }    
    
    

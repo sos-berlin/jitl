@@ -4,6 +4,7 @@ public class FilterJobStreams {
 
     private String jobStream;
     private String schedulerId;
+    private String folder;
     private String status;
     
     public String getJobStream() {
@@ -30,6 +31,16 @@ public class FilterJobStreams {
     
     public void setSchedulerId(String schedulerId) {
         this.schedulerId = schedulerId;
+    }
+
+    
+    public String getFolder() {
+        return folder;
+    }
+
+    
+    public void setFolder(String folder) {
+        this.folder = folder;
     }
 
     

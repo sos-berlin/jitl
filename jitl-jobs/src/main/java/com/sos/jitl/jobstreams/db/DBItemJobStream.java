@@ -23,6 +23,7 @@ public class DBItemJobStream {
     private Long id;
     private String schedulerId;
     private String jobStream;
+    private String folder;
     private String state;
     private Date created;
 
@@ -60,6 +61,15 @@ public class DBItemJobStream {
 
     public void setState(String state) {
         this.state = state;
+    }
+
+    @Column(name = "[FOLDER]", nullable = true)
+    public String getFolder() {
+        return folder;
+    }
+
+    public void setFolder(String folder) {
+        this.folder = folder;
     }
 
     @Column(name = "[JOBSTREAM]", nullable = true)

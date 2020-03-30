@@ -1,5 +1,9 @@
 package com.sos.jitl.jobstreams.db;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
 import javax.persistence.Transient;
 
 import com.sos.jitl.jobstreams.interfaces.IJSJobConditionKey;
@@ -8,7 +12,8 @@ public class DBItemInConditionWithCommand implements IJSJobConditionKey {
 
     private DBItemInCondition dbItemInCondition;
     private DBItemInConditionCommand dbItemInConditionCommand;
-    private boolean consumed;
+    private Set<String> consumedForContext;
+
 
     public DBItemInConditionWithCommand(DBItemInCondition dbItemInCondition, DBItemInConditionCommand dbItemInConditionCommand) {
         this.dbItemInCondition = dbItemInCondition;
@@ -32,12 +37,15 @@ public class DBItemInConditionWithCommand implements IJSJobConditionKey {
     }
 
     @Transient
-    public boolean isConsumed() {
-        return consumed;
+    public boolean isConsumed(String context) {
+        return consumedForContext.contains(context);
     }
 
-    public void setConsumed(boolean consumed) {
-        this.consumed = consumed;
+    public void setConsumed(String context) {
+        if (consumedForContext == null) {
+            consumedForContext = new HashSet<String>();
+        }
+        this.consumedForContext.add(context);
     }
 
     @Override
@@ -48,6 +56,11 @@ public class DBItemInConditionWithCommand implements IJSJobConditionKey {
     @Override
     public String getJob() {
         return this.dbItemInCondition.getJob();
+    }
+
+    @Transient
+    public Set<String> getConsumedForContext() {
+        return consumedForContext;
     }
  
 
