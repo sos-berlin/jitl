@@ -44,7 +44,7 @@ public class DBLayerJobStreamHistory {
         }
 
         if (filter.getContextId() != null && !filter.getContextId().isEmpty()) {
-            where += and + " id  = :id";
+            where += and + " contextId  = :contextId";
             and = " and ";
         }
         if (filter.getJobStreamStarter() != null) {
@@ -109,8 +109,8 @@ public class DBLayerJobStreamHistory {
         return row;
     }
 
-    public void save(DBItemJobStreamHistory jsJobStreamStarter) throws SOSHibernateException {
-        sosHibernateSession.save(jsJobStreamStarter);
+    public void save(DBItemJobStreamHistory jsJobStreamHistory) throws SOSHibernateException {
+        sosHibernateSession.save(jsJobStreamHistory);
     }
 
     public Long store(DBItemJobStreamHistory dbItemJobStreamHistory) throws SOSHibernateException {

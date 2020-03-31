@@ -38,4 +38,9 @@ public class DBItemOutConditionWithEvent implements IJSJobConditionKey {
         return dbItemOutCondition.getJob();
     }
 
+    @Override
+    public String getJobStream() {
+        return dbItemOutCondition.getJobStream();
+    }
+
 }

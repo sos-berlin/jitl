@@ -58,6 +58,11 @@ public class DBItemInConditionWithCommand implements IJSJobConditionKey {
         return this.dbItemInCondition.getJob();
     }
 
+    @Override
+    public String getJobStream() {
+        return this.dbItemInCondition.getJobStream();
+    }
+
     @Transient
     public Set<String> getConsumedForContext() {
         return consumedForContext;
