@@ -1,11 +1,15 @@
 package com.sos.jitl.jobstreams.db;
 
+import java.util.Date;
+
 public class FilterJobStreamHistory {
 
     private Long id;
     private Long jobStreamId;
     private Long jobStreamStarter;
     private String contextId;
+    private Date startedFrom;
+    private Date startedTo;
     private Boolean running;
     
     public Long getJobStreamStarter() {
@@ -51,6 +55,29 @@ public class FilterJobStreamHistory {
     public void setJobStreamId(Long jobStreamId) {
         this.jobStreamId = jobStreamId;
     }
+
+    
+    public Date getStartedFrom() {
+        return startedFrom;
+    }
+
+    
+    public void setStartedFrom(Date startedFrom) {
+        this.startedFrom = startedFrom;
+    }
+
+    
+    public Date getStartedTo() {
+        return startedTo;
+    }
+
+    
+    public void setStartedTo(Date startedTo) {
+        this.startedTo = startedTo;
+    }
+
+    
+ 
      
     
 }

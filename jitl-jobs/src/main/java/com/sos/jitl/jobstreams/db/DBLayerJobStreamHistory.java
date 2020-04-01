@@ -57,6 +57,14 @@ public class DBLayerJobStreamHistory {
             and = " and ";
         }
 
+        if (filter.getStartedFrom() != null) {
+            where += and + " started>= :startedFrom";
+            and = " and ";
+        }
+        if (filter.getStartedTo() != null) {
+            where += and + " started < :startedTo ";
+            and = " and ";
+        }
         if (!"".equals(where.trim())) {
             where = " where " + where;
         }
@@ -79,6 +87,12 @@ public class DBLayerJobStreamHistory {
         }
         if (filter.getContextId() != null && !filter.getContextId().isEmpty()) {
             query.setParameter("contextId", filter.getContextId());
+        }
+        if (filter.getStartedFrom() != null) {
+            query.setParameter("startedFrom", filter.getStartedFrom());
+        }
+        if (filter.getStartedTo() != null) {
+            query.setParameter("startedTo", filter.getStartedTo());
         }
 
         return query;
