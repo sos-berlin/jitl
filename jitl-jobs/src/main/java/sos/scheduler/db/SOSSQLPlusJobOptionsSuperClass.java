@@ -2,8 +2,8 @@ package sos.scheduler.db;
 
 import java.util.HashMap;
 
-import com.sos.CredentialStore.SOSCredentialStoreImpl;
-import com.sos.CredentialStore.Options.ISOSCredentialStoreOptionsBridge;
+import com.sos.credentialstore.SOSCredentialStoreImpl;
+import com.sos.credentialstore.options.ISOSCredentialStoreOptionsBridge;
 import com.sos.JSHelper.Annotations.JSOptionClass;
 import com.sos.JSHelper.Annotations.JSOptionDefinition;
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
