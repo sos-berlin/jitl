@@ -96,7 +96,8 @@ public class DBLayerJobStreamsStarterJobs {
 
     public Long store(DBItemJobStreamStarterJob dbItemJobStreamStarterJob) throws SOSHibernateException {
         FilterJobStreamStarterJobs filter = new FilterJobStreamStarterJobs();
-        filter.setId(dbItemJobStreamStarterJob.getId());
+        filter.setJob(dbItemJobStreamStarterJob.getJob());
+        filter.setJobStreamStarter(dbItemJobStreamStarterJob.getJobStreamStarter());
         deleteCascading(filter);
         sosHibernateSession.save(dbItemJobStreamStarterJob);
         return dbItemJobStreamStarterJob.getId();
