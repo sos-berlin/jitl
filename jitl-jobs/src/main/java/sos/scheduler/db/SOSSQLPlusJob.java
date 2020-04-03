@@ -79,7 +79,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
             LOGGER.debug(objOptions.command_script_file.getValue());
             strFC += "\n" + "exit;\n";
             objTF.writeLine(strFC);
-            int intCC = objShell.executeCommand(objOptions);
+            int intCC = executeCommand(objOptions, objShell);
             String strCC = String.valueOf(intCC);
             String f = "00000";
             strCC = f.substring(0, strCC.length() - 1) + strCC;
@@ -160,6 +160,51 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
         return this;
     }
 
+    public int executeCommand(final SOSSQLPlusJobOptions options, final SOSShell shell) throws Exception {
+        return shell.executeCommand(createCommandUsingOptions(options, shell),true);
+    }
+
+    private String[] createCommands(final SOSSQLPlusJobOptions options, final SOSShell shell, final String envComSpecName,
+            final String defaultComSpec, final String startParam) {
+        final String[] command = { " ", " ", " " };
+        String comSpec = "";
+        int indx = 0;
+        String startShellCommandParam = startParam;
+        if (options.getStartShellCommand().isDirty()) {
+            comSpec = options.getStartShellCommand().getValue();
+            if (!"none".equalsIgnoreCase(comSpec)) {
+                command[indx++] = comSpec;
+                if (options.getStartShellCommandParameter().isDirty()) {
+                    startShellCommandParam = options.getStartShellCommandParameter().getValue();
+                    command[indx++] = startShellCommandParam;
+                }
+                command[indx++] = options.getShellCommand().getValue() + " " + options.getCommandLineOptions().getValue() + " " + options
+                        .getShellCommandParameter().getValue();
+            } else {
+                command[indx++] = options.getShellCommand().getValue();
+                command[indx++] = options.getCommandLineOptions().getValue() + " " + options.getShellCommandParameter().getValue();
+            }
+        } else {
+            comSpec = System.getenv(envComSpecName);
+            if (comSpec == null) {
+                comSpec = defaultComSpec;
+            }
+            command[indx++] = comSpec;
+            command[indx++] = startShellCommandParam;
+            command[indx++] = options.getShellCommand().getValue() + " " + options.getCommandLineOptions().getValue() + " " + options
+                    .getShellCommandParameter().getValue();
+        }
+        return command;
+    }
+
+    private String[] createCommandUsingOptions(final SOSSQLPlusJobOptions options, SOSShell shell) {
+        if (shell.isWindows()) {
+            return createCommands(options, shell, "comspec", "cmd.exe", "/C");
+        } else {
+            return createCommands(options, shell, "SHELL", "bin.sh", "-c");
+        }
+    }
+
     private HashMap<String, String> getSettings4StepName() {
         HashMap<String, String> objS = new HashMap<String, String>();
         int intStartPos = objOptions.getCurrentNodeName().length() + 1;
@@ -180,7 +225,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
         }
         return objS;
     }
-    
+
     public String sqlPlusVariableName(String s) {
         if (s.length() > 30) {
             s = s.substring(0, 29) + "_";
