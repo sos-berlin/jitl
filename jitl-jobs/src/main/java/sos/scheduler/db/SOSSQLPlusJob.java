@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.JSHelper.io.Files.JSTextFile;
-import com.sos.vfs.shell.SOSShell;
+import com.sos.vfs.common.SOSShell;
 
 public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
 
