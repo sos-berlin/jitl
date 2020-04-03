@@ -18,9 +18,6 @@ public class JobSchedulerRotateLogMain extends JSToolBox {
         try {
             JobSchedulerRotateLog objM = new JobSchedulerRotateLog();
             JobSchedulerRotateLogOptions objO = objM.getOptions();
-            objO.allowEmptyParameterList.setFalse();
-            objO.applicationName.setValue("JITL");
-            objO.applicationDocuUrl.setValue("http://www.sos-berlin.com/jitl/JobSchedulerRotateLog.xml");
             objO.commandLineArgs(pstrArgs);
             objM.executeDebugLog();
             objM.executeMainLog();
