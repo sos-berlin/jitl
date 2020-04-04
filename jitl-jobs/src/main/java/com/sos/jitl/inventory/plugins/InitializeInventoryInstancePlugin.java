@@ -269,7 +269,8 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
         factory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         factory.addClassMapping(DBLayer.getInventoryClassMapping());
         factory.addClassMapping(DBLayer.getReportingClassMapping());
-        
+        factory.addClassMapping(DBLayer.getJobStreamClassMapping());
+
         factory.build();
     }
 

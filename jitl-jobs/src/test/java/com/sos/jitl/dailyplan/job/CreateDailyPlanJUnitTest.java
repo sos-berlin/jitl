@@ -102,6 +102,7 @@ public class CreateDailyPlanJUnitTest extends JSToolBox {
             SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(createDailyPlanOptions.configuration_file.getValue());
             sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
             sosHibernateFactory.addClassMapping(DBLayer.getInventoryClassMapping());
+            sosHibernateFactory.addClassMapping(DBLayer.getJobStreamClassMapping());
 
             sosHibernateFactory.build();
             SOSHibernateSession session = sosHibernateFactory.openStatelessSession();

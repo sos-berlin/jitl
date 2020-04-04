@@ -219,6 +219,9 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
         if (filter.getPlannedStartTo() != null) {
             query.setParameter("plannedStartTo", filter.getPlannedStartTo(), TemporalType.TIMESTAMP);
         }
+        if (filter.getPlannedStart() != null) {
+            query.setParameter("plannedStart", filter.getPlannedStart(), TemporalType.TIMESTAMP);
+        }
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setParameter("schedulerId", filter.getSchedulerId());
         }

@@ -1,5 +1,6 @@
 package com.sos.jitl.dailyplan.db;
 
+import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -17,6 +18,8 @@ import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.hibernate.exceptions.SOSHibernateException;
@@ -24,12 +27,16 @@ import com.sos.hibernate.exceptions.SOSHibernateObjectOperationException;
 import com.sos.jitl.dailyplan.job.CheckDailyPlanOptions;
 import com.sos.jitl.dailyplan.job.CreateDailyPlanOptions;
 import com.sos.jitl.inventory.db.DBLayerInventory;
-import com.sos.jitl.jobstreams.db.DBItemInConditionWithCommand;
-import com.sos.jitl.jobstreams.db.DBItemOutConditionWithConfiguredEvent;
-import com.sos.jitl.jobstreams.db.DBLayerInConditions;
-import com.sos.jitl.jobstreams.db.DBLayerOutConditions;
-import com.sos.jitl.jobstreams.db.FilterInConditions;
-import com.sos.jitl.jobstreams.db.FilterOutConditions;
+import com.sos.jitl.jobstreams.classes.JSStarter;
+import com.sos.jitl.jobstreams.db.DBItemJobStream;
+import com.sos.jitl.jobstreams.db.DBItemJobStreamStarter;
+import com.sos.jitl.jobstreams.db.DBItemJobStreamStarterJob;
+import com.sos.jitl.jobstreams.db.DBLayerJobStreamStarters;
+import com.sos.jitl.jobstreams.db.DBLayerJobStreams;
+import com.sos.jitl.jobstreams.db.DBLayerJobStreamsStarterJobs;
+import com.sos.jitl.jobstreams.db.FilterJobStreamStarterJobs;
+import com.sos.jitl.jobstreams.db.FilterJobStreamStarters;
+import com.sos.jitl.jobstreams.db.FilterJobStreams;
 import com.sos.jitl.reporting.db.DBItemInventoryJob;
 import com.sos.jitl.reporting.db.DBItemInventoryOrder;
 import com.sos.jitl.reporting.db.DBItemInventorySchedule;
@@ -59,8 +66,7 @@ public class Calendar2DB {
 
     private String dateFormat = "yyyy-MM-dd'T'HH:mm:ss";
     private DailyPlanDBLayer dailyPlanDBLayer;
-    private DBLayerInConditions dbLayerInConditions;
-    private DBLayerOutConditions dbLayerOutConditions;
+    private DBLayerJobStreamStarters dbLayerJobStreamStarters;
 
     private CreateDailyPlanOptions options = null;
     private CheckDailyPlanOptions checkDailyPlanOptions;
@@ -77,8 +83,8 @@ public class Calendar2DB {
 
     public Calendar2DB(SOSHibernateSession session, String schedulerId) throws Exception {
         dailyPlanDBLayer = new DailyPlanDBLayer(session);
-        dbLayerInConditions = new DBLayerInConditions(session);
-        dbLayerOutConditions = new DBLayerOutConditions(session);
+        dbLayerJobStreamStarters = new DBLayerJobStreamStarters(session);
+
         listOfOrders = new HashMap<String, Order>();
         listOfDurations = new HashMap<String, Long>();
         listOfPlanEntries = new HashMap<String, DailyPlanDBItem>();
@@ -109,11 +115,11 @@ public class Calendar2DB {
 
         this.from = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(from).withZone(fromZone));
         this.to = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(to).withZone(fromZone));
-        
+
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.setTime(this.from);
         calendar.add(GregorianCalendar.DAY_OF_MONTH, MAX_DAY_OFFSET);
-        Date max = calendar.getTime();  
+        Date max = calendar.getTime();
         if (max.before(this.to)) {
             this.to = max;
         }
@@ -121,7 +127,6 @@ public class Calendar2DB {
         fillListOfCalendars(true);
         return getCalendarFromJobScheduler();
     }
-    
 
     public void store() throws Exception {
         final long timeStartAll = System.currentTimeMillis();
@@ -130,6 +135,7 @@ public class Calendar2DB {
             fillListOfCalendars(false);
             final long timeStart = System.currentTimeMillis();
             store(null);
+            storeJobStreamStarters();
             final long timeEnd = System.currentTimeMillis();
             LOGGER.debug("Duration store: " + (timeEnd - timeStart) + " ms");
             checkDaysSchedule();
@@ -140,7 +146,110 @@ public class Calendar2DB {
             rollback();
             throw e;
         }
+    }
 
+    private void storeJobStreamStarters() throws Exception {
+        setFrom();
+        setTo();
+        beginTransaction();
+        ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        DBLayerReporting dbLayerReporting = new DBLayerReporting(dailyPlanDBLayer.getSession());
+        DBLayerJobStreamsStarterJobs dbLayerJobStreamsStarterJobs = new DBLayerJobStreamsStarterJobs(dailyPlanDBLayer.getSession());
+        DBLayerJobStreams dbLayerJobStreams = new DBLayerJobStreams(dailyPlanDBLayer.getSession());
+        FilterJobStreams filterJobStreams = new FilterJobStreams();
+        List<DBItemJobStream> listOfJobStreams = dbLayerJobStreams.getJobStreamsList(filterJobStreams, 0);
+        Map<Long, DBItemJobStream> mapOfJobStreams = new HashMap<Long, DBItemJobStream>();
+        for (DBItemJobStream dbItemJobStream : listOfJobStreams) {
+            mapOfJobStreams.put(dbItemJobStream.getId(), dbItemJobStream);
+        }
+        FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
+        FilterJobStreamStarterJobs filterJobStreamStarterJobs = new FilterJobStreamStarterJobs();
+        List<DBItemJobStreamStarter> listOfStarters = dbLayerJobStreamStarters.getJobStreamStartersList(filterJobStreamStarters, 0);
+        for (DBItemJobStreamStarter dbItemJobStreamStarter : listOfStarters) {
+            JSStarter jsStarter = new JSStarter(objectMapper);
+            jsStarter.setItemJobStreamStarter(from, to, dbItemJobStreamStarter);
+            filterJobStreamStarterJobs.setJobStreamStarter(dbItemJobStreamStarter.getId());
+            String start;
+            for (com.sos.joc.model.calendar.Period period : jsStarter.getJobStreamScheduler().getPlan().getPeriods()) {
+
+                for (DBItemJobStreamStarterJob dbItemJobStreamStarterJob : dbLayerJobStreamsStarterJobs.getJobStreamStarterJobsList(
+                        filterJobStreamStarterJobs, 0)) {
+                    boolean isNew;
+
+                    if (period.getSingleStart() != null) {
+                        start = period.getSingleStart();
+                        LOGGER.debug("start jobstream: " + jsStarter.getItemJobStreamStarter().getJobStream() + " at " + start);
+                    } else {
+                        start = period.getBegin();
+                        LOGGER.debug("start jobstream: " + jsStarter.getItemJobStreamStarter().getJobStream() + " at " + start);
+                    }
+
+                    DailyPlanDBItem dailyPlanDBItem;
+                    dailyPlanDBLayer.resetFilter();
+                    dailyPlanDBLayer.getFilter().setJob(dbItemJobStreamStarterJob.getJob());
+                    DailyPlanDate dailyScheduleDate = new DailyPlanDate(dateFormat);
+                    dailyScheduleDate.setSchedule(start);
+                    dailyPlanDBLayer.getFilter().setPlannedStart(dailyScheduleDate.getSchedule());
+                    dailyPlanDBLayer.getFilter().setSchedulerId(this.schedulerId);
+                    List<DailyPlanDBItem> l = dailyPlanDBLayer.getDailyPlanList(0, true);
+
+                    if (l.size() > 0) {
+                        dailyPlanDBItem = l.get(0);
+                        isNew = false;
+                    } else {
+                        dailyPlanDBItem = new DailyPlanDBItem();
+                        isNew = true;
+                    }
+                    dailyPlanDBItem.setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+                    if (period.getSingleStart() != null) {
+                        LOGGER.debug("start jobstream: " + jsStarter.getItemJobStreamStarter().getJobStream() + " at " + start);
+                    } else {
+                        dailyPlanDBItem.setPeriodBegin(period.getBegin());
+                        dailyPlanDBItem.setPeriodEnd(period.getEnd());
+                        try {
+                            dailyPlanDBItem.setRepeatInterval(new BigInteger(period.getAbsoluteRepeat()), new BigInteger(period.getRepeat()));
+                        } catch (Exception e) {
+                        }
+                        LOGGER.debug("start jobstream: " + jsStarter.getItemJobStreamStarter().getJobStream() + " at " + start);
+                    }
+
+                    dailyPlanDBItem.setSchedulerId(this.schedulerId);
+                    dailyPlanDBItem.setIsAssigned(false);
+                    dailyPlanDBItem.setIsLate(false);
+                    dailyPlanDBItem.setJob(dbItemJobStreamStarterJob.getJob());
+                    dailyPlanDBItem.setJobStream(mapOfJobStreams.get(dbItemJobStreamStarter.getJobStream()).getJobStream());
+
+                    dailyPlanDBItem.setJobChain(".");
+                    dailyPlanDBItem.setOrderId(".");
+                    dailyPlanDBItem.setPlannedStart(start);
+                    Long duration = getDuration(dbLayerReporting, dbItemJobStreamStarterJob.getJob(), null);
+
+                    if (dailyPlanDBItem.getPlannedStart() != null) {
+                        dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
+                    }
+
+                    dailyPlanDBItem.setStartStart(false);
+                    dailyPlanDBItem.setState("PLANNED");
+                    dailyPlanDBItem.setReportTriggerId(null);
+                    dailyPlanDBItem.setReportExecutionId(null);
+                    dailyPlanDBItem.setDateFormat(this.dateFormat);
+                    dailyPlanDBItem.setModified(new Date());
+
+                    if (isNew) {
+                        dailyPlanDBItem.setCreated(new Date());
+                        dailyPlanDBLayer.getSession().save(dailyPlanDBItem);
+                    } else {
+                        try {
+                            dailyPlanDBLayer.getSession().update(dailyPlanDBItem);
+                        } catch (SOSHibernateObjectOperationException e) {
+                            dailyPlanDBLayer.getSession().save(dailyPlanDBItem);
+                        }
+                    }
+                }
+            }
+        }
+        commit();
     }
 
     public void addDailyplan2DBFilter(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter, Long instanceId) throws SOSHibernateException,
@@ -291,12 +400,11 @@ public class Calendar2DB {
         } else {
             dayOffset = getDayOffsetFromPlan();
         }
-        
+
         if (dayOffset > MAX_DAY_OFFSET) {
-            LOGGER.warn("Changing dayOffset from %s to %s. See: CVE-2020-6855", dayOffset,2000);
+            LOGGER.warn("Changing dayOffset from %s to %s. See: CVE-2020-6855", dayOffset, 2000);
             dayOffset = MAX_DAY_OFFSET;
         }
-
 
         if (schedulerObjectFactory == null) {
             LOGGER.debug("schedulerObjectFactory is null");
@@ -469,7 +577,6 @@ public class Calendar2DB {
                 Order order = null;
                 String job = null;
                 String jobChain = null;
-                String jobStream = null;
                 DailyPlanDBItem dailyPlanDBItem;
 
                 if (i < dailyPlanList.size()) {
@@ -510,14 +617,11 @@ public class Calendar2DB {
                     job = period.getJob();
                     if (job == null) {
                         order = getOrder(jobChain, orderId);
-                    }else {
-                        jobStream = this.getJobStream(job);
                     }
-                    
+
                     DailyPlanDBItem dailyPlanEntry = new DailyPlanDBItem(this.dateFormat);
                     dailyPlanEntry.setJob(job);
                     dailyPlanEntry.setJobChain(jobChain);
-                    dailyPlanEntry.setJobStream(jobStream);
                     dailyPlanEntry.setOrderId(orderId);
                     dailyPlanEntry.setSchedulerId(schedulerId);
                     if (job != null || order != null) {
@@ -545,7 +649,6 @@ public class Calendar2DB {
                                     dailyPlanDBItem.setPlannedStart(singleStart);
                                     LOGGER.debug("Start at :" + singleStart);
                                     LOGGER.debug("Job Name :" + job);
-                                    LOGGER.debug("Job Stream :" + jobStream);
                                     LOGGER.debug("Job-Chain Name :" + jobChain);
                                     LOGGER.debug("Order Name :" + orderId);
                                 } else {
@@ -561,7 +664,6 @@ public class Calendar2DB {
                                 LOGGER.debug("Job-Name :" + period.getJob());
                             }
                             dailyPlanDBItem.setJob(job);
-                            dailyPlanDBItem.setJobStream(jobStream);
                             dailyPlanDBItem.setJobChain(jobChain);
                             dailyPlanDBItem.setOrderId(orderId);
 
@@ -602,29 +704,6 @@ public class Calendar2DB {
 
     }
 
-    private String getJobStream(String job) throws SOSHibernateException {
-        String jobStream = "";
-        FilterInConditions filterIn = new FilterInConditions();
-        filterIn.setJob(job);
-        filterIn.setJobSchedulerId(schedulerId);
-
-        List<DBItemInConditionWithCommand> listOfInConditions = dbLayerInConditions.getInConditionsList(filterIn, 1);
-        if (listOfInConditions.size() > 0) {
-            jobStream = listOfInConditions.get(0).getDbItemInCondition().getJobStream();
-        }
-        if (jobStream.isEmpty()) {
-            FilterOutConditions filterOut = new FilterOutConditions();
-            filterOut.setJob(job);
-            filterOut.setJobSchedulerId(schedulerId);
-
-            List<DBItemOutConditionWithConfiguredEvent> listOfOutConditions = dbLayerOutConditions.getOutConditionsList(filterOut, 1);
-            if (listOfOutConditions.size() > 0) {
-                jobStream = listOfOutConditions.get(0).getDbItemOutCondition().getJobStream();
-            }
-        }
-        return jobStream;
-    }
-
     private String getUniqueKey(DailyPlanDBItem dailyPlanEntry) {
         return dailyPlanEntry.getPlannedStart() + dailyPlanEntry.getJob() + dailyPlanEntry.getJobOrJobchain() + dailyPlanEntry.getSchedulerId();
     }
@@ -649,7 +728,6 @@ public class Calendar2DB {
                 Order order = null;
                 String job = null;
                 String jobChain = null;
-                String jobStream = null;
                 DailyPlanDBItem dailyPlanDBItem;
 
                 dailyPlanDBItem = new DailyPlanDBItem(this.dateFormat);
@@ -669,8 +747,6 @@ public class Calendar2DB {
 
                     if (job == null) {
                         order = getOrder(jobChain, orderId);
-                    }else {
-                        jobStream = this.getJobStream(job);
                     }
                     if (job != null || order != null) {
                         if (singleStart != null) {
@@ -678,7 +754,6 @@ public class Calendar2DB {
                                 dailyPlanDBItem.setPlannedStart(singleStart);
                                 LOGGER.debug("Start at :" + singleStart);
                                 LOGGER.debug("Job Name :" + job);
-                                LOGGER.debug("Job Stream :" + jobStream);
                                 LOGGER.debug("Job-Chain Name :" + jobChain);
                                 LOGGER.debug("Order Name :" + orderId);
                             } else {
@@ -705,7 +780,6 @@ public class Calendar2DB {
 
                             dailyPlanDBItem.setJob(job);
                             dailyPlanDBItem.setJobChain(jobChain);
-                            dailyPlanDBItem.setJobStream(jobStream);
                             dailyPlanDBItem.setOrderId(orderId);
                             Long duration = getDuration(dbLayerReporting, job, order);
                             dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
