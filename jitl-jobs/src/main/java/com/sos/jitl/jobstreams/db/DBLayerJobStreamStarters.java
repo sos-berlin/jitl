@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.joc.model.common.NameValuePair;
+import com.sos.joc.model.jobstreams.JobStreamJob;
 import com.sos.joc.model.jobstreams.JobStreamStarter;
 import com.sos.joc.model.jobstreams.JobStreamStarters;
 
@@ -114,10 +115,18 @@ public class DBLayerJobStreamStarters {
 
     public void deleteInsert(JobStreamStarters jobStreamStarters) throws SOSHibernateException, JsonProcessingException {
         DBLayerJobStreamParameters dbLayerJobStreamParameters = new DBLayerJobStreamParameters(sosHibernateSession);
+        DBLayerJobStreamsStarterJobs dbLayerJobStreamsStarterJobs = new DBLayerJobStreamsStarterJobs(sosHibernateSession);
         FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
         filterJobStreamStarters.setJobStreamId(jobStreamStarters.getJobStream());
 
         List<DBItemJobStreamStarter> lStarters = getJobStreamStartersList(filterJobStreamStarters, 0);
+
+        for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {
+            FilterJobStreamStarterJobs filterJobStreamStarterJobs = new FilterJobStreamStarterJobs();
+            filterJobStreamStarterJobs.setJobStreamStarter(dbItemJobStreamStarter.getId());
+            dbLayerJobStreamsStarterJobs.deleteCascading(filterJobStreamStarterJobs);
+        }
+
         for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {
             FilterJobStreamParameters filterJobStreamParameters = new FilterJobStreamParameters();
             filterJobStreamParameters.setJobStreamStarterId(dbItemJobStreamStarter.getId());
@@ -138,13 +147,30 @@ public class DBLayerJobStreamStarters {
             }
             sosHibernateSession.save(dbItemJobStreamStarter);
             jobStreamStarter.setJobStreamStarterId(dbItemJobStreamStarter.getId());
+            
+            for (JobStreamJob jobStreamJob : jobStreamStarter.getJobs()) {
+                DBItemJobStreamStarterJob dbItemJobStreamStarterJob = new DBItemJobStreamStarterJob();
+                dbItemJobStreamStarterJob.setCreated(new Date());
+                dbItemJobStreamStarterJob.setDelay(jobStreamJob.getStartDelay());
+                dbItemJobStreamStarterJob.setJob(jobStreamJob.getJob());
+                dbItemJobStreamStarterJob.setJobStreamStarter(dbItemJobStreamStarter.getId());
+                Long newJobId = dbLayerJobStreamsStarterJobs.store(dbItemJobStreamStarterJob);
+                jobStreamJob.setJobId(newJobId);
+            }
+            
+            
             for (NameValuePair param : jobStreamStarter.getParams()) {
                 DBItemJobStreamParameter dbItemJobStreamParameter = new DBItemJobStreamParameter();
                 dbItemJobStreamParameter.setCreated(new Date());
                 dbItemJobStreamParameter.setJobStreamStarter(dbItemJobStreamStarter.getId());
-                dbItemJobStreamParameter.setName(param.getName());
-                dbItemJobStreamParameter.setValue(param.getValue());
-                sosHibernateSession.save(dbItemJobStreamParameter);
+                if (param.getName() != null) {
+                    dbItemJobStreamParameter.setName(param.getName());
+                    if (param.getValue() == null) {
+                        param.setValue("");
+                    }
+                    dbItemJobStreamParameter.setValue(param.getValue());
+                    sosHibernateSession.save(dbItemJobStreamParameter);
+                }
             }
         }
     }

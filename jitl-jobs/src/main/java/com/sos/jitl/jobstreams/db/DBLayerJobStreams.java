@@ -7,10 +7,14 @@ import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.joc.model.common.NameValuePair;
 import com.sos.joc.model.jobstreams.JobStream;
+import com.sos.joc.model.jobstreams.JobStreamJob;
 import com.sos.joc.model.jobstreams.JobStreamStarter;
 import com.sos.joc.model.jobstreams.JobStreamStarters;
 
@@ -32,7 +36,7 @@ public class DBLayerJobStreams {
         FilterJobStreams filter = new FilterJobStreams();
         filter.setJobStream("");
         filter.setStatus("");
-        
+
         return filter;
     }
 
@@ -56,7 +60,7 @@ public class DBLayerJobStreams {
             where += and + " jobStream  = :jobStream";
             and = " and ";
         }
-        
+
         if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
             where += and + " folder  = :folder";
             and = " and ";
@@ -110,19 +114,18 @@ public class DBLayerJobStreams {
             FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
             filterJobStreamStarters.setJobStreamId(dbItemJobStream.getId());
             List<DBItemJobStreamStarter> lStarters = dbLayerJobStreamStarters.getJobStreamStartersList(filterJobStreamStarters, 0);
-           
+
             for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {
                 FilterJobStreamStarterJobs filterJobStreamStarterJobs = new FilterJobStreamStarterJobs();
                 filterJobStreamStarterJobs.setJobStreamStarter(dbItemJobStreamStarter.getId());
-                dbLayerJobStreamsStarterJobs.deleteCascading(filterJobStreamStarterJobs);          
-                }
-            
-            
+                dbLayerJobStreamsStarterJobs.deleteCascading(filterJobStreamStarterJobs);
+            }
+
             for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {
                 FilterJobStreamParameters filterJobStreamParameters = new FilterJobStreamParameters();
                 filterJobStreamParameters.setJobStreamStarterId(dbItemJobStreamStarter.getId());
                 dbLayerJobStreamParameters.delete(filterJobStreamParameters);
-              
+
             }
             dbLayerJobStreamStarters.delete(filterJobStreamStarters);
         }
@@ -143,6 +146,56 @@ public class DBLayerJobStreams {
         sosHibernateSession.save(jsJobStream);
         return jsJobStream.getId();
 
+    }
+
+    public void deleteInsert(JobStream jobStream) throws SOSHibernateException, JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        DBLayerJobStreamStarters dbLayerJobStreamStarters = new DBLayerJobStreamStarters(sosHibernateSession);
+        DBLayerJobStreamsStarterJobs dbLayerJobStreamsStarterJobs = new DBLayerJobStreamsStarterJobs(sosHibernateSession);
+        DBLayerJobStreamParameters dbLayerJobStreamParameters = new DBLayerJobStreamParameters(sosHibernateSession);
+
+        DBItemJobStream dbItemJobStream = new DBItemJobStream();
+        dbItemJobStream.setCreated(new Date());
+        dbItemJobStream.setJobStream(jobStream.getJobStream());
+        dbItemJobStream.setSchedulerId(jobStream.getJobschedulerId());
+        dbItemJobStream.setFolder(jobStream.getFolder());
+        dbItemJobStream.setState(jobStream.getState());
+
+        Long newId = this.store(dbItemJobStream);
+        jobStream.setId(newId);
+        for (JobStreamStarter jobstreamStarter : jobStream.getJobstreamStarters()) {
+            DBItemJobStreamStarter dbItemJobStreamStarter = new DBItemJobStreamStarter();
+            dbItemJobStreamStarter.setCreated(new Date());
+            dbItemJobStreamStarter.setJobStream(newId);
+            dbItemJobStreamStarter.setTitle(jobstreamStarter.getTitle());
+            if (jobstreamStarter.getRunTime() != null) {
+                dbItemJobStreamStarter.setRunTime(objectMapper.writeValueAsString(jobstreamStarter.getRunTime()));
+            }
+            dbItemJobStreamStarter.setState(jobstreamStarter.getState());
+            Long newStarterId = dbLayerJobStreamStarters.store(dbItemJobStreamStarter);
+            jobstreamStarter.setJobStreamStarterId(newStarterId);
+            jobstreamStarter.setTitle(jobstreamStarter.getTitle());
+            for (JobStreamJob jobStreamJob : jobstreamStarter.getJobs()) {
+                DBItemJobStreamStarterJob dbItemJobStreamStarterJob = new DBItemJobStreamStarterJob();
+                dbItemJobStreamStarterJob.setCreated(new Date());
+                dbItemJobStreamStarterJob.setDelay(jobStreamJob.getStartDelay());
+                dbItemJobStreamStarterJob.setJob(jobStreamJob.getJob());
+                dbItemJobStreamStarterJob.setJobStreamStarter(newStarterId);
+                Long newJobId = dbLayerJobStreamsStarterJobs.store(dbItemJobStreamStarterJob);
+                jobStreamJob.setJobId(newJobId);
+
+            }
+            for (NameValuePair param : jobstreamStarter.getParams()) {
+
+                DBItemJobStreamParameter dbItemParameter = new DBItemJobStreamParameter();
+                dbItemParameter.setCreated(new Date());
+                dbItemParameter.setJobStreamStarter(newStarterId);
+                dbItemParameter.setName(param.getName());
+                dbItemParameter.setValue(param.getValue());
+                dbLayerJobStreamParameters.save(dbItemParameter);
+            }
+
+        }
     }
 
 }

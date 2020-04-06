@@ -45,8 +45,8 @@ public class JobStreamScheduler {
                 periodResolver.addStartTimes(p);
             }
 
-            listOfStartTimes.sort(null);
             listOfStartTimes = periodResolver.getStartTimes();
+            listOfStartTimes.sort(null);
         }
     }
 
