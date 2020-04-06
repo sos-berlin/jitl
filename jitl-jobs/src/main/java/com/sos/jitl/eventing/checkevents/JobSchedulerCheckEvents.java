@@ -108,7 +108,7 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
 	}
 
 	@Override
-	public void setCC(final int pintCC) {
+	public void setExitCode(final int pintCC) {
 		// TODO Auto-generated method stub
 	}
 

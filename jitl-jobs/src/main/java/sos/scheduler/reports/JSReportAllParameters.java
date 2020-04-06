@@ -96,7 +96,7 @@ public class JSReportAllParameters extends JSToolBox implements JSJobUtilities {
     }
 
     @Override
-    public void setCC(final int pintCC) {
+    public void setExitCode(final int pintCC) {
         // TO DO Auto-generated method stub
     }
 

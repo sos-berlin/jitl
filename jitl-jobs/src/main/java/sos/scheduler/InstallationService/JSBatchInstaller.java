@@ -107,7 +107,7 @@ public class JSBatchInstaller extends JSToolBox implements JSJobUtilities, IJSCo
     }
 
     @Override
-    public void setCC(final int pintCC) {
+    public void setExitCode(final int pintCC) {
         // TODO Auto-generated method stub
     }
 
