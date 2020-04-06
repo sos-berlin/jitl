@@ -76,7 +76,7 @@ public class JobSchedulerManagedDBReportJob extends JSToolBox implements JSJobUt
     }
 
     @Override
-    public void setCC(final int pintCC) {
+    public void setExitCode(final int pintCC) {
         // TODO Auto-generated method stub
     }
 

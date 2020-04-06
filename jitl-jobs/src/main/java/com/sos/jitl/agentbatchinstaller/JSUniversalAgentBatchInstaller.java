@@ -104,7 +104,7 @@ public class JSUniversalAgentBatchInstaller extends JSToolBox implements JSJobUt
     }
 
     @Override
-    public void setCC(final int pintCC) {
+    public void setExitCode(final int pintCC) {
     }
 
     @Override

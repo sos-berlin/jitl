@@ -231,7 +231,7 @@ public class JobSchedulerCheckRunHistory extends JSToolBox implements JSJobUtili
     }
 
     @Override
-    public void setCC(final int pintCC) {
+    public void setExitCode(final int pintCC) {
     }
 
     @Override

@@ -508,7 +508,7 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
     }
 
     @Override
-    public void setCC(final int pintCC) {
+    public void setExitCode(final int pintCC) {
         //
     }
 
