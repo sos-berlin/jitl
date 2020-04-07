@@ -117,7 +117,7 @@ public class DBLayerJobStreamStarters {
         DBLayerJobStreamParameters dbLayerJobStreamParameters = new DBLayerJobStreamParameters(sosHibernateSession);
         DBLayerJobStreamsStarterJobs dbLayerJobStreamsStarterJobs = new DBLayerJobStreamsStarterJobs(sosHibernateSession);
         FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
-        filterJobStreamStarters.setJobStreamId(jobStreamStarters.getJobStream());
+        filterJobStreamStarters.setJobStreamId(jobStreamStarters.getJobStreamId());
 
         List<DBItemJobStreamStarter> lStarters = getJobStreamStartersList(filterJobStreamStarters, 0);
 
@@ -140,7 +140,7 @@ public class DBLayerJobStreamStarters {
 
             DBItemJobStreamStarter dbItemJobStreamStarter = new DBItemJobStreamStarter();
             dbItemJobStreamStarter.setCreated(new Date());
-            dbItemJobStreamStarter.setJobStream(jobStreamStarters.getJobStream());
+            dbItemJobStreamStarter.setJobStream(jobStreamStarters.getJobStreamId());
             dbItemJobStreamStarter.setTitle(jobStreamStarter.getTitle());
             dbItemJobStreamStarter.setState(jobStreamStarter.getState());
             if (jobStreamStarter.getRunTime() != null) {
