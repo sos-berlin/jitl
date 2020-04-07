@@ -57,7 +57,7 @@ public class DBLayerOutConditionEvents {
         }
 
         if (!"".equals(where.trim())) {
-            where = "where " + where;
+            where = " where " + where;
         }
         return where;
     }

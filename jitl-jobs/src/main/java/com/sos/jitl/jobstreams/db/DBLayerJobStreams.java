@@ -108,6 +108,7 @@ public class DBLayerJobStreams {
     }
 
     public Integer deleteCascading(FilterJobStreams filter) throws SOSHibernateException {
+//TODO: JSTREAM_EVENTS        JSTREAM_HISTORY        JSTREAM_TASK_CONTEXT
 
         int row = 0;
         String hql = "";
@@ -119,11 +120,10 @@ public class DBLayerJobStreams {
 
         List<DBItemJobStream> lJobStreams = getJobStreamsList(filter, 0);
         for (DBItemJobStream dbItemJobStream : lJobStreams) {
-            FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
-            filterJobStreamStarters.setJobStreamId(dbItemJobStream.getId());
-          
             FilterInConditions filterInConditions = new FilterInConditions();
             filterInConditions.setJobStream(dbItemJobStream.getJobStream());
+            FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
+            filterJobStreamStarters.setJobStreamId(dbItemJobStream.getId());
             filterInConditions.setJobSchedulerId(filter.getSchedulerId());
             dbLayerInConditions.deleteCascading(filterInConditions);
 
@@ -131,7 +131,9 @@ public class DBLayerJobStreams {
             filterOutConditions.setJobStream(dbItemJobStream.getJobStream());
             filterOutConditions.setJobSchedulerId(filter.getSchedulerId());
             dbLayerOutConditions.deleteCascading(filterOutConditions);
-            
+
+            filterJobStreamStarters = new FilterJobStreamStarters();
+            filterJobStreamStarters.setJobStreamId(dbItemJobStream.getId());
             List<DBItemJobStreamStarter> lStarters = dbLayerJobStreamStarters.getJobStreamStartersList(filterJobStreamStarters, 0);
 
             for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {
@@ -210,6 +212,9 @@ public class DBLayerJobStreams {
                 dbItemParameter.setCreated(new Date());
                 dbItemParameter.setJobStreamStarter(newStarterId);
                 dbItemParameter.setName(param.getName());
+                if (param.getValue() == null) {
+                    param.setValue("");
+                }
                 dbItemParameter.setValue(param.getValue());
                 dbLayerJobStreamParameters.save(dbItemParameter);
             }

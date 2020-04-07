@@ -121,12 +121,11 @@ public class DBLayerInConditions {
         DBLayerConsumedInConditions dbLayerConsumedInConditions = new DBLayerConsumedInConditions(sosHibernateSession);
 
         FilterInConditionCommands filterInConditionCommands = new FilterInConditionCommands();
-        filterInConditionCommands.setJob(filterInConditions.getJob());
+        filterInConditionCommands.setJobStream(filterInConditions.getJobStream());
         dbLayerInConditionCommands.deleteCommandWithInConditions(filterInConditionCommands);
 
         FilterConsumedInConditions filterConsumedInConditions = new FilterConsumedInConditions();
         filterConsumedInConditions.setJobStream(filterInConditions.getJobStream());
-        filterConsumedInConditions.setJob(filterInConditions.getJob());
         dbLayerConsumedInConditions.deleteConsumedInConditions(filterConsumedInConditions);
         
         delete(filterInConditions) ;
