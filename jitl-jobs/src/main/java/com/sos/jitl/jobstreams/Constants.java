@@ -101,6 +101,12 @@ public class Constants {
 
         return String.valueOf(month) + "." + String.valueOf(dayOfMonth);
     }
+    public static String getSession() {
+        Calendar calendar = Calendar.getInstance();
+        int month = calendar.get(Calendar.MONTH) + 1;
+        int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+        return String.valueOf(month) + "." + String.valueOf(dayOfMonth);
+    }
 
     public static ClassList getConditionsClassMapping() {
         ClassList cl = new ClassList();
