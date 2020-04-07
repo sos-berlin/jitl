@@ -178,4 +178,12 @@ public class DBLayerOutConditions {
 
     }
 
+    public void deleteCascading(FilterOutConditions filterOutConditions) throws SOSHibernateException {
+        DBLayerOutConditionEvents dbLayerOutConditionEvents = new DBLayerOutConditionEvents(sosHibernateSession);
+        FilterOutConditionEvents filterOutConditionEvents = new FilterOutConditionEvents();
+        filterOutConditionEvents.setJobStream(filterOutConditions.getJobStream());
+        dbLayerOutConditionEvents.deleteByJobstream(filterOutConditionEvents);
+        delete(filterOutConditions) ;
+    }
+
 }

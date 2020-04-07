@@ -124,7 +124,7 @@ public class DBLayerJobStreamStarters {
         for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {
             FilterJobStreamStarterJobs filterJobStreamStarterJobs = new FilterJobStreamStarterJobs();
             filterJobStreamStarterJobs.setJobStreamStarter(dbItemJobStreamStarter.getId());
-            dbLayerJobStreamsStarterJobs.deleteCascading(filterJobStreamStarterJobs);
+            dbLayerJobStreamsStarterJobs.delete(filterJobStreamStarterJobs);
         }
 
         for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {
@@ -141,6 +141,7 @@ public class DBLayerJobStreamStarters {
             DBItemJobStreamStarter dbItemJobStreamStarter = new DBItemJobStreamStarter();
             dbItemJobStreamStarter.setCreated(new Date());
             dbItemJobStreamStarter.setJobStream(jobStreamStarters.getJobStream());
+            dbItemJobStreamStarter.setTitle(jobStreamStarter.getTitle());
             dbItemJobStreamStarter.setState(jobStreamStarter.getState());
             if (jobStreamStarter.getRunTime() != null) {
                 dbItemJobStreamStarter.setRunTime(objectMapper.writeValueAsString(jobStreamStarter.getRunTime()));

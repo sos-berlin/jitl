@@ -81,7 +81,7 @@ public class DBLayerJobStreamsStarterJobs {
         return sosHibernateSession.getResultList(query);
     }
 
-    public Integer deleteCascading(FilterJobStreamStarterJobs filter) throws SOSHibernateException {
+    public Integer delete(FilterJobStreamStarterJobs filter) throws SOSHibernateException {
 
         int row = 0;
         String hql = "";
@@ -98,7 +98,7 @@ public class DBLayerJobStreamsStarterJobs {
         FilterJobStreamStarterJobs filter = new FilterJobStreamStarterJobs();
         filter.setJob(dbItemJobStreamStarterJob.getJob());
         filter.setJobStreamStarter(dbItemJobStreamStarterJob.getJobStreamStarter());
-        deleteCascading(filter);
+        delete(filter);
         sosHibernateSession.save(dbItemJobStreamStarterJob);
         return dbItemJobStreamStarterJob.getId();
 

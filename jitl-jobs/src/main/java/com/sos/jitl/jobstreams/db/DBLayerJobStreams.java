@@ -16,7 +16,6 @@ import com.sos.joc.model.common.NameValuePair;
 import com.sos.joc.model.jobstreams.JobStream;
 import com.sos.joc.model.jobstreams.JobStreamJob;
 import com.sos.joc.model.jobstreams.JobStreamStarter;
-import com.sos.joc.model.jobstreams.JobStreamStarters;
 
 public class DBLayerJobStreams {
 
@@ -34,9 +33,8 @@ public class DBLayerJobStreams {
 
     public FilterJobStreams resetFilter() {
         FilterJobStreams filter = new FilterJobStreams();
-        filter.setJobStream("");
         filter.setStatus("");
-
+        filter.setJobStream("");
         return filter;
     }
 
@@ -57,7 +55,12 @@ public class DBLayerJobStreams {
         }
 
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
-            where += and + " jobStream  = :jobStream";
+            where += and + " jobstream = :jobstream";
+            and = " and ";
+        }
+
+        if (filter.getJobStreamId() != null) {
+            where += and + " id  = :id";
             and = " and ";
         }
 
@@ -76,14 +79,17 @@ public class DBLayerJobStreams {
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setParameter("schedulerId", filter.getSchedulerId());
         }
-        if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
-            query.setParameter("jobStream", filter.getJobStream());
+        if (filter.getJobStreamId() != null) {
+            query.setParameter("id", filter.getJobStreamId());
         }
         if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
             query.setParameter("folder", filter.getFolder());
         }
         if (filter.getStatus() != null && !"".equals(filter.getStatus())) {
             query.setParameter("status", filter.getStatus());
+        }
+        if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
+            query.setParameter("jobstream", filter.getJobStream());
         }
 
         return query;
@@ -108,17 +114,30 @@ public class DBLayerJobStreams {
         DBLayerJobStreamStarters dbLayerJobStreamStarters = new DBLayerJobStreamStarters(sosHibernateSession);
         DBLayerJobStreamParameters dbLayerJobStreamParameters = new DBLayerJobStreamParameters(sosHibernateSession);
         DBLayerJobStreamsStarterJobs dbLayerJobStreamsStarterJobs = new DBLayerJobStreamsStarterJobs(sosHibernateSession);
+        DBLayerInConditions dbLayerInConditions = new DBLayerInConditions(sosHibernateSession);
+        DBLayerOutConditions dbLayerOutConditions = new DBLayerOutConditions(sosHibernateSession);
 
         List<DBItemJobStream> lJobStreams = getJobStreamsList(filter, 0);
         for (DBItemJobStream dbItemJobStream : lJobStreams) {
             FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
             filterJobStreamStarters.setJobStreamId(dbItemJobStream.getId());
+          
+            FilterInConditions filterInConditions = new FilterInConditions();
+            filterInConditions.setJobStream(dbItemJobStream.getJobStream());
+            filterInConditions.setJobSchedulerId(filter.getSchedulerId());
+            dbLayerInConditions.deleteCascading(filterInConditions);
+
+            FilterOutConditions filterOutConditions = new FilterOutConditions();
+            filterOutConditions.setJobStream(dbItemJobStream.getJobStream());
+            filterOutConditions.setJobSchedulerId(filter.getSchedulerId());
+            dbLayerOutConditions.deleteCascading(filterOutConditions);
+            
             List<DBItemJobStreamStarter> lStarters = dbLayerJobStreamStarters.getJobStreamStartersList(filterJobStreamStarters, 0);
 
             for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {
                 FilterJobStreamStarterJobs filterJobStreamStarterJobs = new FilterJobStreamStarterJobs();
                 filterJobStreamStarterJobs.setJobStreamStarter(dbItemJobStreamStarter.getId());
-                dbLayerJobStreamsStarterJobs.deleteCascading(filterJobStreamStarterJobs);
+                dbLayerJobStreamsStarterJobs.delete(filterJobStreamStarterJobs);
             }
 
             for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {
@@ -162,7 +181,7 @@ public class DBLayerJobStreams {
         dbItemJobStream.setState(jobStream.getState());
 
         Long newId = this.store(dbItemJobStream);
-        jobStream.setId(newId);
+        jobStream.setJobStreamId(newId);
         for (JobStreamStarter jobstreamStarter : jobStream.getJobstreamStarters()) {
             DBItemJobStreamStarter dbItemJobStreamStarter = new DBItemJobStreamStarter();
             dbItemJobStreamStarter.setCreated(new Date());
@@ -197,5 +216,4 @@ public class DBLayerJobStreams {
 
         }
     }
-
 }

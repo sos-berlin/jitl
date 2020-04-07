@@ -115,6 +115,22 @@ public class DBLayerInConditions {
         }
 
     }
+    
+    public void deleteCascading(FilterInConditions filterInConditions) throws SOSHibernateException {
+        DBLayerInConditionCommands dbLayerInConditionCommands = new DBLayerInConditionCommands(sosHibernateSession);
+        DBLayerConsumedInConditions dbLayerConsumedInConditions = new DBLayerConsumedInConditions(sosHibernateSession);
+
+        FilterInConditionCommands filterInConditionCommands = new FilterInConditionCommands();
+        filterInConditionCommands.setJob(filterInConditions.getJob());
+        dbLayerInConditionCommands.deleteCommandWithInConditions(filterInConditionCommands);
+
+        FilterConsumedInConditions filterConsumedInConditions = new FilterConsumedInConditions();
+        filterConsumedInConditions.setJobStream(filterInConditions.getJobStream());
+        filterConsumedInConditions.setJob(filterInConditions.getJob());
+        dbLayerConsumedInConditions.deleteConsumedInConditions(filterConsumedInConditions);
+        
+        delete(filterInConditions) ;
+    }
 
     public void deleteInsert(InConditions inConditions) throws SOSHibernateException {
         DBLayerInConditionCommands dbLayerInConditionCommands = new DBLayerInConditionCommands(sosHibernateSession);

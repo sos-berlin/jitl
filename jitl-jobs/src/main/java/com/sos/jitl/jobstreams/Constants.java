@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 public class Constants {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Constants.class);
-    
+
     public static enum OutConditionEventCommand {
         create, delete
     }
@@ -71,33 +71,42 @@ public class Constants {
     public static String baseUrl;
 
     public static String getSession(String periodBegin) {
+        if (periodBegin == null) {
+            periodBegin = "00:00";
+        }
         Calendar calendar = Calendar.getInstance();
         String[] period = periodBegin.split(":");
         int hours = 0;
         int minutes = 0;
         if (period.length == 1) {
             try {
-            hours = Integer.parseInt(period[0])*-1;
-            }catch (NumberFormatException e) {
-                LOGGER.warn ("Wrong time format for sos.jobstream_period_begin: " + periodBegin);
+                hours = Integer.parseInt(period[0]) * -1;
+            } catch (NumberFormatException e) {
+                LOGGER.warn("Wrong time format for sos.jobstream_period_begin: " + periodBegin);
+                hours = 0;
+                minutes = 0;
+                periodBegin = "00:00";
             }
         }
-        if (period.length == 1) {
+        if (period.length == 2) {
             try {
-                hours = Integer.parseInt(period[0])*-1;
-                minutes = Integer.parseInt(period[1])*-1;
-            }catch (NumberFormatException e) {
-                LOGGER.warn ("Wrong time format for sos.jobstream_period_begin: " + periodBegin);
+                hours = Integer.parseInt(period[0]) * -1;
+                minutes = Integer.parseInt(period[1]) * -1;
+            } catch (NumberFormatException e) {
+                LOGGER.warn("Wrong time format for sos.jobstream_period_begin: " + periodBegin);
+                hours = 0;
+                minutes = 0;
+                periodBegin = "00:00";
             }
         }
-        
+
         calendar.add(Calendar.HOUR_OF_DAY, hours);
         calendar.add(Calendar.HOUR_OF_DAY, minutes);
-        
+
         int month = calendar.get(Calendar.MONTH) + 1;
         int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
-       
-        LOGGER.info ("Period starts at  " + periodBegin);
+
+        LOGGER.info("Period starts at  " + periodBegin);
 
         return String.valueOf(month) + "." + String.valueOf(dayOfMonth);
     }
