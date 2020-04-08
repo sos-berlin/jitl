@@ -6,6 +6,7 @@ public class FilterEvents {
     private Boolean globalEvent;
     private Boolean includingGlobalEvent=false;
     private Long outConditionId;
+    private Long jobStreamHistoryId;
     private String jobStream;
     private String session;
     private String job;
@@ -88,6 +89,16 @@ public class FilterEvents {
     
     public void setIncludingGlobalEvent(Boolean includingGlobalEvent) {
         this.includingGlobalEvent = includingGlobalEvent;
+    }
+
+    
+    public Long getJobStreamHistoryId() {
+        return jobStreamHistoryId;
+    }
+
+    
+    public void setJobStreamHistoryId(Long jobStreamHistoryId) {
+        this.jobStreamHistoryId = jobStreamHistoryId;
     }
 
 }

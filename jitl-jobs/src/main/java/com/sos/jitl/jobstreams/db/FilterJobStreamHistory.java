@@ -8,6 +8,7 @@ public class FilterJobStreamHistory {
     private Long jobStreamId;
     private Long jobStreamStarter;
     private String contextId;
+    private String schedulerId;
     private Date startedFrom;
     private Date startedTo;
     private Boolean running;
@@ -74,6 +75,16 @@ public class FilterJobStreamHistory {
     
     public void setStartedTo(Date startedTo) {
         this.startedTo = startedTo;
+    }
+
+    
+    public String getSchedulerId() {
+        return schedulerId;
+    }
+
+    
+    public void setSchedulerId(String schedulerId) {
+        this.schedulerId = schedulerId;
     }
 
     

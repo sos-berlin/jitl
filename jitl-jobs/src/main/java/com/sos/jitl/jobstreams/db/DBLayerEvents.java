@@ -75,6 +75,11 @@ public class DBLayerEvents {
             and = " and ";
         }
 
+        if (filter.getJobStreamHistoryId() != null) {
+            where += and + " e.jobStreamHistoryId = :jobStreamHistoryId";
+            and = " and ";
+        }
+
         if (!"".equals(where.trim())) {
             where = "where " + where;
         }
@@ -97,6 +102,11 @@ public class DBLayerEvents {
 
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
             where += and + " jobStream = :jobStream";
+            and = " and ";
+        }
+        
+        if (filter.getJobStreamHistoryId() != null) {
+            where += and + " e.jobStreamHistoryId = :jobStreamHistoryId";
             and = " and ";
         }
 
@@ -125,6 +135,9 @@ public class DBLayerEvents {
         }
         if (filter.getOutConditionId() != null) {
             query.setParameter("outConditionId", filter.getOutConditionId());
+        }
+        if (filter.getJobStreamHistoryId() != null) {
+            query.setParameter("jobStreamHistoryId", filter.getJobStreamHistoryId());
         }
         return query;
     }

@@ -25,6 +25,7 @@ public class DBItemJobStreamHistory {
     private Long jobStreamStarter;
     private Boolean running;
     private String contextId;
+    private String schedulerId;
     private Date started;
     private Date ended;
     private Date created;
@@ -71,6 +72,15 @@ public class DBItemJobStreamHistory {
 
     public void setContextId(String contextId) {
         this.contextId = contextId;
+    }
+
+    @Column(name = "[SCHEDULER_ID]", nullable = false)
+    public String getSchedulerId() {
+        return schedulerId;
+    }
+
+    public void setSchedulerId(String schedulerId) {
+        this.schedulerId = schedulerId;
     }
 
     @Column(name = "[RUNNING]", nullable = true)

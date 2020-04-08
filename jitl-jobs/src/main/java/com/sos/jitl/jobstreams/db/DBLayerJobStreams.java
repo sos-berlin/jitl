@@ -124,6 +124,7 @@ public class DBLayerJobStreams {
 
             FilterJobStreamHistory filterJobStreamHistory = new FilterJobStreamHistory();
             filterJobStreamHistory.setJobStreamId(dbItemJobStream.getId());
+            filterJobStreamHistory.setSchedulerId(filter.getSchedulerId());
             dbLayerJobStreamHistory.deleteCascading(filterJobStreamHistory);
 
             FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();

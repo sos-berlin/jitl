@@ -47,6 +47,12 @@ public class DBLayerJobStreamHistory {
             where += and + " contextId  = :contextId";
             and = " and ";
         }
+
+        if (filter.getSchedulerId() != null && !filter.getSchedulerId().isEmpty()) {
+            where += and + " schedulerId  = :schedulerId";
+            and = " and ";
+        }
+
         if (filter.getJobStreamStarter() != null) {
             where += and + " jobStreamStarter  = :jobStreamStarter";
             and = " and ";
@@ -88,6 +94,9 @@ public class DBLayerJobStreamHistory {
         if (filter.getContextId() != null && !filter.getContextId().isEmpty()) {
             query.setParameter("contextId", filter.getContextId());
         }
+        if (filter.getSchedulerId() != null && !filter.getSchedulerId().isEmpty()) {
+            query.setParameter("schedulerId", filter.getSchedulerId());
+        }
         if (filter.getStartedFrom() != null) {
             query.setParameter("startedFrom", filter.getStartedFrom());
         }
@@ -123,17 +132,14 @@ public class DBLayerJobStreamHistory {
         return row;
     }
 
-    public void save(DBItemJobStreamHistory jsJobStreamHistory) throws SOSHibernateException {
-        sosHibernateSession.save(jsJobStreamHistory);
+    public void save(DBItemJobStreamHistory dbItemJobStreamHistory) throws SOSHibernateException {
+        sosHibernateSession.save(dbItemJobStreamHistory);
     }
 
-    public Long store(DBItemJobStreamHistory dbItemJobStreamHistory) throws SOSHibernateException {
-        FilterJobStreamHistory filterJobStreamHistory = new FilterJobStreamHistory();
-        filterJobStreamHistory.setContextId(dbItemJobStreamHistory.getContextId());
-        deleteCascading(filterJobStreamHistory);
-        sosHibernateSession.save(dbItemJobStreamHistory);
-        return dbItemJobStreamHistory.getId();
+    public void update(DBItemJobStreamHistory dbItemJobStreamHistory) throws SOSHibernateException {
+        sosHibernateSession.update(dbItemJobStreamHistory);
     }
+    
 
     public void deleteCascading(FilterJobStreamHistory filterJobStreamHistory) throws SOSHibernateException {
         DBLayerJobStreamsTaskContext dbLayerJobStreamTasksContext = new DBLayerJobStreamsTaskContext(sosHibernateSession);
@@ -150,13 +156,8 @@ public class DBLayerJobStreamHistory {
                 dbLayerJobStreamTasksContext.delete(filterJobStreamTaskContext);
 
                 FilterEvents filterEvents = new FilterEvents();
-                filterEvents.setSession(dbItemJobStreamHistory.getContextId());
-                List<DBItemOutConditionWithEvent> lEvents = dbLayerEvents.getEventsList(filterEvents, 0);
-                if (!lEvents.isEmpty()) {
-                    filterEvents.setSession("");
-                    filterEvents.setOutConditionId(lEvents.get(0).getDbItemOutCondition().getId());
-                    dbLayerEvents.delete(filterEvents);
-                }
+                filterEvents.setJobStreamHistoryId(dbItemJobStreamHistory.getId());
+                dbLayerEvents.delete(filterEvents);
             }
         }
 
