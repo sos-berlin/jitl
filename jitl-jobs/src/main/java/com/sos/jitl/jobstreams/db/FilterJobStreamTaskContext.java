@@ -5,6 +5,7 @@ public class FilterJobStreamTaskContext {
     private Long id;
     private Long taskId;
     private String jobstreamHistoryId;
+    private String jobStream;
     
     public Long getTaskId() {
         return taskId;
@@ -30,6 +31,16 @@ public class FilterJobStreamTaskContext {
     
     public void setId(Long id) {
         this.id = id;
+    }
+
+    
+    public String getJobStream() {
+        return jobStream;
+    }
+
+    
+    public void setJobStream(String jobStream) {
+        this.jobStream = jobStream;
     }
     
     

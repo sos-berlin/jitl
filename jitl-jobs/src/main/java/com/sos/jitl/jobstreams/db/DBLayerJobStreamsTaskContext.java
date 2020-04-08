@@ -44,6 +44,11 @@ public class DBLayerJobStreamsTaskContext {
             and = " and ";
         }
 
+        if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
+            where += and + " jobStream = :jobStream";
+            and = " and ";
+        }
+
         if (filter.getTaskId() != null) {
             where += and + " taskId = :taskId";
             and = " and ";
@@ -65,6 +70,10 @@ public class DBLayerJobStreamsTaskContext {
         if (filter.getTaskId() != null) {
             query.setParameter("taskId", filter.getTaskId());
         }
+        if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
+            query.setParameter("jobstream", filter.getJobStream());
+        }
+
         return query;
     }
 

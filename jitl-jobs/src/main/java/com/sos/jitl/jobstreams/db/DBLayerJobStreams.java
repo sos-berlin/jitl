@@ -108,8 +108,6 @@ public class DBLayerJobStreams {
     }
 
     public Integer deleteCascading(FilterJobStreams filter) throws SOSHibernateException {
-//TODO: JSTREAM_EVENTS        JSTREAM_HISTORY        JSTREAM_TASK_CONTEXT
-
         int row = 0;
         String hql = "";
         DBLayerJobStreamStarters dbLayerJobStreamStarters = new DBLayerJobStreamStarters(sosHibernateSession);
@@ -117,13 +115,32 @@ public class DBLayerJobStreams {
         DBLayerJobStreamsStarterJobs dbLayerJobStreamsStarterJobs = new DBLayerJobStreamsStarterJobs(sosHibernateSession);
         DBLayerInConditions dbLayerInConditions = new DBLayerInConditions(sosHibernateSession);
         DBLayerOutConditions dbLayerOutConditions = new DBLayerOutConditions(sosHibernateSession);
+        DBLayerJobStreamHistory dbLayerJobStreamHistory = new DBLayerJobStreamHistory(sosHibernateSession);
 
         List<DBItemJobStream> lJobStreams = getJobStreamsList(filter, 0);
         for (DBItemJobStream dbItemJobStream : lJobStreams) {
-            FilterInConditions filterInConditions = new FilterInConditions();
-            filterInConditions.setJobStream(dbItemJobStream.getJobStream());
+            FilterJobStreamStarterJobs filterJobStreamStarterJobs = new FilterJobStreamStarterJobs();
+            FilterJobStreamParameters filterJobStreamParameters = new FilterJobStreamParameters();
+
+            FilterJobStreamHistory filterJobStreamHistory = new FilterJobStreamHistory();
+            filterJobStreamHistory.setJobStreamId(dbItemJobStream.getId());
+            dbLayerJobStreamHistory.deleteCascading(filterJobStreamHistory);
+
             FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
             filterJobStreamStarters.setJobStreamId(dbItemJobStream.getId());
+            List<DBItemJobStreamStarter> lStarters = dbLayerJobStreamStarters.getJobStreamStartersList(filterJobStreamStarters, 0);
+
+            for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {
+                filterJobStreamStarterJobs.setJobStreamStarter(dbItemJobStreamStarter.getId());
+                dbLayerJobStreamsStarterJobs.delete(filterJobStreamStarterJobs);
+
+                filterJobStreamParameters.setJobStreamStarterId(dbItemJobStreamStarter.getId());
+                dbLayerJobStreamParameters.delete(filterJobStreamParameters);
+
+            }
+
+            FilterInConditions filterInConditions = new FilterInConditions();
+            filterInConditions.setJobStream(dbItemJobStream.getJobStream());
             filterInConditions.setJobSchedulerId(filter.getSchedulerId());
             dbLayerInConditions.deleteCascading(filterInConditions);
 
@@ -132,22 +149,6 @@ public class DBLayerJobStreams {
             filterOutConditions.setJobSchedulerId(filter.getSchedulerId());
             dbLayerOutConditions.deleteCascading(filterOutConditions);
 
-            filterJobStreamStarters = new FilterJobStreamStarters();
-            filterJobStreamStarters.setJobStreamId(dbItemJobStream.getId());
-            List<DBItemJobStreamStarter> lStarters = dbLayerJobStreamStarters.getJobStreamStartersList(filterJobStreamStarters, 0);
-
-            for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {
-                FilterJobStreamStarterJobs filterJobStreamStarterJobs = new FilterJobStreamStarterJobs();
-                filterJobStreamStarterJobs.setJobStreamStarter(dbItemJobStreamStarter.getId());
-                dbLayerJobStreamsStarterJobs.delete(filterJobStreamStarterJobs);
-            }
-
-            for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {
-                FilterJobStreamParameters filterJobStreamParameters = new FilterJobStreamParameters();
-                filterJobStreamParameters.setJobStreamStarterId(dbItemJobStreamStarter.getId());
-                dbLayerJobStreamParameters.delete(filterJobStreamParameters);
-
-            }
             dbLayerJobStreamStarters.delete(filterJobStreamStarters);
         }
 

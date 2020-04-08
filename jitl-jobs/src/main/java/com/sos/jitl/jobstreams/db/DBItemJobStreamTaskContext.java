@@ -22,6 +22,7 @@ public class DBItemJobStreamTaskContext {
 
     private Long id;
     private Long taskId;
+    private String schedulerId;
     private String jobStreamHistoryId;
     private String job;
     private String jobStream;
@@ -44,6 +45,15 @@ public class DBItemJobStreamTaskContext {
         this.id = id;
     }
 
+    @Column(name = "[SCHEDULER_ID]", nullable = false)
+    public String getSchedulerId() {
+        return schedulerId;
+    }
+
+    public void setSchedulerId(String schedulerId) {
+        this.schedulerId = schedulerId;
+    }
+
     @Column(name = "[JOBSTREAM_HISTORY_ID]", nullable = false)
     public String getJobStreamHistoryId() {
         return jobStreamHistoryId;
@@ -61,7 +71,7 @@ public class DBItemJobStreamTaskContext {
     public void setJob(String job) {
         this.job = job;
     }
-    
+
     @Column(name = "[JOB_STREAM]", nullable = false)
     public String getJobStream() {
         return jobStream;

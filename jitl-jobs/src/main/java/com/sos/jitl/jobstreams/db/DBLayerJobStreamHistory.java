@@ -130,9 +130,38 @@ public class DBLayerJobStreamHistory {
     public Long store(DBItemJobStreamHistory dbItemJobStreamHistory) throws SOSHibernateException {
         FilterJobStreamHistory filterJobStreamHistory = new FilterJobStreamHistory();
         filterJobStreamHistory.setContextId(dbItemJobStreamHistory.getContextId());
-        delete(filterJobStreamHistory);
+        deleteCascading(filterJobStreamHistory);
         sosHibernateSession.save(dbItemJobStreamHistory);
         return dbItemJobStreamHistory.getId();
+    }
+
+    public void deleteCascading(FilterJobStreamHistory filterJobStreamHistory) throws SOSHibernateException {
+        DBLayerJobStreamsTaskContext dbLayerJobStreamTasksContext = new DBLayerJobStreamsTaskContext(sosHibernateSession);
+        DBLayerEvents dbLayerEvents = new DBLayerEvents(sosHibernateSession);
+        List<DBItemJobStreamHistory> lHistory = getJobStreamHistoryList(filterJobStreamHistory, 0);
+        if (filterJobStreamHistory.getContextId() != null && !filterJobStreamHistory.getContextId().isEmpty()) {
+            FilterJobStreamTaskContext filterJobStreamTaskContext = new FilterJobStreamTaskContext();
+            filterJobStreamTaskContext.setJobstreamHistoryId(filterJobStreamHistory.getContextId());
+            dbLayerJobStreamTasksContext.delete(filterJobStreamTaskContext);
+        } else {
+            for (DBItemJobStreamHistory dbItemJobStreamHistory : lHistory) {
+                FilterJobStreamTaskContext filterJobStreamTaskContext = new FilterJobStreamTaskContext();
+                filterJobStreamTaskContext.setJobstreamHistoryId(dbItemJobStreamHistory.getContextId());
+                dbLayerJobStreamTasksContext.delete(filterJobStreamTaskContext);
+
+                FilterEvents filterEvents = new FilterEvents();
+                filterEvents.setSession(dbItemJobStreamHistory.getContextId());
+                List<DBItemOutConditionWithEvent> lEvents = dbLayerEvents.getEventsList(filterEvents, 0);
+                if (!lEvents.isEmpty()) {
+                    filterEvents.setSession("");
+                    filterEvents.setOutConditionId(lEvents.get(0).getDbItemOutCondition().getId());
+                    dbLayerEvents.delete(filterEvents);
+                }
+            }
+        }
+
+        delete(filterJobStreamHistory);
+
     }
 
 }
