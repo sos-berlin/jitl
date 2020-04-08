@@ -20,7 +20,7 @@ public class JobSchedulerStartLatecomersOptionsSuperClass extends JSOptionsClass
 	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerStartLatecomersOptionsSuperClass.class);
 
 	public JobSchedulerStartLatecomersOptionsSuperClass() {
-		objParentClass = this.getClass();
+	    currentClass = this.getClass();
 	}
 
 	public JobSchedulerStartLatecomersOptionsSuperClass(JSListener pobjListener) {

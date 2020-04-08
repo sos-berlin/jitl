@@ -27,7 +27,7 @@ public class CopyJob2OrderParameterOptionsSuperClass extends JSOptionsClass {
     }
 
     public CopyJob2OrderParameterOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public CopyJob2OrderParameterOptionsSuperClass(JSListener pobjListener) {

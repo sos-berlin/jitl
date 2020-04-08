@@ -61,7 +61,7 @@ public class JobSchedulerMD5FileOptionsSuperClass extends JSOptionsClass {
     }
 
     public JobSchedulerMD5FileOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JobSchedulerMD5FileOptionsSuperClass(JSListener pobjListener) {

@@ -179,7 +179,7 @@ public class JobSchedulerSynchronizeJobChainsOptionsSuperClass extends JSOptions
     }
 
     public JobSchedulerSynchronizeJobChainsOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JobSchedulerSynchronizeJobChainsOptionsSuperClass(final JSListener pobjListener) {

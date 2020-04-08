@@ -112,7 +112,7 @@ public class JSBatchInstallerOptionsSuperClass extends JSOptionsClass {
     }
 
     public JSBatchInstallerOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JSBatchInstallerOptionsSuperClass(JSListener pobjListener) {

@@ -183,7 +183,7 @@ public class JobSchedulerDequeueMailJobOptionsSuperClass extends JSOptionsClass 
     }
 
     public JobSchedulerDequeueMailJobOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JobSchedulerDequeueMailJobOptionsSuperClass(JSListener pobjListener) {

@@ -220,7 +220,7 @@ public class StoreResultsJobOptionsSuperClass extends JSOptionsClass {
 	}
 
 	public StoreResultsJobOptionsSuperClass() {
-		objParentClass = this.getClass();
+	    currentClass = this.getClass();
 	}
 
 	public StoreResultsJobOptionsSuperClass(JSListener listener) {

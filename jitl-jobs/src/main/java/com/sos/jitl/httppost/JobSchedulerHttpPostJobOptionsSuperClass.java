@@ -96,7 +96,7 @@ public class JobSchedulerHttpPostJobOptionsSuperClass extends JSOptionsClass {
     }
 
     public JobSchedulerHttpPostJobOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JobSchedulerHttpPostJobOptionsSuperClass(JSListener pobjListener) {

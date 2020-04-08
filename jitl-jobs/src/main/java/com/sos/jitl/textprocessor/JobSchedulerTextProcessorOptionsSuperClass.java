@@ -73,7 +73,7 @@ public class JobSchedulerTextProcessorOptionsSuperClass extends JSOptionsClass {
     }
 
     public JobSchedulerTextProcessorOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JobSchedulerTextProcessorOptionsSuperClass(JSListener pobjListener) {

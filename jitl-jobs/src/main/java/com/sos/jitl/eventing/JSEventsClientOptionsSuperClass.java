@@ -242,7 +242,7 @@ public class JSEventsClientOptionsSuperClass extends JSOptionsClass implements I
     }
 
     public JSEventsClientOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JSEventsClientOptionsSuperClass(final JSListener pobjListener) {

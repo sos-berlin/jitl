@@ -42,7 +42,7 @@ public class JSReportAllParametersOptionsSuperClass extends JSOptionsClass {
     }
 
     public JSReportAllParametersOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JSReportAllParametersOptionsSuperClass(JSListener pobjListener) {

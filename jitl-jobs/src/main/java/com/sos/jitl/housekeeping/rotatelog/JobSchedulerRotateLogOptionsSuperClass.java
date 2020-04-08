@@ -141,7 +141,7 @@ public class JobSchedulerRotateLogOptionsSuperClass extends JSOptionsClass {
     public SOSOptionRegExp compress_file_spec = (SOSOptionRegExp) file_specification.setAlias(conClassName + ".compress_file_spec");
 
     public JobSchedulerRotateLogOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JobSchedulerRotateLogOptionsSuperClass(JSListener pobjListener) {

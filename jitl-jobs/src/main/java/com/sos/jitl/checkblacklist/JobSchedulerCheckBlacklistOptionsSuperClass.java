@@ -73,7 +73,7 @@ public class JobSchedulerCheckBlacklistOptionsSuperClass extends JSOptionsClass 
     }
 
     public JobSchedulerCheckBlacklistOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JobSchedulerCheckBlacklistOptionsSuperClass(JSListener pobjListener) {

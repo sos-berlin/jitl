@@ -299,7 +299,7 @@ public class JobSchedulerManagedDBReportJobOptionsSuperClass extends JSOptionsCl
     }
 
     public JobSchedulerManagedDBReportJobOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JobSchedulerManagedDBReportJobOptionsSuperClass(final JSListener pobjListener) {

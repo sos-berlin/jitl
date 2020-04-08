@@ -40,7 +40,7 @@ public class GenericAPIJobOptionsSuperClass extends JSOptionsClass {
     }
 
     public GenericAPIJobOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public GenericAPIJobOptionsSuperClass(final JSListener pobjListener) {

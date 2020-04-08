@@ -66,7 +66,7 @@ public class CreateDailyPlanOptionsSuperClass extends JSOptionsClass {
     }
 
     public CreateDailyPlanOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public CreateDailyPlanOptionsSuperClass(JSListener pobjListener) {

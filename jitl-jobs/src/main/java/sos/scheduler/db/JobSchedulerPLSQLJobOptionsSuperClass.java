@@ -184,7 +184,7 @@ public class JobSchedulerPLSQLJobOptionsSuperClass extends JSOptionsClass implem
     }
 
     public JobSchedulerPLSQLJobOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JobSchedulerPLSQLJobOptionsSuperClass(final JSListener pobjListener) {

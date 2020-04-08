@@ -357,7 +357,7 @@ public class JSExistsFileOptionsSuperClass extends JSOptionsClass {
     }
 
     public JSExistsFileOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JSExistsFileOptionsSuperClass(JSListener pobjListener) {
