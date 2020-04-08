@@ -206,7 +206,7 @@ public class SOSSQLPlusJobOptionsSuperClass extends JSOptionsClass implements IS
     }
 
     public SOSSQLPlusJobOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public SOSSQLPlusJobOptionsSuperClass(final JSListener pobjListener) {

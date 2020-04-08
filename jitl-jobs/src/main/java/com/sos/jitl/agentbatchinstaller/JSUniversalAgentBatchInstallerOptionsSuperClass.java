@@ -84,7 +84,7 @@ public class JSUniversalAgentBatchInstallerOptionsSuperClass extends JSOptionsCl
     }
 
     public JSUniversalAgentBatchInstallerOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JSUniversalAgentBatchInstallerOptionsSuperClass(JSListener pobjListener) {

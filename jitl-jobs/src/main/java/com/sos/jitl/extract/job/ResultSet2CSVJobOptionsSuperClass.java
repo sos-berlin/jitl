@@ -142,7 +142,7 @@ public class ResultSet2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     public ResultSet2CSVJobOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public ResultSet2CSVJobOptionsSuperClass(JSListener listener) {

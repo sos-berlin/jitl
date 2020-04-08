@@ -83,7 +83,7 @@ public class NotificationJobOptionsSuperClass extends JSOptionsClass {
     }
 
     public NotificationJobOptionsSuperClass() {
-        this.objParentClass = this.getClass();
+        this.currentClass = this.getClass();
     }
 
     public NotificationJobOptionsSuperClass(JSListener listener) {

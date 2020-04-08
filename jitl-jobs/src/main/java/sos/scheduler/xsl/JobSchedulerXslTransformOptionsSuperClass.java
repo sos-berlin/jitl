@@ -51,7 +51,7 @@ public class JobSchedulerXslTransformOptionsSuperClass extends JSOptionsClass {
     }
 
     public JobSchedulerXslTransformOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JobSchedulerXslTransformOptionsSuperClass(final JSListener pobjListener) {

@@ -16,7 +16,7 @@ public class SOSMailProcessInboxOptionsSuperClass extends JSOptionsClass {
 	private static final String CLASSNAME = "SOSMailProcessInboxOptionsSuperClass";
 
 	public SOSMailProcessInboxOptionsSuperClass() {
-		objParentClass = this.getClass();
+	    currentClass = this.getClass();
 	}
 
 	public SOSMailProcessInboxOptionsSuperClass(JSListener pobjListener) {

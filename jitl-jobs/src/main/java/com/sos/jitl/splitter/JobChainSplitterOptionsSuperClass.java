@@ -85,7 +85,7 @@ public class JobChainSplitterOptionsSuperClass extends JSOptionsClass {
     }
 
     public JobChainSplitterOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JobChainSplitterOptionsSuperClass(final JSListener pobjListener) {

@@ -67,7 +67,7 @@ public class ReportingJobOptionsSuperClass extends JSOptionsClass {
     }
 
     public ReportingJobOptionsSuperClass() {
-        this.objParentClass = this.getClass();
+        this.currentClass = this.getClass();
     }
 
     public ReportingJobOptionsSuperClass(JSListener listener) {

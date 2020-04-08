@@ -181,7 +181,7 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
     }
 
     public JobSchedulerCleanupSchedulerDbOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JobSchedulerCleanupSchedulerDbOptionsSuperClass(JSListener pobjListener) {

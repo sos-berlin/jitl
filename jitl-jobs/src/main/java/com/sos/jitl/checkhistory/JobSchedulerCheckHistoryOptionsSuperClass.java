@@ -277,7 +277,7 @@ public class JobSchedulerCheckHistoryOptionsSuperClass extends JSOptionsClass {
     }
 
     public JobSchedulerCheckHistoryOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JobSchedulerCheckHistoryOptionsSuperClass(JSListener pobjListener) {

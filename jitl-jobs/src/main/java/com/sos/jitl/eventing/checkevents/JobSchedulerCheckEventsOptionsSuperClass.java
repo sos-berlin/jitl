@@ -160,7 +160,7 @@ public class JobSchedulerCheckEventsOptionsSuperClass extends JSOptionsClass {
     }
 
     public JobSchedulerCheckEventsOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JobSchedulerCheckEventsOptionsSuperClass(JSListener pobjListener) {

@@ -97,7 +97,7 @@ public class ManagedDatabaseJobOptions extends JSOptionsClass {
     }
 
     public ManagedDatabaseJobOptions() {
-        objParentClass = getClass();
+        currentClass = getClass();
     }
 
     public ManagedDatabaseJobOptions(JSListener listener) {

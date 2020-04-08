@@ -15,7 +15,7 @@ public class JobSchedulerJoinOrdersOptionsSuperClass extends JSOptionsClass {
     private static final String CLASSNAME = "JobSchedulerJoinOrdersOptionsSuperClass";
 
     public JobSchedulerJoinOrdersOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JobSchedulerJoinOrdersOptionsSuperClass(JSListener pobjListener) {

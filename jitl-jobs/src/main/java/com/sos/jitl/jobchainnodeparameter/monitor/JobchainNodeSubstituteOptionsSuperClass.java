@@ -13,7 +13,7 @@ public class JobchainNodeSubstituteOptionsSuperClass extends JSOptionsClass {
 
 
     public JobchainNodeSubstituteOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
     
     public JobchainNodeSubstituteOptionsSuperClass(JSListener pobjListener) {

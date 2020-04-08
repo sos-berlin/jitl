@@ -108,7 +108,7 @@ public class UncriticalJobNodesJobOptionsSuperClass extends JSOptionsClass {
     }
 
     public UncriticalJobNodesJobOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public UncriticalJobNodesJobOptionsSuperClass(JSListener pobjListener) {

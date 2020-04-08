@@ -64,7 +64,7 @@ public class CheckDailyPlanOptionsSuperClass extends JSOptionsClass {
     }
 
     public CheckDailyPlanOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public CheckDailyPlanOptionsSuperClass(JSListener pobjListener) {
