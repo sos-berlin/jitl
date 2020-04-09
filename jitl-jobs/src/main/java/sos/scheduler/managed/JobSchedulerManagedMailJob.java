@@ -14,7 +14,6 @@ import sos.net.SOSMail;
 import sos.net.SOSMailAttachment;
 import sos.settings.SOSProfileSettings;
 import sos.settings.SOSSettings;
-import sos.spooler.Order;
 import sos.util.SOSFile;
 
 public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
@@ -24,7 +23,6 @@ public class JobSchedulerManagedMailJob extends JobSchedulerManagedJob {
     @Override
     public boolean spooler_process() {
 
-        Order order = null;
         orderPayload = null;
         String orderId = "(none)";
         String host = spooler_log.mail().smtp();
