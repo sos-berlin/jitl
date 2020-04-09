@@ -25,6 +25,7 @@ public class DBItemJobStreamStarter {
     private String title;
     private String state;
     private String runTime;
+    private Date nextStart;
     private Date created;
 
     public DBItemJobStreamStarter() {
@@ -93,6 +94,15 @@ public class DBItemJobStreamStarter {
         this.created = created;
     }
  
- 
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "[NEXT_START]", nullable = false)
+    public Date getNextStart() {
+        return nextStart;
+    }
+
+    @Column(name = "[NEXT_START]", nullable = false)
+    public void setNextStart(Date nextStart) {
+        this.nextStart = nextStart;
+    }
    
 }

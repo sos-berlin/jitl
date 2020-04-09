@@ -214,9 +214,6 @@ public class DBLayerJobStreams {
                 dbItemParameter.setCreated(new Date());
                 dbItemParameter.setJobStreamStarter(newStarterId);
                 dbItemParameter.setName(param.getName());
-                if (param.getValue() == null) {
-                    param.setValue("");
-                }
                 dbItemParameter.setValue(param.getValue());
                 dbLayerJobStreamParameters.save(dbItemParameter);
             }
