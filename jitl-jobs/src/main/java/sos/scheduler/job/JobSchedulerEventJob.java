@@ -50,7 +50,7 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 		try {
 			httpPort = SOSSchedulerCommand.getHTTPPortFromScheduler(spooler);
 		} catch (Exception e) {
-		    LOGGER.debug("could not read http port from scheduler.xml");
+			LOGGER.debug("could not read http port from scheduler.xml");
 		}
 
 		boolean rc = super.spooler_init();
@@ -71,22 +71,14 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 			confFile = getHibernateConfigurationReporting().toFile().getAbsolutePath();
 		}
 
-		try {
-			session = getSession(confFile);
-			schedulerEventDBLayer = new SchedulerEventDBLayer(session);
-			filter = new SchedulerEventFilter();
-
-		} catch (Exception e) {
-			LOGGER.error("Could not create session: " + e.getMessage());
-			throw new RuntimeException(e);
-		}
-
 		return rc;
 	}
 
 	@Override
 	public boolean spooler_process() throws Exception {
 		super.spooler_process();
+
+
 		boolean rc = true;
 		try {
 
@@ -232,27 +224,41 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 					this.eventHandlerFilespec = "\\.sos.scheduler.xsl$";
 				}
 				jobParameterNames.add("event_handler_filespec");
-                Element params = DocumentHelper.createElement("params");
-                String[] parameterNames = this.parameters.names().split(";");
-                for (int i = 0; i < parameterNames.length; i++) {
-                    if (!jobParameterNames.contains(parameterNames[i])) {
-                        params.addElement("param").addAttribute("name", parameterNames[i]).addAttribute("value", parameters.value(parameterNames[i]));
-                        if (parameterNames[i].contains("password")) {
-                            LOGGER.debug("Event parameter [" + parameterNames[i] + "]: *****");
-                        } else {
-                            LOGGER.debug("Event parameter [" + parameterNames[i] + "]: " + parameters.value(parameterNames[i]));
-                        }
-                    }
-                }
-                if (params.hasContent()) {
-                    filter.setParametersAsString(params.asXML());
-                }
+				Element params = DocumentHelper.createElement("params");
+				String[] parameterNames = this.parameters.names().split(";");
+				for (int i = 0; i < parameterNames.length; i++) {
+					if (!jobParameterNames.contains(parameterNames[i])) {
+						params.addElement("param").addAttribute("name", parameterNames[i]).addAttribute("value",
+								parameters.value(parameterNames[i]));
+						if (parameterNames[i].contains("password")) {
+							LOGGER.debug("Event parameter [" + parameterNames[i] + "]: *****");
+						} else {
+							LOGGER.debug("Event parameter [" + parameterNames[i] + "]: "
+									+ parameters.value(parameterNames[i]));
+						}
+					}
+				}
+				if (params.hasContent()) {
+					filter.setParametersAsString(params.asXML());
+				}
 			} catch (Exception e) {
 				LOGGER.error("error occurred processing parameters: " + e.getMessage());
 				throw e;
 			}
 
 			try {
+				
+
+				try {
+					session = getSession(confFile);
+					schedulerEventDBLayer = new SchedulerEventDBLayer(session);
+					filter = new SchedulerEventFilter();
+
+				} catch (Exception e) {
+					LOGGER.error("Could not create session: " + e.getMessage());
+					throw new RuntimeException(e);
+				}
+				
 				if ("add".equalsIgnoreCase(this.eventAction)) {
 					LOGGER.info("adding event: " + filter.getEventClass() + " " + filter.getEventId());
 					this.addEvent();
@@ -265,8 +271,12 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 				this.getSchedulerEvents();
 				this.processSchedulerEvents();
 			} catch (Exception e) {
-			    LOGGER.error("error occurred processing event: " + e.getMessage());
+				LOGGER.error("error occurred processing event: " + e.getMessage());
 				throw e;
+			} finally {
+				if (session != null) {
+					session.close();
+				}
 			}
 			return spooler_job.order_queue() != null ? rc : false;
 		} catch (Exception e) {
