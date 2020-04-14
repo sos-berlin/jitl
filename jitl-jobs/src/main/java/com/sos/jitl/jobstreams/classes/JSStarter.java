@@ -7,8 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sos.jitl.jobstreams.db.DBItemJobStreamStarter;
@@ -20,7 +18,6 @@ public class JSStarter {
     private DBItemJobStreamStarter itemJobStreamStarter;
     private Date nextStart;
     private JobStreamScheduler jobStreamScheduler;
-    private String jobStreamName;
     private ObjectMapper objectMapper;
  
 
@@ -80,10 +77,5 @@ public class JSStarter {
         return nextStart;
     }
  
-
-    public void setJobStreamName(String jobStream) {
-        this.jobStreamName = jobStream;
-    }
-  
 
 }
