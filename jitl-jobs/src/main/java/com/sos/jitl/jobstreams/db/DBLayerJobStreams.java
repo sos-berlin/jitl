@@ -107,7 +107,7 @@ public class DBLayerJobStreams {
         return sosHibernateSession.getResultList(query);
     }
 
-    public Integer deleteCascading(FilterJobStreams filter) throws SOSHibernateException {
+    public Integer deleteCascading(FilterJobStreams filter, Boolean withConditions) throws SOSHibernateException {
         int row = 0;
         String hql = "";
         DBLayerJobStreamStarters dbLayerJobStreamStarters = new DBLayerJobStreamStarters(sosHibernateSession);
@@ -122,10 +122,12 @@ public class DBLayerJobStreams {
             FilterJobStreamStarterJobs filterJobStreamStarterJobs = new FilterJobStreamStarterJobs();
             FilterJobStreamParameters filterJobStreamParameters = new FilterJobStreamParameters();
 
-            FilterJobStreamHistory filterJobStreamHistory = new FilterJobStreamHistory();
-            filterJobStreamHistory.setJobStreamId(dbItemJobStream.getId());
-            filterJobStreamHistory.setSchedulerId(filter.getSchedulerId());
-            dbLayerJobStreamHistory.deleteCascading(filterJobStreamHistory);
+            if (withConditions) {
+                FilterJobStreamHistory filterJobStreamHistory = new FilterJobStreamHistory();
+                filterJobStreamHistory.setJobStreamId(dbItemJobStream.getId());
+                filterJobStreamHistory.setSchedulerId(filter.getSchedulerId());
+                dbLayerJobStreamHistory.deleteCascading(filterJobStreamHistory);
+            }
 
             FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
             filterJobStreamStarters.setJobStreamId(dbItemJobStream.getId());
@@ -140,15 +142,18 @@ public class DBLayerJobStreams {
 
             }
 
-            FilterInConditions filterInConditions = new FilterInConditions();
-            filterInConditions.setJobStream(dbItemJobStream.getJobStream());
-            filterInConditions.setJobSchedulerId(filter.getSchedulerId());
-            dbLayerInConditions.deleteCascading(filterInConditions);
+            if (withConditions) {
 
-            FilterOutConditions filterOutConditions = new FilterOutConditions();
-            filterOutConditions.setJobStream(dbItemJobStream.getJobStream());
-            filterOutConditions.setJobSchedulerId(filter.getSchedulerId());
-            dbLayerOutConditions.deleteCascading(filterOutConditions);
+                FilterInConditions filterInConditions = new FilterInConditions();
+                filterInConditions.setJobStream(dbItemJobStream.getJobStream());
+                filterInConditions.setJobSchedulerId(filter.getSchedulerId());
+                dbLayerInConditions.deleteCascading(filterInConditions);
+
+                FilterOutConditions filterOutConditions = new FilterOutConditions();
+                filterOutConditions.setJobStream(dbItemJobStream.getJobStream());
+                filterOutConditions.setJobSchedulerId(filter.getSchedulerId());
+                dbLayerOutConditions.deleteCascading(filterOutConditions);
+            }
 
             dbLayerJobStreamStarters.delete(filterJobStreamStarters);
         }
@@ -165,7 +170,7 @@ public class DBLayerJobStreams {
         FilterJobStreams filter = new FilterJobStreams();
         filter.setJobStream(jsJobStream.getJobStream());
         filter.setSchedulerId(jsJobStream.getSchedulerId());
-        deleteCascading(filter);
+        deleteCascading(filter,false);
         sosHibernateSession.save(jsJobStream);
         return jsJobStream.getId();
 

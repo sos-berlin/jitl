@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TimeZone;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,7 @@ public class PeriodResolver {
     }
 
     private Date getDate(String date) throws ParseException {
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         return dateFormat.parse(date);
     }
 

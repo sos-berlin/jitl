@@ -1,6 +1,7 @@
 package com.sos.jitl.jobstreams.classes;
 
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -37,7 +38,7 @@ public class JobStreamScheduler {
         SOSXMLXPath xml = new SOSXMLXPath(new StringBuffer(xmlMapper.writeValueAsString(XmlSerializer.serializeAbstractSchedule(runTime))));
         RuntimeResolver r = new RuntimeResolver();
         LOGGER.debug("------->get plan");
-        plan = r.resolve(xml, fromDate, toDate, "");
+        plan = r.resolve(xml, fromDate, toDate, ZoneId.systemDefault().getId());
         if (resolve) {
             PeriodResolver periodResolver = new PeriodResolver();
             for (Period p : plan.getPeriods()) {
@@ -53,7 +54,6 @@ public class JobStreamScheduler {
     private String dateAsString(Date date) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         String dateS = formatter.format(date);
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
         return dateS;
     }
 
