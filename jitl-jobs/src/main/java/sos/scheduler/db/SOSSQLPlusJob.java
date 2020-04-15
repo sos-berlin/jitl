@@ -161,7 +161,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
     }
 
     public int executeCommand(final SOSSQLPlusJobOptions options, final SOSShell shell) throws Exception {
-        return shell.executeCommand(createCommandUsingOptions(options, shell),true);
+        return shell.executeCommand(createCommandUsingOptions(options, shell),false);
     }
 
     private String[] createCommands(final SOSSQLPlusJobOptions options, final SOSShell shell, final String envComSpecName,
