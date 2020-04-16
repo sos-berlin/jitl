@@ -1,10 +1,8 @@
 package com.sos.jitl.jobstreams.classes;
 
 import java.text.SimpleDateFormat;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +23,11 @@ public class JobStreamScheduler {
     private static final Logger LOGGER = LoggerFactory.getLogger(JobStreamScheduler.class);
     private com.sos.joc.model.plan.RunTime plan;
     private List<Long> listOfStartTimes;
+    private String timeZoneId;
 
-    public JobStreamScheduler() {
+    public JobStreamScheduler(String timeZoneId) {
         super();
+        this.timeZoneId = timeZoneId;
     }
 
     public void schedule(Date from, Date to, RunTime runTime, boolean resolve) throws JsonProcessingException, Exception {
@@ -38,7 +38,7 @@ public class JobStreamScheduler {
         SOSXMLXPath xml = new SOSXMLXPath(new StringBuffer(xmlMapper.writeValueAsString(XmlSerializer.serializeAbstractSchedule(runTime))));
         RuntimeResolver r = new RuntimeResolver();
         LOGGER.debug("------->get plan");
-        plan = r.resolve(xml, fromDate, toDate, ZoneId.systemDefault().getId());
+        plan = r.resolve(xml, fromDate, toDate, timeZoneId);
         if (resolve) {
             PeriodResolver periodResolver = new PeriodResolver();
             for (Period p : plan.getPeriods()) {

@@ -99,7 +99,7 @@ public class DBLayerConsumedInConditions {
             throws SOSHibernateException {
 
         String q = "select c from " + DBItemInCondition + " i, " + DBItemConsumedInCondition + " c " + getWhere(filter) + " and i.id=c.inConditionId";
-      
+
         Query<DBItemConsumedInCondition> query = sosHibernateSession.createQuery(q);
         query = bindParameters(filter, query);
 
@@ -136,8 +136,7 @@ public class DBLayerConsumedInConditions {
 
     public int deleteConsumedInConditions(FilterConsumedInConditions filterConsumedInConditions) throws SOSHibernateException {
         filterConsumedInConditions.setSession("");
-        String select = "select id from " +  DBItemInCondition + getDeleteWhere(
-                filterConsumedInConditions);
+        String select = "select id from " + DBItemInCondition + getDeleteWhere(filterConsumedInConditions);
 
         String hql = "delete from " + DBItemConsumedInCondition + " where inConditionId in ( " + select + ")";
         Query<DBItemConsumedInCondition> query = sosHibernateSession.createQuery(hql);
@@ -145,8 +144,8 @@ public class DBLayerConsumedInConditions {
         int row = sosHibernateSession.executeUpdate(query);
         return row;
     }
-    
-       public int updateConsumedInCondition(Long oldId, Long newId) throws SOSHibernateException {
+
+    public int updateConsumedInCondition(Long oldId, Long newId) throws SOSHibernateException {
         String hql = "update " + DBItemConsumedInCondition + " set inConditionId=" + newId + " where inConditionId=:oldId";
         int row = 0;
         Query<DBItemConsumedInCondition> query = sosHibernateSession.createQuery(hql);
@@ -163,8 +162,6 @@ public class DBLayerConsumedInConditions {
         deleteByInConditionId(filterConsumedInConditions);
         sosHibernateSession.save(dbItemConsumedInCondition);
     }
-
-   
 
     public void store(DBItemConsumedInCondition dbItemConsumedInCondition) throws SOSHibernateException {
         sosHibernateSession.save(dbItemConsumedInCondition);

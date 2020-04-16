@@ -45,20 +45,25 @@ public class PeriodResolver {
     }
 
     private void add(Long start, Period period) {
-        LOGGER.debug("Adding " + start);
-        Period p = listOfPeriods.get(start);
-        if (p == null) {
-            listOfPeriods.put(start, period);
-        } else {
-            LOGGER.info("Overlapping period for start time: " + start);
-            logPeriod(p);
-            logPeriod(period);
+        Date now = new Date();
+        Date startDate = new Date(start);
+        if (startDate.after(now)) {
+
+            LOGGER.debug("Adding " + start);
+            Period p = listOfPeriods.get(start);
+            if (p == null) {
+                listOfPeriods.put(start, period);
+            } else {
+                LOGGER.info("Overlapping period for start time: " + start);
+                logPeriod(p);
+                logPeriod(period);
+            }
         }
     }
 
     private void addRepeat(Period period) throws ParseException {
-        if (!period.getAbsoluteRepeat().isEmpty() && !"00:00:00".equals(period.getAbsoluteRepeat())) {
 
+        if (!period.getAbsoluteRepeat().isEmpty() && !"00:00:00".equals(period.getAbsoluteRepeat())) {
             Long start = getDate(period.getBegin()).getTime();
             Long end = getDate(period.getEnd()).getTime();
             Date repeat = getDate("2001-01-01T" + period.getAbsoluteRepeat() + "Z");

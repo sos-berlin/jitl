@@ -139,7 +139,6 @@ public class DBLayerJobStreamHistory {
     public void update(DBItemJobStreamHistory dbItemJobStreamHistory) throws SOSHibernateException {
         sosHibernateSession.update(dbItemJobStreamHistory);
     }
-    
 
     public void deleteCascading(FilterJobStreamHistory filterJobStreamHistory) throws SOSHibernateException {
         DBLayerJobStreamsTaskContext dbLayerJobStreamTasksContext = new DBLayerJobStreamsTaskContext(sosHibernateSession);
@@ -163,6 +162,25 @@ public class DBLayerJobStreamHistory {
 
         delete(filterJobStreamHistory);
 
+    }
+
+    public int updateHistoryWithStarter(Long oldId, Long newId) throws SOSHibernateException {
+        String hql = "update " + DBItemJobStreamHistory + " set jobStreamStarter=" + newId + " where jobStreamStarter=:oldId";
+        int row = 0;
+        Query<DBItemJobStreamHistory> query = sosHibernateSession.createQuery(hql);
+        query.setParameter("oldId", oldId);
+
+        row = sosHibernateSession.executeUpdate(query);
+        return row;
+    }
+    public int updateHistoryWithJobStream(Long oldId, Long newId) throws SOSHibernateException {
+        String hql = "update " + DBItemJobStreamHistory + " set jobstream=" + newId + " where jobstream=:oldId";
+        int row = 0;
+        Query<DBItemJobStreamHistory> query = sosHibernateSession.createQuery(hql);
+        query.setParameter("oldId", oldId);
+
+        row = sosHibernateSession.executeUpdate(query);
+        return row;
     }
 
 }

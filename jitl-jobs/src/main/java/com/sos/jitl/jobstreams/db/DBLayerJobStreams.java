@@ -166,13 +166,23 @@ public class DBLayerJobStreams {
         return row;
     }
 
-    public Long store(DBItemJobStream jsJobStream) throws SOSHibernateException {
+    public Long store(DBItemJobStream dbItemJobStream) throws SOSHibernateException {
+        DBLayerJobStreamHistory dbLayerJobStreamHistory = new DBLayerJobStreamHistory(sosHibernateSession);
         FilterJobStreams filter = new FilterJobStreams();
-        filter.setJobStream(jsJobStream.getJobStream());
-        filter.setSchedulerId(jsJobStream.getSchedulerId());
-        deleteCascading(filter,false);
-        sosHibernateSession.save(jsJobStream);
-        return jsJobStream.getId();
+        filter.setJobStream(dbItemJobStream.getJobStream());
+        filter.setSchedulerId(dbItemJobStream.getSchedulerId());
+        List<DBItemJobStream> listOfJobStreams = getJobStreamsList(filter, 1);
+        deleteCascading(filter, false);
+        sosHibernateSession.save(dbItemJobStream);
+        if (listOfJobStreams.size() > 0) {
+            Long oldId = listOfJobStreams.get(0).getId();
+            Long newId = dbItemJobStream.getId();
+            if (oldId != newId) {
+                dbLayerJobStreamHistory.updateHistoryWithJobStream(oldId, newId);
+            }
+        }
+
+        return dbItemJobStream.getId();
 
     }
 
@@ -215,12 +225,14 @@ public class DBLayerJobStreams {
             }
             for (NameValuePair param : jobstreamStarter.getParams()) {
 
-                DBItemJobStreamParameter dbItemParameter = new DBItemJobStreamParameter();
-                dbItemParameter.setCreated(new Date());
-                dbItemParameter.setJobStreamStarter(newStarterId);
-                dbItemParameter.setName(param.getName());
-                dbItemParameter.setValue(param.getValue());
-                dbLayerJobStreamParameters.save(dbItemParameter);
+                if (param.getName() != null && !param.getName().isEmpty()) {
+                    DBItemJobStreamParameter dbItemParameter = new DBItemJobStreamParameter();
+                    dbItemParameter.setCreated(new Date());
+                    dbItemParameter.setJobStreamStarter(newStarterId);
+                    dbItemParameter.setName(param.getName());
+                    dbItemParameter.setValue(param.getValue());
+                    dbLayerJobStreamParameters.save(dbItemParameter);
+                }
             }
 
         }

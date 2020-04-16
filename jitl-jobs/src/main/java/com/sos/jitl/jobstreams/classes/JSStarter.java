@@ -37,9 +37,9 @@ public class JSStarter {
         return null;
     }
 
-    public void setItemJobStreamStarter(Date from, Date to, DBItemJobStreamStarter itemJobStreamStarter) throws Exception {
+    public void setItemJobStreamStarter(Date from, Date to, DBItemJobStreamStarter itemJobStreamStarter, String timeZoneId) throws Exception {
         this.itemJobStreamStarter = itemJobStreamStarter;
-        jobStreamScheduler = new JobStreamScheduler();
+        jobStreamScheduler = new JobStreamScheduler(timeZoneId);
         RunTime runtime = this.getRunTime();
         if (runtime != null) {
             jobStreamScheduler.schedule(from,to,runtime, false);

@@ -101,9 +101,13 @@ public class DBLayerJobStreamStarters {
         return row;
     }
 
-    public void save(DBItemJobStreamStarter jsJobStreamStarter) throws SOSHibernateException {
-        sosHibernateSession.save(jsJobStreamStarter);
+    public void save(DBItemJobStreamStarter dbItemJobStreamStarter) throws SOSHibernateException {
+        sosHibernateSession.save(dbItemJobStreamStarter);
     }
+    public void update(DBItemJobStreamStarter dbItemJobStreamStarter) throws SOSHibernateException {
+        this.sosHibernateSession.update(dbItemJobStreamStarter);
+    }
+
 
     public Long store(DBItemJobStreamStarter dbItemJobStreamStarter) throws SOSHibernateException {
         FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
@@ -116,10 +120,13 @@ public class DBLayerJobStreamStarters {
     public void deleteInsert(JobStreamStarters jobStreamStarters) throws SOSHibernateException, JsonProcessingException {
      
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        DBLayerJobStreamHistory dbLayerJobStreamHistory = new DBLayerJobStreamHistory(sosHibernateSession);
+        DBLayerJobStreamParameters dbLayerJobStreamParameters = new DBLayerJobStreamParameters(sosHibernateSession);
+        DBLayerJobStreamsStarterJobs dbLayerJobStreamsStarterJobs = new DBLayerJobStreamsStarterJobs(sosHibernateSession);
+
         for (JobStreamStarter jobStreamStarter : jobStreamStarters.getJobstreamStarters()) {
 
-            DBLayerJobStreamParameters dbLayerJobStreamParameters = new DBLayerJobStreamParameters(sosHibernateSession);
-            DBLayerJobStreamsStarterJobs dbLayerJobStreamsStarterJobs = new DBLayerJobStreamsStarterJobs(sosHibernateSession);
+            Long oldId = jobStreamStarter.getJobStreamStarterId();
             FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
             filterJobStreamStarters.setJobStreamId(jobStreamStarters.getJobStreamId());
             filterJobStreamStarters.setId(jobStreamStarter.getJobStreamStarterId());
@@ -150,7 +157,14 @@ public class DBLayerJobStreamStarters {
                 dbItemJobStreamStarter.setRunTime(objectMapper.writeValueAsString(jobStreamStarter.getRunTime()));
             }
             sosHibernateSession.save(dbItemJobStreamStarter);
+            Long newId = dbItemJobStreamStarter.getId();
+            
+            if (oldId != newId) {
+                dbLayerJobStreamHistory.updateHistoryWithStarter(oldId, newId);
+            }
+ 
             jobStreamStarter.setJobStreamStarterId(dbItemJobStreamStarter.getId());
+
             
             for (JobStreamJob jobStreamJob : jobStreamStarter.getJobs()) {
                 DBItemJobStreamStarterJob dbItemJobStreamStarterJob = new DBItemJobStreamStarterJob();
@@ -178,5 +192,4 @@ public class DBLayerJobStreamStarters {
             }
         }
     }
-
 }
