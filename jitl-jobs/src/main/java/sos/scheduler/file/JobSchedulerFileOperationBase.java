@@ -257,7 +257,10 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
         name = pstrParamName;
         String strT = params.get(pstrParamName);
         if (isNull(strT)) {
-            strT = params.get(pstrParamName.replaceAll("_", EMPTY_STRING).toLowerCase());
+            strT = params.get(pstrParamName.toLowerCase());
+            if (isNull(strT)) {
+                strT = params.get(pstrParamName.replaceAll("_", EMPTY_STRING).toLowerCase());
+            }
         }
         if (isNotNull(strT)) {
             strT = strT.trim();
@@ -434,11 +437,14 @@ public class JobSchedulerFileOperationBase extends JobSchedulerJobAdapter {
             }
         }
         if (isNotEmpty(resultList2File) && isNotEmpty(strResultSetFileList)) {
+            LOGGER.debug("..try to write file:" + resultList2File);
             JSTextFile objResultListFile = new JSTextFile(resultList2File);
             try {
                 if (objResultListFile.canWrite()) {
                     objResultListFile.write(strResultSetFileList);
                     objResultListFile.close();
+                    LOGGER.debug("..file close");
+
                 } else {
                     throw new JobSchedulerException(JSJ_F_0090.get(PARAMETER_RESULT_LIST_FILE, resultList2File));
                 }
