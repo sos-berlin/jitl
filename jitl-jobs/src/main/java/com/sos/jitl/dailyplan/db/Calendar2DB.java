@@ -149,6 +149,8 @@ public class Calendar2DB {
     }
 
     private void storeJobStreamStarters() throws Exception {
+         
+
         setFrom();
         setTo();
         beginTransaction();
@@ -167,7 +169,7 @@ public class Calendar2DB {
         List<DBItemJobStreamStarter> listOfStarters = dbLayerJobStreamStarters.getJobStreamStartersList(filterJobStreamStarters, 0);
         for (DBItemJobStreamStarter dbItemJobStreamStarter : listOfStarters) {
             JSStarter jsStarter = new JSStarter(objectMapper);
-            jsStarter.setItemJobStreamStarter(from, to, dbItemJobStreamStarter,"");
+            jsStarter.setItemJobStreamStarter(from, to, dbItemJobStreamStarter,DateTimeZone.getDefault().getID());
             filterJobStreamStarterJobs.setJobStreamStarter(dbItemJobStreamStarter.getId());
             String start;
             for (com.sos.joc.model.calendar.Period period : jsStarter.getJobStreamScheduler().getPlan().getPeriods()) {
@@ -250,6 +252,7 @@ public class Calendar2DB {
             }
         }
         commit();
+ 
     }
 
     public void addDailyplan2DBFilter(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter, Long instanceId) throws SOSHibernateException,

@@ -80,7 +80,7 @@ public class Constants {
         int minutes = 0;
         if (period.length == 1) {
             try {
-                hours = Integer.parseInt(period[0]) * -1;
+                hours = Integer.parseInt(period[0]);
             } catch (NumberFormatException e) {
                 LOGGER.warn("Wrong time format for sos.jobstream_period_begin: " + periodBegin);
                 hours = 0;
@@ -90,8 +90,8 @@ public class Constants {
         }
         if (period.length == 2) {
             try {
-                hours = Integer.parseInt(period[0]) * -1;
-                minutes = Integer.parseInt(period[1]) * -1;
+                hours = Integer.parseInt(period[0]);
+                minutes = Integer.parseInt(period[1]);
             } catch (NumberFormatException e) {
                 LOGGER.warn("Wrong time format for sos.jobstream_period_begin: " + periodBegin);
                 hours = 0;
@@ -99,6 +99,14 @@ public class Constants {
                 periodBegin = "00:00";
             }
         }
+        if (hours==0) {
+            hours=24;
+        }
+        if (minutes==0) {
+            minutes=60;
+        }
+        hours = (0-(24-hours));
+        minutes = (0-(60-minutes));
 
         calendar.add(Calendar.HOUR_OF_DAY, hours);
         calendar.add(Calendar.HOUR_OF_DAY, minutes);

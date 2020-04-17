@@ -34,6 +34,7 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
     private SOSHibernateSession getSession(String confFile) throws Exception {
         SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(confFile);
         sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
+        sosHibernateFactory.addClassMapping(DBLayer.getJobStreamClassMapping());
         sosHibernateFactory.build();
         return sosHibernateFactory.openStatelessSession();
     }

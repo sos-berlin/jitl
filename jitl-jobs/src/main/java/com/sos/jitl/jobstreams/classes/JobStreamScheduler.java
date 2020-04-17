@@ -37,7 +37,7 @@ public class JobStreamScheduler {
         String toDate = dateAsString(to);
         SOSXMLXPath xml = new SOSXMLXPath(new StringBuffer(xmlMapper.writeValueAsString(XmlSerializer.serializeAbstractSchedule(runTime))));
         RuntimeResolver r = new RuntimeResolver();
-        LOGGER.debug("------->get plan");
+        LOGGER.debug("------->get plan: from " + from +  " to " + to + " timezone: " + timeZoneId);
         plan = r.resolve(xml, fromDate, toDate, timeZoneId);
         if (resolve) {
             PeriodResolver periodResolver = new PeriodResolver();

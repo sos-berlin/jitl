@@ -63,7 +63,7 @@ public class PeriodResolver {
 
     private void addRepeat(Period period) throws ParseException {
 
-        if (!period.getAbsoluteRepeat().isEmpty() && !"00:00:00".equals(period.getAbsoluteRepeat())) {
+        if (period.getAbsoluteRepeat() != null && !period.getAbsoluteRepeat().isEmpty() && !"00:00:00".equals(period.getAbsoluteRepeat())) {
             Long start = getDate(period.getBegin()).getTime();
             Long end = getDate(period.getEnd()).getTime();
             Date repeat = getDate("2001-01-01T" + period.getAbsoluteRepeat() + "Z");
