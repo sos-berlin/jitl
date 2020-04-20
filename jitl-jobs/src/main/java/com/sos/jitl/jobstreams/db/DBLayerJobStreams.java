@@ -1,7 +1,10 @@
 package com.sos.jitl.jobstreams.db;
 
+import java.text.ParseException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
@@ -12,6 +15,13 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
+import com.sos.jitl.dailyplan.db.Calendar2DB;
+import com.sos.jitl.dailyplan.db.DailyPlanCalender2DBFilter;
+import com.sos.jitl.inventory.db.DBLayerInventory;
+import com.sos.jitl.inventory.helper.Calendar2DBHelper;
+import com.sos.jitl.reporting.db.DBItemInventoryInstance;
+import com.sos.jitl.reporting.db.DBItemInventoryJob;
+import com.sos.jitl.reporting.plugin.FactEventHandler.CustomEventType;
 import com.sos.joc.model.common.NameValuePair;
 import com.sos.joc.model.jobstreams.JobStream;
 import com.sos.joc.model.jobstreams.JobStreamJob;
@@ -186,11 +196,12 @@ public class DBLayerJobStreams {
 
     }
 
-    public void deleteInsert(JobStream jobStream) throws SOSHibernateException, JsonProcessingException {
+    public void deleteInsert(JobStream jobStream) throws Exception  {
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         DBLayerJobStreamStarters dbLayerJobStreamStarters = new DBLayerJobStreamStarters(sosHibernateSession);
         DBLayerJobStreamsStarterJobs dbLayerJobStreamsStarterJobs = new DBLayerJobStreamsStarterJobs(sosHibernateSession);
         DBLayerJobStreamParameters dbLayerJobStreamParameters = new DBLayerJobStreamParameters(sosHibernateSession);
+        Calendar2DB calendar2Db = new Calendar2DB(sosHibernateSession, jobStream.getJobschedulerId());
 
         DBItemJobStream dbItemJobStream = new DBItemJobStream();
         dbItemJobStream.setCreated(new Date());
@@ -213,6 +224,7 @@ public class DBLayerJobStreams {
             Long newStarterId = dbLayerJobStreamStarters.store(dbItemJobStreamStarter);
             jobstreamStarter.setJobStreamStarterId(newStarterId);
             jobstreamStarter.setTitle(jobstreamStarter.getTitle());
+                     
             for (JobStreamJob jobStreamJob : jobstreamStarter.getJobs()) {
                 DBItemJobStreamStarterJob dbItemJobStreamStarterJob = new DBItemJobStreamStarterJob();
                 dbItemJobStreamStarterJob.setCreated(new Date());
@@ -221,8 +233,12 @@ public class DBLayerJobStreams {
                 dbItemJobStreamStarterJob.setJobStreamStarter(newStarterId);
                 Long newJobId = dbLayerJobStreamsStarterJobs.store(dbItemJobStreamStarterJob);
                 jobStreamJob.setJobId(newJobId);
-
             }
+
+            FilterJobStreams filterJobStreams = new FilterJobStreams();
+            filterJobStreams.setJobStreamId(jobStream.getJobStreamId());
+            calendar2Db.processJobStreamStarterFilter(filterJobStreams);
+             
             for (NameValuePair param : jobstreamStarter.getParams()) {
 
                 if (param.getName() != null && !param.getName().isEmpty()) {

@@ -81,7 +81,7 @@ public class Calendar2DB {
     private Map<String, DailyPlanDBItem> listOfPlanEntries;
     Date maxPlannedTime;
 
-    public Calendar2DB(SOSHibernateSession session, String schedulerId) throws Exception {
+    public Calendar2DB(SOSHibernateSession session, String schedulerId)  {
         dailyPlanDBLayer = new DailyPlanDBLayer(session);
         dbLayerJobStreamStarters = new DBLayerJobStreamStarters(session);
 
@@ -135,7 +135,9 @@ public class Calendar2DB {
             fillListOfCalendars(false);
             final long timeStart = System.currentTimeMillis();
             store(null);
-            storeJobStreamStarters();
+            beginTransaction();
+            processJobStreamStarterFilter();
+            commit();
             final long timeEnd = System.currentTimeMillis();
             LOGGER.debug("Duration store: " + (timeEnd - timeStart) + " ms");
             checkDaysSchedule();
@@ -148,23 +150,18 @@ public class Calendar2DB {
         }
     }
 
-    private void storeJobStreamStarters() throws Exception {
-         
-
-        setFrom();
-        setTo();
-        beginTransaction();
+    private void storeJobStreamStarters(FilterJobStreams filterJobStreams) throws Exception  {
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         DBLayerReporting dbLayerReporting = new DBLayerReporting(dailyPlanDBLayer.getSession());
         DBLayerJobStreamsStarterJobs dbLayerJobStreamsStarterJobs = new DBLayerJobStreamsStarterJobs(dailyPlanDBLayer.getSession());
         DBLayerJobStreams dbLayerJobStreams = new DBLayerJobStreams(dailyPlanDBLayer.getSession());
-        FilterJobStreams filterJobStreams = new FilterJobStreams();
         List<DBItemJobStream> listOfJobStreams = dbLayerJobStreams.getJobStreamsList(filterJobStreams, 0);
         Map<Long, DBItemJobStream> mapOfJobStreams = new HashMap<Long, DBItemJobStream>();
         for (DBItemJobStream dbItemJobStream : listOfJobStreams) {
             mapOfJobStreams.put(dbItemJobStream.getId(), dbItemJobStream);
         }
         FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
+        filterJobStreamStarters.setJobStreamId(filterJobStreams.getJobStreamId());
         FilterJobStreamStarterJobs filterJobStreamStarterJobs = new FilterJobStreamStarterJobs();
         List<DBItemJobStreamStarter> listOfStarters = dbLayerJobStreamStarters.getJobStreamStartersList(filterJobStreamStarters, 0);
         for (DBItemJobStreamStarter dbItemJobStreamStarter : listOfStarters) {
@@ -177,6 +174,10 @@ public class Calendar2DB {
                 for (DBItemJobStreamStarterJob dbItemJobStreamStarterJob : dbLayerJobStreamsStarterJobs.getJobStreamStarterJobsList(
                         filterJobStreamStarterJobs, 0)) {
                     boolean isNew;
+                    dailyPlanInterval = new DailyPlanInterval(from, to);
+                    DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter = new DailyPlanCalender2DBFilter(); 
+                    dailyPlanCalender2DBFilter.setForJob(dbItemJobStreamStarterJob.getJob());
+                    deleteItemsAfterTo(dailyPlanCalender2DBFilter);
 
                     if (period.getSingleStart() != null) {
                         start = period.getSingleStart();
@@ -251,8 +252,20 @@ public class Calendar2DB {
                 }
             }
         }
-        commit();
- 
+    }
+
+    private void processJobStreamStarterFilter() throws Exception  {
+        setFrom();
+        setTo();
+        FilterJobStreams filterJobStreams = new FilterJobStreams();
+        storeJobStreamStarters(filterJobStreams);
+    }
+
+    
+    public void processJobStreamStarterFilter(FilterJobStreams filterJobStreams) throws Exception  {
+        setFrom();
+        setTo();
+        storeJobStreamStarters(filterJobStreams);
     }
 
     public void addDailyplan2DBFilter(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter, Long instanceId) throws SOSHibernateException,
