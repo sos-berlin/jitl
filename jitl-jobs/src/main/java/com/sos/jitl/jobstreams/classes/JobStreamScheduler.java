@@ -43,7 +43,7 @@ public class JobStreamScheduler {
             PeriodResolver periodResolver = new PeriodResolver();
             for (Period p : plan.getPeriods()) {
                 LOGGER.debug("-------> period" + p.getAbsoluteRepeat() + " " + p.getSingleStart());
-                periodResolver.addStartTimes(p);
+                periodResolver.addStartTimes(p); 
             }
 
             listOfStartTimes = periodResolver.getStartTimes();
