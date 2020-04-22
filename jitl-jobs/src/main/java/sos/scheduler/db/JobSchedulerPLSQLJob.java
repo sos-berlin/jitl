@@ -62,6 +62,7 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
 
             String plsql = objOptions.command.unescapeXML().replace("\r\n", "\n");
             plsql = objJSJobUtilities.replaceSchedulerVars(plsql);
+            LOGGER.debug(String.format("substituted Statement: %s will be executed.",plsql));
             dbmsOutput = new DbmsOutput(objConnection);
             dbmsOutput.enable(1000000);
             cs = objConnection.prepareCall(plsql);
