@@ -104,6 +104,10 @@ public class JSEvent {
         itemEvent.setOutConditionId(outConditionId);
     }
 
+    public void setJobStreamHistoryId(Long jobStreamHistoryId) {
+        itemEvent.setJobStreamHistoryId(jobStreamHistoryId);
+    }
+
     public boolean store(SOSHibernateSession sosHibernateSession) {
         dbError = false;
         DBLayerEvents dbLayerEvents = new DBLayerEvents(sosHibernateSession);
@@ -162,4 +166,5 @@ public class JSEvent {
     public String toStr() {
         return this.getEvent() + "::" + SOSString.toString(this);
     }
+
 }
