@@ -100,22 +100,10 @@ public class Constants {
                 periodBegin = "00:00";
             }
         }
-        if (hours < 0) {
-            hours = hours * -1;
-            hours = hours + 24;
-        }
-
-        if (hours == 0) {
-            hours = 24;
-        }
-        if (minutes == 0) {
-            minutes = 60;
-        }
-        hours = (24 - hours);
-        minutes = (60 - minutes);
-
+       
         calendar.add(Calendar.HOUR_OF_DAY, hours);
-        calendar.add(Calendar.HOUR_OF_DAY, minutes);
+        calendar.add(Calendar.MINUTE, minutes);
+        calendar.add(Calendar.DATE, 1);
 
         return calendar;
     }
