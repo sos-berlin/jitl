@@ -53,14 +53,14 @@ public class JobSchedulerStartLatecomers extends JSJobUtilitiesClass<JobSchedule
 		LOGGER.debug(getOptions().toString());
 		LateComersHelper lateComersHelper = new LateComersHelper(jobSchedulerStartLatecomersOptions);
 		
-    	JobSchedulerCredentialStoreJOCParameters jobSchedulerCredentialStoreJOCParameters = new JobSchedulerCredentialStoreJOCParameters();
-    	jobSchedulerCredentialStoreJOCParameters.setCredentialStoreEntryPath(objOptions.credential_store_entry_path.getValue());
-    	jobSchedulerCredentialStoreJOCParameters.setCredentialStoreFile(objOptions.credential_store_file.getValue());
-    	jobSchedulerCredentialStoreJOCParameters.setCredentialStoreKeyFile(objOptions.credential_store_key_file.getValue());
-    	jobSchedulerCredentialStoreJOCParameters.setCredentialStorePassword(objOptions.credential_store_password.getValue());
-    	jobSchedulerCredentialStoreJOCParameters.setJocUrl(objOptions.jocUrl.getValue());
-    	jobSchedulerCredentialStoreJOCParameters.setPassword(objOptions.password.getValue());
-    	jobSchedulerCredentialStoreJOCParameters.setUser(objOptions.user.getValue());
+		JobSchedulerCredentialStoreJOCParameters jobSchedulerCredentialStoreJOCParameters = new JobSchedulerCredentialStoreJOCParameters();
+    	jobSchedulerCredentialStoreJOCParameters.setCredentialStoreEntryPath(jobSchedulerStartLatecomersOptions.credential_store_entry_path.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setCredentialStoreFile(jobSchedulerStartLatecomersOptions.credential_store_file.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setCredentialStoreKeyFile(jobSchedulerStartLatecomersOptions.credential_store_key_file.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setCredentialStorePassword(jobSchedulerStartLatecomersOptions.credential_store_password.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setJocUrl(jobSchedulerStartLatecomersOptions.jocUrl.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setPassword(jobSchedulerStartLatecomersOptions.password.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setUser(jobSchedulerStartLatecomersOptions.user.getValue());
 		
 		AccessTokenProvider accessTokenProvider = new AccessTokenProvider(jobSchedulerCredentialStoreJOCParameters);
 		WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
