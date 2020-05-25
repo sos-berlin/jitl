@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.sos-berlin</groupId>
 		<artifactId>jitl</artifactId>
-                <version>1.13.3</version>
+                <version>1.13.3-patch</version>
 	</parent>
 
 	<groupId>com.sos-berlin.jitl</groupId>
@@ -106,6 +106,28 @@
 		<dependency>
 			<groupId>com.sos-berlin.jobscheduler.engine</groupId>
 			<artifactId>engine-kernel</artifactId>
+			<version>${sos.engine.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sos-berlin.jobscheduler.engine</groupId>
+			<artifactId>engine-common</artifactId>
+			<version>${sos.engine.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sos-berlin.jobscheduler.engine</groupId>
+			<artifactId>engine-cppjava-runtime</artifactId>
+			<version>${sos.engine.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sos-berlin.jobscheduler.engine</groupId>
+			<artifactId>engine-data</artifactId>
+			<version>${sos.engine.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -176,6 +198,13 @@
 		<dependency>
 			<groupId>javax.jms</groupId>
 			<artifactId>javax.jms-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-library</artifactId>
+			<version>2.11.11</version>
+			<scope>provided</scope>
 		</dependency>
 
 	</dependencies>
