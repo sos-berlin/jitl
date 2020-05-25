@@ -61,7 +61,11 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
                 if (mapItem.getValue() != null) {
                     strMapKey = strMapKey.replace(".", "_");
                     String strT = String.format("DEFINE %1$s = %2$s (char)", strMapKey, addQuotes(mapItem.getValue().toString()));
-                    LOGGER.debug(strT);
+                    if ("db_password".equals(strMapKey)) {
+                        LOGGER.debug("DEFINE db_password = ******** (char)");
+                    }else {
+                        LOGGER.debug(strT);
+                    }
                     objTF.writeLine(strT);
                 }
             }
@@ -219,6 +223,9 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
                 }
             }
             if (strValue != null) {
+            	if ("db_password".equals(strMapKey)) {
+                    strValue = "********";
+                }
                 LOGGER.debug(strMapKey + " = " + strValue);
                 objS.put(strMapKey, strValue);
             }
