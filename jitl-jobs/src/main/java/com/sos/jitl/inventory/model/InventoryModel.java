@@ -1052,6 +1052,11 @@ public class InventoryModel {
 
     private void processOrderFromNodes(Element order) throws Exception {
         String method = "    processOrder";
+        // JITL-615 special for distributed orders
+        if (order.getAttribute("in_database_only").equals("yes") && order.getAttribute("order_source_type").equalsIgnoreCase("permanent") && !order
+                .getAttribute("job_chain").isEmpty()) {
+            order.setAttribute("path", order.getAttribute("job_chain") + "," + order.getAttribute("order"));
+        }
         DBItemInventoryFile file = processFile(order, EConfigFileExtensions.ORDER, true);
         if (file != null) {
             countTotalOrders++;
