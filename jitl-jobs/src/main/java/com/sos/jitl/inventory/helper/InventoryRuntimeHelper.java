@@ -8,7 +8,6 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -174,6 +173,9 @@ public class InventoryRuntimeHelper {
     public static void createOrUpdateCalendarUsage(SOSXMLXPath xPath, List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages, DbItem dbItem,
             String type, DBLayerInventory dbLayer, Path liveDirectory, String schedulerId, String timezone, Boolean isCalendarEvent)
             throws Exception {
+        if (xPath == null) {
+            return;
+        }
         ObjectMapper mapper = new ObjectMapper();
         // set only if json should be pretty printed (results in a lot of lines)
         // mapper.enable(SerializationFeature.INDENT_OUTPUT);

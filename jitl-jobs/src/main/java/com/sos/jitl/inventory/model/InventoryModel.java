@@ -581,7 +581,7 @@ public class InventoryModel {
             }
             NodeList orderNodes =
                     xPathAnswerXml.selectNodeList(
-                            "/spooler/answer/state/job_chains/job_chain/job_chain_node/order_queue/order[file_based/@file]");
+                            "/spooler/answer/state/job_chains/job_chain/job_chain_node/order_queue/order[file_based/@file or (@in_database_only='yes' and @order_source_type='Permanent')]");
             for (int i = 0; i < orderNodes.getLength(); i++) {
                 try {
                     processOrderFromNodes((Element)orderNodes.item(i));
@@ -623,10 +623,15 @@ public class InventoryModel {
         Date fileModified = null;
         Date fileLocalCreated = null;
         Date fileLocalModified = null;
-        String path = Latin1ToUtf8.convert(xPathAnswerXml.selectSingleNodeValue(element, "file_based/@file"));
-        BasicFileAttributes attrs = null;
+        Path path = null;
+        Element fileBasedElem = (Element) xPathAnswerXml.selectSingleNode(element, "file_based");
+        if (fileBasedElem.hasAttribute("file")) {
+            path = Paths.get(Latin1ToUtf8.convert(fileBasedElem.getAttribute("file")));
+        } else {
+            path = liveDirectory.resolve(fileName.substring(1));
+        }
         try {
-            attrs = Files.readAttributes(Paths.get(path), BasicFileAttributes.class);
+            BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
             fileCreated = ReportUtil.convertFileTime2UTC(attrs.creationTime());
             fileModified = ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime());
             fileLocalCreated = ReportUtil.convertFileTime2Local(attrs.creationTime());
@@ -653,7 +658,7 @@ public class InventoryModel {
                     item.getFileDirectory(), item.getFileCreated(), item.getFileModified()));
             return item;
         } catch (IOException | IllegalArgumentException exception) {
-            LOGGER.debug(String.format("%s: cannot read file attributes. file = %s, exception = %s  ", method, path,
+            LOGGER.debug(String.format("%s: cannot read file attributes. file = %s, exception = %s  ", method, path.toString(),
                     exception.toString()));
             return null;
         }
@@ -1053,7 +1058,7 @@ public class InventoryModel {
     private void processOrderFromNodes(Element order) throws Exception {
         String method = "    processOrder";
         // JITL-615 special for distributed orders
-        if (order.getAttribute("in_database_only").equals("yes") && order.getAttribute("order_source_type").equalsIgnoreCase("permanent") && !order
+        if (order.getAttribute("in_database_only").equals("yes") && order.getAttribute("order_source_type").equals("Permanent") && !order
                 .getAttribute("job_chain").isEmpty()) {
             order.setAttribute("path", order.getAttribute("job_chain") + "," + order.getAttribute("order"));
         }
