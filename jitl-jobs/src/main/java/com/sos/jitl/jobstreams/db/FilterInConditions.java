@@ -5,6 +5,7 @@ public class FilterInConditions {
     private String jobSchedulerId;
     private String job;
     private String jobStream;
+    private String folder;
 
     public String getJobSchedulerId() {
         return jobSchedulerId;
@@ -28,6 +29,16 @@ public class FilterInConditions {
 
     public void setJobStream(String jobStream) {
         this.jobStream = jobStream;
+    }
+
+    
+    public String getFolder() {
+        return folder;
+    }
+
+    
+    public void setFolder(String folder) {
+        this.folder = folder;
     }
 
 }

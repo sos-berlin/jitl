@@ -126,12 +126,17 @@ public class DBLayerJobStreams {
         DBLayerInConditions dbLayerInConditions = new DBLayerInConditions(sosHibernateSession);
         DBLayerOutConditions dbLayerOutConditions = new DBLayerOutConditions(sosHibernateSession);
         DBLayerJobStreamHistory dbLayerJobStreamHistory = new DBLayerJobStreamHistory(sosHibernateSession);
-
+        
         List<DBItemJobStream> lJobStreams = getJobStreamsList(filter, 0);
         for (DBItemJobStream dbItemJobStream : lJobStreams) {
             FilterJobStreamStarterJobs filterJobStreamStarterJobs = new FilterJobStreamStarterJobs();
             FilterJobStreamParameters filterJobStreamParameters = new FilterJobStreamParameters();
 
+            if (filter.getJobStreamId() != null) {
+                filter.setFolder(dbItemJobStream.getFolder());
+            }
+
+            
             if (withConditions) {
                 FilterJobStreamHistory filterJobStreamHistory = new FilterJobStreamHistory();
                 filterJobStreamHistory.setJobStreamId(dbItemJobStream.getId());
@@ -149,19 +154,19 @@ public class DBLayerJobStreams {
 
                 filterJobStreamParameters.setJobStreamStarterId(dbItemJobStreamStarter.getId());
                 dbLayerJobStreamParameters.delete(filterJobStreamParameters);
-
             }
 
             if (withConditions) {
-
                 FilterInConditions filterInConditions = new FilterInConditions();
                 filterInConditions.setJobStream(dbItemJobStream.getJobStream());
                 filterInConditions.setJobSchedulerId(filter.getSchedulerId());
+                filterInConditions.setFolder(filter.getFolder());
                 dbLayerInConditions.deleteCascading(filterInConditions);
 
                 FilterOutConditions filterOutConditions = new FilterOutConditions();
                 filterOutConditions.setJobStream(dbItemJobStream.getJobStream());
                 filterOutConditions.setJobSchedulerId(filter.getSchedulerId());
+                filterOutConditions.setFolder(filter.getFolder());
                 dbLayerOutConditions.deleteCascading(filterOutConditions);
             }
 
@@ -179,6 +184,7 @@ public class DBLayerJobStreams {
     public Long store(DBItemJobStream dbItemJobStream) throws SOSHibernateException {
         DBLayerJobStreamHistory dbLayerJobStreamHistory = new DBLayerJobStreamHistory(sosHibernateSession);
         FilterJobStreams filter = new FilterJobStreams();
+        filter.setFolder(dbItemJobStream.getFolder());
         filter.setJobStream(dbItemJobStream.getJobStream());
         filter.setSchedulerId(dbItemJobStream.getSchedulerId());
         List<DBItemJobStream> listOfJobStreams = getJobStreamsList(filter, 1);

@@ -1,5 +1,6 @@
 package com.sos.jitl.jobstreams.db;
 
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -72,6 +73,10 @@ public class DBLayerOutConditions {
             where += and + " o.jobStream = :jobStream";
             and = " and ";
         }
+        if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
+            where += and + " o.folder = :folder";
+            and = " and ";
+        }
 
         if (filter.getListOfEvents() != null && filter.getListOfEvents().size() > 0) {
             where += and + getEventListSql(filter.getListOfEvents());
@@ -91,6 +96,10 @@ public class DBLayerOutConditions {
 
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
             query.setParameter("jobStream", filter.getJobStream());
+        }
+
+        if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
+            query.setParameter("folder", filter.getFolder());
         }
 
         return query;
@@ -136,6 +145,8 @@ public class DBLayerOutConditions {
         DBLayerEvents dbLayerEvents = new DBLayerEvents(sosHibernateSession);
         for (JobOutCondition jobOutCondition : outConditions.getJobsOutconditions()) {
 
+            String folder = Paths.get(jobOutCondition.getJob()).getParent().toString().replace('\\', '/');
+
             FilterOutConditions filterOutConditions = new FilterOutConditions();
             filterOutConditions.setJob(jobOutCondition.getJob());
             filterOutConditions.setJobSchedulerId(outConditions.getJobschedulerId());
@@ -156,6 +167,7 @@ public class DBLayerOutConditions {
                 dbItemOutCondition.setSchedulerId(outConditions.getJobschedulerId());
                 jobStream = outCondition.getJobStream();
                 dbItemOutCondition.setJobStream(outCondition.getJobStream());
+                dbItemOutCondition.setFolder(folder);
                 dbItemOutCondition.setCreated(new Date());
                 sosHibernateSession.save(dbItemOutCondition);
                 dbLayerOutConditionEvents.deleteInsert(dbItemOutCondition, outCondition);
@@ -182,6 +194,7 @@ public class DBLayerOutConditions {
         DBLayerOutConditionEvents dbLayerOutConditionEvents = new DBLayerOutConditionEvents(sosHibernateSession);
         FilterOutConditionEvents filterOutConditionEvents = new FilterOutConditionEvents();
         filterOutConditionEvents.setJobStream(filterOutConditions.getJobStream());
+        filterOutConditionEvents.setFolder(filterOutConditions.getFolder());
         dbLayerOutConditionEvents.deleteByJobstream(filterOutConditionEvents);
         delete(filterOutConditions) ;
     }

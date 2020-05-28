@@ -46,6 +46,11 @@ public class DBLayerOutConditionEvents {
             and = " and ";
         }
 
+        if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
+            where += and + " folder = :folder";
+            and = " and ";
+        }
+
         if (filter.getCommand() != null && !"".equals(filter.getCommand())) {
             where += and + " command = :command";
             and = " and ";
@@ -74,6 +79,9 @@ public class DBLayerOutConditionEvents {
         }
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
             query.setParameter("jobstream", filter.getJobStream());
+        }
+        if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
+            query.setParameter("folder", filter.getFolder());
         }
         if (filter.getOutConditionId() != null) {
             query.setParameter("outConditionId", filter.getOutConditionId());
@@ -121,6 +129,7 @@ public class DBLayerOutConditionEvents {
     public int deleteByJobstream(FilterOutConditionEvents filterOutConditionEvents) throws SOSHibernateException {
         FilterOutConditionEvents filter = new FilterOutConditionEvents();
         filter.setJobStream(filterOutConditionEvents.getJobStream());
+        filter.setFolder(filterOutConditionEvents.getFolder());
         String select = "select id from " + DBItemOutCondition + getWhere(filter);
         String hql = "delete from " + DBItemOutConditionEvent + " where outConditionId in ( " + select + ")";
         Query<DBItemOutConditionEvent> query = sosHibernateSession.createQuery(hql);

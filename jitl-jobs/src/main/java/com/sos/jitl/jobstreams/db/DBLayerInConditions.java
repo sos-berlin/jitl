@@ -55,6 +55,10 @@ public class DBLayerInConditions {
             where += and + " i.jobStream = :jobStream";
             and = " and ";
         }
+        if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
+            where += and + " i.folder = :folder";
+            and = " and ";
+        }
 
         where = "where 1=1 " + and + where;
         return where;
@@ -67,6 +71,10 @@ public class DBLayerInConditions {
         if (filter.getJob() != null && !"".equals(filter.getJob())) {
             query.setParameter("job", filter.getJob());
         }
+        if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
+            query.setParameter("folder", filter.getFolder());
+        }
+
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
             query.setParameter("jobStream", filter.getJobStream());
         }
@@ -122,19 +130,25 @@ public class DBLayerInConditions {
 
         FilterInConditionCommands filterInConditionCommands = new FilterInConditionCommands();
         filterInConditionCommands.setJobStream(filterInConditions.getJobStream());
+        filterInConditionCommands.setFolder(filterInConditions.getFolder());
         dbLayerInConditionCommands.deleteCommandWithInConditions(filterInConditionCommands);
 
         FilterConsumedInConditions filterConsumedInConditions = new FilterConsumedInConditions();
         filterConsumedInConditions.setJobStream(filterInConditions.getJobStream());
+        filterConsumedInConditions.setFolder(filterInConditions.getFolder());
         dbLayerConsumedInConditions.deleteConsumedInConditions(filterConsumedInConditions);
         
         delete(filterInConditions) ;
     }
 
     public void deleteInsert(InConditions inConditions) throws SOSHibernateException {
+        
         DBLayerInConditionCommands dbLayerInConditionCommands = new DBLayerInConditionCommands(sosHibernateSession);
         DBLayerConsumedInConditions dbLayerConsumedInConditions = new DBLayerConsumedInConditions(sosHibernateSession);
         for (JobInCondition jobInCondition : inConditions.getJobsInconditions()) {
+            String folder = Paths.get(jobInCondition.getJob()).getParent().toString().replace('\\', '/');
+
+            
             DBLayerInConditions dbLayerInConditions = new DBLayerInConditions(sosHibernateSession);
             FilterInConditions filterInConditions = new FilterInConditions();
             filterInConditions.setJob(jobInCondition.getJob());
@@ -153,7 +167,9 @@ public class DBLayerInConditions {
                 dbItemInCondition.setExpression(expression);
                 dbItemInCondition.setJob(jobInCondition.getJob());
                 dbItemInCondition.setSchedulerId(inConditions.getJobschedulerId());
-                dbItemInCondition.setJobStream(Paths.get(inCondition.getJobStream()).getFileName().toString());
+                //dbItemInCondition.setJobStream(Paths.get(inCondition.getJobStream()).getFileName().toString());
+                dbItemInCondition.setJobStream(inCondition.getJobStream());
+                dbItemInCondition.setFolder(folder);
                 dbItemInCondition.setMarkExpression(getBoolean(inCondition.getMarkExpression(), true));
                 dbItemInCondition.setSkipOutCondition(getBoolean(inCondition.getSkipOutCondition(), false));
                 dbItemInCondition.setCreated(new Date());

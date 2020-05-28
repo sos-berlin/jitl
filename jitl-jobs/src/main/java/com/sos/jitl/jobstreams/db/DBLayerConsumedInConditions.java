@@ -66,6 +66,11 @@ public class DBLayerConsumedInConditions {
             and = " and ";
         }
 
+        if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
+            where += and + " folder = :folder";
+            and = " and ";
+        }
+
         if (filter.getJob() != null && !"".equals(filter.getJob())) {
             where += and + " job = :job";
             and = " and ";
@@ -84,6 +89,9 @@ public class DBLayerConsumedInConditions {
         }
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
             query.setParameter("jobStream", filter.getJobStream());
+        }
+        if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
+            query.setParameter("folder", filter.getFolder());
         }
         if (filter.getJob() != null && !"".equals(filter.getJob())) {
             query.setParameter("job", filter.getJob());

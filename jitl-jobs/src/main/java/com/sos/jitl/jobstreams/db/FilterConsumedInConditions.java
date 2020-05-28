@@ -5,6 +5,7 @@ public class FilterConsumedInConditions {
     private Long inConditionId;
     private String jobSchedulerId="";
     private String jobStream="";
+    private String folder="";
     private String job="";
     private String session;
 
@@ -50,6 +51,16 @@ public class FilterConsumedInConditions {
     
     public void setJobSchedulerId(String jobSchedulerId) {
         this.jobSchedulerId = jobSchedulerId;
+    }
+
+    
+    public String getFolder() {
+        return folder;
+    }
+
+    
+    public void setFolder(String folder) {
+        this.folder = folder;
     }
 
 }

@@ -46,6 +46,10 @@ public class DBLayerInConditionCommands {
             where += and + " jobstream = :jobstream";
             and = " and ";
         }
+        if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
+            where += and + " folder = :folder";
+            and = " and ";
+        }
 
         where = " where " + where;
         return where;
@@ -92,6 +96,9 @@ public class DBLayerInConditionCommands {
         }
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
             query.setParameter("jobstream", filter.getJobStream());
+        }
+        if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
+            query.setParameter("folder", filter.getFolder());
         }
 
         return query;

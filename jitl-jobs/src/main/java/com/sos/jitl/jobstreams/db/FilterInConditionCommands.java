@@ -5,6 +5,7 @@ public class FilterInConditionCommands {
     private Long inConditionId;
     private String command;
     private String jobStream;
+    private String folder;
     private String commandParam;
     private String job;
     
@@ -50,6 +51,16 @@ public class FilterInConditionCommands {
     
     public void setJobStream(String jobStream) {
         this.jobStream = jobStream;
+    }
+
+    
+    public String getFolder() {
+        return folder;
+    }
+
+    
+    public void setFolder(String folder) {
+        this.folder = folder;
     }
     
 }
