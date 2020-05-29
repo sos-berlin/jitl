@@ -77,6 +77,7 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 	@Override
 	public boolean spooler_process() throws Exception {
 		super.spooler_process();
+        filter = new SchedulerEventFilter();
 
 
 		boolean rc = true;
@@ -252,7 +253,6 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 				try {
 					session = getSession(confFile);
 					schedulerEventDBLayer = new SchedulerEventDBLayer(session);
-					filter = new SchedulerEventFilter();
 
 				} catch (Exception e) {
 					LOGGER.error("Could not create session: " + e.getMessage());
