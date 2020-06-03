@@ -114,7 +114,7 @@ public class AccessTokenProvider {
         String userDecodedAccount = "";
         String jocApiUser = "";
         String jocApiPassword = "";
-        String jocUrl;
+        String jocUrl="";
 
         WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
 
@@ -141,12 +141,13 @@ public class AccessTokenProvider {
             LOGGER.debug("JOCUrl: " + jocUrl);
             LOGGER.debug("User: " + jocApiUser);
             LOGGER.debug("Password: " + "********");
-          
 
         } else {
-            jocUrl = jobSchedulerCredentialStoreParameters.getJocUrl();
-            jocApiUser = jobSchedulerCredentialStoreParameters.getUser();
-            jocApiPassword = jobSchedulerCredentialStoreParameters.getPassword();
+            if (jobSchedulerCredentialStoreParameters != null) {
+                jocUrl = jobSchedulerCredentialStoreParameters.getJocUrl();
+                jocApiUser = jobSchedulerCredentialStoreParameters.getUser();
+                jocApiPassword = jobSchedulerCredentialStoreParameters.getPassword();
+            }
         }
 
         if (!jocApiUser.isEmpty() && !jocApiPassword.isEmpty()) {
