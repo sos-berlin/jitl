@@ -1,6 +1,7 @@
 package com.sos.jitl.jobstreams;
 
 import java.util.Calendar;
+import java.util.TimeZone;
 
 import com.sos.hibernate.classes.ClassList;
 import com.sos.jitl.eventhandler.handler.EventHandlerSettings;
@@ -74,10 +75,13 @@ public class Constants {
     public static Calendar getSessionCalendar() {
         if (periodBegin == null) {
             periodBegin = "00:00";
-        }
-        Calendar calendar = Calendar.getInstance();
+        } 
+
+        TimeZone timeZone = TimeZone.getTimeZone("UTC");
+        Calendar calendar = Calendar.getInstance(timeZone);
+        
         String[] period = periodBegin.split(":");
-        int hours = 0;
+        int hours = 0; 
         int minutes = 0;
         if (period.length == 1) {
             try {
@@ -99,8 +103,8 @@ public class Constants {
                 minutes = 0;
                 periodBegin = "00:00";
             }
-        }
-       
+        } 
+        
         calendar.add(Calendar.HOUR_OF_DAY, hours);
         calendar.add(Calendar.MINUTE, minutes);
         calendar.add(Calendar.DATE, 1);

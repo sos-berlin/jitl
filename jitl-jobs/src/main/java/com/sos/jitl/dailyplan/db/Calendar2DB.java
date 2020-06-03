@@ -564,9 +564,8 @@ public class Calendar2DB {
     }
 
     private boolean isBeforeToday(Date d) {
-        UtcTimeHelper utcTimeHelper = new UtcTimeHelper();
         DateTime dLocal = new DateTime(d);
-        DateTime today = new DateTime(utcTimeHelper.getNowUtc());
+        DateTime today = new DateTime(UtcTimeHelper.getNowUtc());
         return today.getDayOfYear() > dLocal.getDayOfYear();
     }
 
