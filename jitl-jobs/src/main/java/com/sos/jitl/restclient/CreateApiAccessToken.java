@@ -8,14 +8,18 @@ import sos.spooler.IMonitor_impl;
 
 public class CreateApiAccessToken extends JobSchedulerJobAdapter implements IMonitor_impl {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CreateApiAccessToken.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CreateApiAccessToken.class);
 
-    @Override
-    public boolean spooler_process_before() throws Exception {
-        LOGGER.debug("Starting spooler_process_before");
-        AccessTokenProvider accessTokenProvider = new AccessTokenProvider(null);
-        accessTokenProvider.getAccessToken(spooler);
-        return true;
-    }
+	@Override
+	public boolean spooler_process_before() throws Exception {
+		LOGGER.debug("Starting spooler_process_before");
+		try {
+			AccessTokenProvider accessTokenProvider = new AccessTokenProvider(null);
+			accessTokenProvider.getAccessToken(spooler);
+		} catch (Exception e) {
+			LOGGER.error(e.getLocalizedMessage(), e);
+		}
+		return true;
+	}
 
 }
