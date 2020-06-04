@@ -18,11 +18,11 @@ public class StoreResultsJobJSAdapterClass extends JobSchedulerJobAdapter {
     StoreResultsJob job = null;
     StoreResultsJobOptions options = null;
 
-    public void init(Order order) throws Exception {
+    public void init(HashMap<String, String> params) throws Exception {
 
         job = new StoreResultsJob();
         options = job.getOptions();
-        options.setAllOptions(getSchedulerParameterAsProperties(order));
+        options.setAllOptions(params);
         job.setJSJobUtilites(this);
 
         if (SOSString.isEmpty(options.scheduler_notification_hibernate_configuration_file.getValue())) {
@@ -52,7 +52,7 @@ public class StoreResultsJobJSAdapterClass extends JobSchedulerJobAdapter {
 
         HashMap<String, String> params = getJobOrOrderParameters(order);
         if (params != null && params.size() > 0) {
-            init(order);
+            init(params);
 
             options.mon_results_standalone.value(isStandalone);
             options.mon_results_scheduler_id.setValue(spooler.id());
