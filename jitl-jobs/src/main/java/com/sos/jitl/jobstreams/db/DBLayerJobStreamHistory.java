@@ -183,4 +183,13 @@ public class DBLayerJobStreamHistory {
         return row;
     }
 
+    public int updateHistoryWithJobStreamStarter(Long oldStarterId, Long newStarterId) throws SOSHibernateException {
+        String hql = "update " + DBItemJobStreamHistory + " set jobStreamStarter=" + newStarterId + " where jobStreamStarter=:oldStarterId";
+        int row = 0;
+        Query<DBItemJobStreamHistory> query = sosHibernateSession.createQuery(hql);
+        query.setParameter("oldStarterId", oldStarterId);
+
+        row = sosHibernateSession.executeUpdate(query);
+        return row;    }
+
 }

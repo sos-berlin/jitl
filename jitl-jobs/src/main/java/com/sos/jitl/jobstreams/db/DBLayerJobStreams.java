@@ -207,7 +207,9 @@ public class DBLayerJobStreams {
         DBLayerJobStreamStarters dbLayerJobStreamStarters = new DBLayerJobStreamStarters(sosHibernateSession);
         DBLayerJobStreamsStarterJobs dbLayerJobStreamsStarterJobs = new DBLayerJobStreamsStarterJobs(sosHibernateSession);
         DBLayerJobStreamParameters dbLayerJobStreamParameters = new DBLayerJobStreamParameters(sosHibernateSession);
+        DBLayerJobStreamHistory dbLayerJobStreamHistory = new DBLayerJobStreamHistory(sosHibernateSession); 
         Calendar2DB calendar2Db = new Calendar2DB(sosHibernateSession, jobStream.getJobschedulerId());
+        
 
         DBItemJobStream dbItemJobStream = new DBItemJobStream();
         dbItemJobStream.setCreated(new Date());
@@ -228,6 +230,10 @@ public class DBLayerJobStreams {
             }
             dbItemJobStreamStarter.setState(jobstreamStarter.getState());
             Long newStarterId = dbLayerJobStreamStarters.store(dbItemJobStreamStarter);
+            Long oldStarterId = jobstreamStarter.getJobStreamStarterId();
+            if (newStarterId != oldStarterId && oldStarterId != null) {
+                dbLayerJobStreamHistory.updateHistoryWithJobStreamStarter(oldStarterId, newStarterId);
+            }
             jobstreamStarter.setJobStreamStarterId(newStarterId);
             jobstreamStarter.setTitle(jobstreamStarter.getTitle());
                      
