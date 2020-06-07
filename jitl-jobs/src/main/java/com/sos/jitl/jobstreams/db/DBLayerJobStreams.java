@@ -1,27 +1,17 @@
 package com.sos.jitl.jobstreams.db;
 
-import java.text.ParseException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.dailyplan.db.Calendar2DB;
-import com.sos.jitl.dailyplan.db.DailyPlanCalender2DBFilter;
-import com.sos.jitl.inventory.db.DBLayerInventory;
-import com.sos.jitl.inventory.helper.Calendar2DBHelper;
-import com.sos.jitl.reporting.db.DBItemInventoryInstance;
-import com.sos.jitl.reporting.db.DBItemInventoryJob;
-import com.sos.jitl.reporting.plugin.FactEventHandler.CustomEventType;
 import com.sos.joc.model.common.NameValuePair;
 import com.sos.joc.model.jobstreams.JobStream;
 import com.sos.joc.model.jobstreams.JobStreamJob;
@@ -103,6 +93,13 @@ public class DBLayerJobStreams {
         }
 
         return query;
+    }
+    
+    public Long getJobStreamCount() throws SOSHibernateException {
+        String q = "select count(*) from " + DBItemJobStream;
+        Query<?> query = sosHibernateSession.createQuery(q);
+        Long count = (Long) sosHibernateSession.getResultList(query).get(0);  
+        return count;
     }
 
     public List<DBItemJobStream> getJobStreamsList(FilterJobStreams filter, final int limit) throws SOSHibernateException {
