@@ -25,6 +25,7 @@ public class DBItemJobStream {
     private String jobStream;
     private String folder;
     private String state;
+    private String version="1.34";
     private Date created;
 
     public DBItemJobStream() {
@@ -63,7 +64,7 @@ public class DBItemJobStream {
         this.state = state;
     }
 
-    @Column(name = "[FOLDER]", nullable = true)
+    @Column(name = "[FOLDER]", nullable = false)
     public String getFolder() {
         return folder;
     }
@@ -72,7 +73,7 @@ public class DBItemJobStream {
         this.folder = folder;
     }
 
-    @Column(name = "[JOBSTREAM]", nullable = true)
+    @Column(name = "[JOBSTREAM]", nullable = false)
     public String getJobStream() {
         return jobStream;
     }
@@ -81,6 +82,14 @@ public class DBItemJobStream {
         this.jobStream = jobStream;
     }
 
+    @Column(name = "[VERSION]", nullable = false)
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[CREATED]", nullable = false)
     public Date getCreated() {
