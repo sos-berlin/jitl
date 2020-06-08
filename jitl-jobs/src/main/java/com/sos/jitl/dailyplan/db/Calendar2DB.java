@@ -159,6 +159,7 @@ public class Calendar2DB {
         Map<Long, DBItemJobStream> mapOfJobStreams = new HashMap<Long, DBItemJobStream>();
         for (DBItemJobStream dbItemJobStream : listOfJobStreams) {
             mapOfJobStreams.put(dbItemJobStream.getId(), dbItemJobStream);
+            LOGGER.trace("map add jobstream: " + dbItemJobStream.getId());
         }
         FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
         filterJobStreamStarters.setJobStreamId(filterJobStreams.getJobStreamId());
@@ -221,7 +222,13 @@ public class Calendar2DB {
                     dailyPlanDBItem.setIsAssigned(false);
                     dailyPlanDBItem.setIsLate(false);
                     dailyPlanDBItem.setJob(dbItemJobStreamStarterJob.getJob());
-                    dailyPlanDBItem.setJobStream(mapOfJobStreams.get(dbItemJobStreamStarter.getJobStream()).getJobStream());
+                    LOGGER.trace("map get jobstream: " + dbItemJobStreamStarter.getJobStream());
+                    if (mapOfJobStreams.get(dbItemJobStreamStarter.getJobStream()) != null){
+                        dailyPlanDBItem.setJobStream(mapOfJobStreams.get(dbItemJobStreamStarter.getJobStream()).getJobStream());
+                    }else {
+                        LOGGER.debug("map jobstream does not contain: " + dbItemJobStreamStarter.getJobStream());
+                        dailyPlanDBItem.setJobStream(String.valueOf(dbItemJobStreamStarter.getJobStream())); 
+                    }
 
                     dailyPlanDBItem.setJobChain(".");
                     dailyPlanDBItem.setOrderId(".");

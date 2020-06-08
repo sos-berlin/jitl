@@ -12,6 +12,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.annotations.Type;
+
 import com.sos.jitl.jobstreams.Constants;
 
 @Entity
@@ -83,7 +85,8 @@ public class DBItemJobStreamHistory {
         this.schedulerId = schedulerId;
     }
 
-    @Column(name = "[RUNNING]", nullable = true)
+    @Column(name = "[RUNNING]", nullable = false)
+    @Type(type = "numeric_boolean")
     public Boolean getRunning() {
         return running;
     }

@@ -2,7 +2,6 @@ package com.sos.jitl.jobstreams.db;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.persistence.Transient;
 
