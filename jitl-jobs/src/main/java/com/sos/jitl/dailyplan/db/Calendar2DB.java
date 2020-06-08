@@ -167,7 +167,8 @@ public class Calendar2DB {
         List<DBItemJobStreamStarter> listOfStarters = dbLayerJobStreamStarters.getJobStreamStartersList(filterJobStreamStarters, 0);
         for (DBItemJobStreamStarter dbItemJobStreamStarter : listOfStarters) {
             JSStarter jsStarter = new JSStarter(objectMapper);
-            jsStarter.setItemJobStreamStarter(from, to, dbItemJobStreamStarter,DateTimeZone.getDefault().getID());
+            TimeZone timeZone = TimeZone.getTimeZone( "UTC" );
+            jsStarter.setItemJobStreamStarter(from, to, dbItemJobStreamStarter,timeZone.getID());
             filterJobStreamStarterJobs.setJobStreamStarter(dbItemJobStreamStarter.getId());
             String start;
             for (com.sos.joc.model.calendar.Period period : jsStarter.getJobStreamScheduler().getPlan().getPeriods()) {
