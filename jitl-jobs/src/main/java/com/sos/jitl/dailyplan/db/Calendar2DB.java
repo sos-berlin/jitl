@@ -135,9 +135,9 @@ public class Calendar2DB {
             fillListOfCalendars(false);
             final long timeStart = System.currentTimeMillis();
             store(null);
-            beginTransaction();
-            processJobStreamStarterFilter();
-            commit();
+            //beginTransaction();
+            //processJobStreamStarterFilter();
+            //commit();
             final long timeEnd = System.currentTimeMillis();
             LOGGER.debug("Duration store: " + (timeEnd - timeStart) + " ms");
             checkDaysSchedule();
@@ -150,7 +150,7 @@ public class Calendar2DB {
         }
     }
 
-    private void storeJobStreamStarters(FilterJobStreams filterJobStreams) throws Exception  {
+    private void storeJobStreamStarters(FilterJobStreams filterJobStreams, String timezone) throws Exception  {
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         DBLayerReporting dbLayerReporting = new DBLayerReporting(dailyPlanDBLayer.getSession());
         DBLayerJobStreamsStarterJobs dbLayerJobStreamsStarterJobs = new DBLayerJobStreamsStarterJobs(dailyPlanDBLayer.getSession());
@@ -167,7 +167,7 @@ public class Calendar2DB {
         List<DBItemJobStreamStarter> listOfStarters = dbLayerJobStreamStarters.getJobStreamStartersList(filterJobStreamStarters, 0);
         for (DBItemJobStreamStarter dbItemJobStreamStarter : listOfStarters) {
             JSStarter jsStarter = new JSStarter(objectMapper);
-            TimeZone timeZone = TimeZone.getTimeZone( "UTC" );
+            TimeZone timeZone = TimeZone.getTimeZone(timezone);
             jsStarter.setItemJobStreamStarter(from, to, dbItemJobStreamStarter,timeZone.getID());
             filterJobStreamStarterJobs.setJobStreamStarter(dbItemJobStreamStarter.getId());
             String start;
@@ -262,18 +262,18 @@ public class Calendar2DB {
         }
     }
 
-    private void processJobStreamStarterFilter() throws Exception  {
+   /* private void processJobStreamStarterFilter() throws Exception  {
         setFrom();
         setTo();
         FilterJobStreams filterJobStreams = new FilterJobStreams();
         storeJobStreamStarters(filterJobStreams);
-    }
+    }*/
 
     
-    public void processJobStreamStarterFilter(FilterJobStreams filterJobStreams) throws Exception  {
+    public void processJobStreamStarterFilter(FilterJobStreams filterJobStreams, String timezone) throws Exception  {
         setFrom();
         setTo();
-        storeJobStreamStarters(filterJobStreams);
+        storeJobStreamStarters(filterJobStreams, timezone);
     }
 
     public void addDailyplan2DBFilter(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter, Long instanceId) throws SOSHibernateException,

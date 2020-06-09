@@ -240,6 +240,6 @@ public class DBLayerJobStreamStarters {
         }
         FilterJobStreams filterJobStreams = new FilterJobStreams();
         filterJobStreams.setJobStreamId(jobStreamStarters.getJobStreamId());
-        calendar2Db.processJobStreamStarterFilter(filterJobStreams);
+        calendar2Db.processJobStreamStarterFilter(filterJobStreams, timezone);
     }
 }

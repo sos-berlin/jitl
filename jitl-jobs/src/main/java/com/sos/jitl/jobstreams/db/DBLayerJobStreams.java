@@ -199,7 +199,7 @@ public class DBLayerJobStreams {
 
     }
 
-    public void deleteInsert(JobStream jobStream) throws Exception  {
+    public void deleteInsert(JobStream jobStream, String timezone) throws Exception  {
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         DBLayerJobStreamStarters dbLayerJobStreamStarters = new DBLayerJobStreamStarters(sosHibernateSession);
         DBLayerJobStreamsStarterJobs dbLayerJobStreamsStarterJobs = new DBLayerJobStreamsStarterJobs(sosHibernateSession);
@@ -246,7 +246,7 @@ public class DBLayerJobStreams {
 
             FilterJobStreams filterJobStreams = new FilterJobStreams();
             filterJobStreams.setJobStreamId(jobStream.getJobStreamId());
-            calendar2Db.processJobStreamStarterFilter(filterJobStreams);
+            calendar2Db.processJobStreamStarterFilter(filterJobStreams, timezone);
              
             for (NameValuePair param : jobstreamStarter.getParams()) {
 
