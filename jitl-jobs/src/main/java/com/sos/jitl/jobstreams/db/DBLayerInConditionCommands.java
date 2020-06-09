@@ -43,7 +43,7 @@ public class DBLayerInConditionCommands {
             and = " and ";
         }
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
-            where += and + " jobstream = :jobstream";
+            where += and + " jobStream = :jobstream";
             and = " and ";
         }
         if (filter.getFolder() != null && !"".equals(filter.getFolder())) {

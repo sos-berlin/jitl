@@ -42,7 +42,7 @@ public class DBLayerOutConditionEvents {
         }
 
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
-            where += and + " jobstream = :jobstream";
+            where += and + " jobStream = :jobstream";
             and = " and ";
         }
 

@@ -55,7 +55,7 @@ public class DBLayerJobStreams {
         }
 
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
-            where += and + " jobstream = :jobstream";
+            where += and + " jobStream = :jobStream";
             and = " and ";
         }
 
@@ -89,7 +89,7 @@ public class DBLayerJobStreams {
             query.setParameter("status", filter.getStatus());
         }
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
-            query.setParameter("jobstream", filter.getJobStream());
+            query.setParameter("jobStream", filter.getJobStream());
         }
 
         return query;
