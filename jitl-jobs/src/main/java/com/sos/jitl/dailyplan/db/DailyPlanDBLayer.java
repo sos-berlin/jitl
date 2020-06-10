@@ -176,7 +176,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
         }
         if (filter.isJobStream() != null) {
             if (filter.isJobStream()) {
-                where += and + " p.jobStream is not null";
+                where += and + " p.jobStream is not null and p.jobStream <> ''";
 
             }
             and = " and ";
