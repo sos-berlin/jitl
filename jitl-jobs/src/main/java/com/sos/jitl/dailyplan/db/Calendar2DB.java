@@ -138,8 +138,8 @@ public class Calendar2DB {
             initSchedulerConnection();
             fillListOfCalendars(false);
             final long timeStart = System.currentTimeMillis();
-            store(null);
             beginTransaction();
+            store(null);
             processJobStreamStarterFilter();
             commit();
             final long timeEnd = System.currentTimeMillis();
@@ -184,7 +184,6 @@ public class Calendar2DB {
                     dailyPlanInterval = new DailyPlanInterval(from, to);
                     DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter = new DailyPlanCalender2DBFilter(); 
                     dailyPlanCalender2DBFilter.setForJob(dbItemJobStreamStarterJob.getJob());
-                    deleteItemsAfterTo(dailyPlanCalender2DBFilter);
 
                     if (period.getSingleStart() != null) {
                         start = period.getSingleStart();
@@ -194,7 +193,7 @@ public class Calendar2DB {
                         LOGGER.debug("start jobstream: " + jsStarter.getItemJobStreamStarter().getJobStream() + " at " + start);
                     }
 
-                    DailyPlanDBItem dailyPlanDBItem;
+                    DailyPlanDBItem dailyPlanDBItem=null;
                     dailyPlanDBLayer.resetFilter();
                     dailyPlanDBLayer.getFilter().setJob(dbItemJobStreamStarterJob.getJob());
                     DailyPlanDate dailyScheduleDate = new DailyPlanDate(dateFormat);
@@ -207,7 +206,7 @@ public class Calendar2DB {
                         dailyPlanDBItem = l.get(0);
                         isNew = false;
                     } else {
-                        dailyPlanDBItem = new DailyPlanDBItem();
+                        dailyPlanDBItem = new DailyPlanDBItem(this.dateFormat);
                         isNew = true;
                     }
                     dailyPlanDBItem.setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -253,16 +252,16 @@ public class Calendar2DB {
                     dailyPlanDBItem.setModified(new Date());
 
                     if (isNew) {
-                        LOGGER.debug("Store daily plan job stream item: " + dailyPlanDBItem.getPlannedStartFormated());
                         dailyPlanDBItem.setCreated(new Date());
                         dailyPlanDBLayer.getSession().save(dailyPlanDBItem);
+                        LOGGER.debug("Store daily plan job stream item:" +   dailyPlanDBItem.getId() + " at " + dailyPlanDBItem.getPlannedStartFormated());
                     } else {
                         try {
-                            LOGGER.debug("Update daily plan job stream item" +   dailyPlanDBItem.getPlannedStartFormated());
                             dailyPlanDBLayer.getSession().update(dailyPlanDBItem);
+                            LOGGER.debug("Update daily plan job stream item:" +   dailyPlanDBItem.getId() + " at " + dailyPlanDBItem.getPlannedStartFormated());
                         } catch (SOSHibernateObjectOperationException e) {
-                            LOGGER.debug("Store daily plan job stream item" + dailyPlanDBItem.getPlannedStartFormated());
                             dailyPlanDBLayer.getSession().save(dailyPlanDBItem);
+                            LOGGER.debug("Store daily plan job stream item:" +   dailyPlanDBItem.getId() + " at " + dailyPlanDBItem.getPlannedStartFormated());
                         }
                     }
                 }
@@ -270,7 +269,8 @@ public class Calendar2DB {
         }
     }
 
-     private void processJobStreamStarterFilter() throws Exception  {
+  
+    private void processJobStreamStarterFilter() throws Exception  {
          String sql = String.format("from %s where schedulerId = :schedulerId", DBITEM_INVENTORY_INSTANCES);
          String timeZone = "UTC";
          Query<DBItemInventoryInstance> query = dailyPlanDBLayer.getSession().createQuery(sql.toString());
@@ -596,7 +596,6 @@ public class Calendar2DB {
 
     private void store(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter) throws Exception {
 
-        beginTransaction();
         DBLayerReporting dbLayerReporting = new DBLayerReporting(dailyPlanDBLayer.getSession());
 
         int i = 0;
@@ -604,9 +603,6 @@ public class Calendar2DB {
 
         deleteItemsAfterTo(dailyPlanCalender2DBFilter);
         getCurrentDailyPlan(dailyPlanCalender2DBFilter);
-        commit();
-
-        beginTransaction();
 
         for (DailyPlanCalendarItem dailyPlanCalendarItem : listOfCalendars) {
 
@@ -739,8 +735,6 @@ public class Calendar2DB {
         }
 
         dailyPlanDBLayer.updateDailyPlanList(schedulerId);
-
-        commit();
 
     }
 
