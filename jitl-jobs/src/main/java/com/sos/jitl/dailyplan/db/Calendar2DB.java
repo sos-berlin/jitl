@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
+import org.hibernate.query.Query;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
@@ -37,6 +38,7 @@ import com.sos.jitl.jobstreams.db.DBLayerJobStreamsStarterJobs;
 import com.sos.jitl.jobstreams.db.FilterJobStreamStarterJobs;
 import com.sos.jitl.jobstreams.db.FilterJobStreamStarters;
 import com.sos.jitl.jobstreams.db.FilterJobStreams;
+import com.sos.jitl.reporting.db.DBItemInventoryInstance;
 import com.sos.jitl.reporting.db.DBItemInventoryJob;
 import com.sos.jitl.reporting.db.DBItemInventoryOrder;
 import com.sos.jitl.reporting.db.DBItemInventorySchedule;
@@ -50,6 +52,8 @@ import com.sos.scheduler.model.commands.JSCmdShowOrder;
 import com.sos.scheduler.model.objects.Spooler;
 
 public class Calendar2DB {
+
+    public static final String DBITEM_INVENTORY_INSTANCES = DBItemInventoryInstance.class.getSimpleName();
 
     private static final int DEFAULT_DAYS_OFFSET = 31;
     private static final int AVERAGE_DURATION_ONE_ITEM = 5;
@@ -135,9 +139,9 @@ public class Calendar2DB {
             fillListOfCalendars(false);
             final long timeStart = System.currentTimeMillis();
             store(null);
-            //beginTransaction();
-            //processJobStreamStarterFilter();
-            //commit();
+            beginTransaction();
+            processJobStreamStarterFilter();
+            commit();
             final long timeEnd = System.currentTimeMillis();
             LOGGER.debug("Duration store: " + (timeEnd - timeStart) + " ms");
             checkDaysSchedule();
@@ -151,6 +155,7 @@ public class Calendar2DB {
     }
 
     private void storeJobStreamStarters(FilterJobStreams filterJobStreams, String timezone) throws Exception  {
+        LOGGER.debug("Store job stream start with timezone " + timezone);
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         DBLayerReporting dbLayerReporting = new DBLayerReporting(dailyPlanDBLayer.getSession());
         DBLayerJobStreamsStarterJobs dbLayerJobStreamsStarterJobs = new DBLayerJobStreamsStarterJobs(dailyPlanDBLayer.getSession());
@@ -248,12 +253,15 @@ public class Calendar2DB {
                     dailyPlanDBItem.setModified(new Date());
 
                     if (isNew) {
+                        LOGGER.debug("Store daily plan job stream item: " + dailyPlanDBItem.getPlannedStartFormated());
                         dailyPlanDBItem.setCreated(new Date());
                         dailyPlanDBLayer.getSession().save(dailyPlanDBItem);
                     } else {
                         try {
+                            LOGGER.debug("Update daily plan job stream item" +   dailyPlanDBItem.getPlannedStartFormated());
                             dailyPlanDBLayer.getSession().update(dailyPlanDBItem);
                         } catch (SOSHibernateObjectOperationException e) {
+                            LOGGER.debug("Store daily plan job stream item" + dailyPlanDBItem.getPlannedStartFormated());
                             dailyPlanDBLayer.getSession().save(dailyPlanDBItem);
                         }
                     }
@@ -262,12 +270,21 @@ public class Calendar2DB {
         }
     }
 
-   /* private void processJobStreamStarterFilter() throws Exception  {
+     private void processJobStreamStarterFilter() throws Exception  {
+         String sql = String.format("from %s where schedulerId = :schedulerId", DBITEM_INVENTORY_INSTANCES);
+         String timeZone = "UTC";
+         Query<DBItemInventoryInstance> query = dailyPlanDBLayer.getSession().createQuery(sql.toString());
+         query.setParameter("schedulerId", schedulerId);
+         List<DBItemInventoryInstance> result = dailyPlanDBLayer.getSession().getResultList(query);
+         if (result != null && !result.isEmpty()) {
+             timeZone = result.get(0).getTimeZone();
+         }
+               
         setFrom();
         setTo();
         FilterJobStreams filterJobStreams = new FilterJobStreams();
-        storeJobStreamStarters(filterJobStreams);
-    }*/
+        storeJobStreamStarters(filterJobStreams,timeZone);
+    } 
 
     
     public void processJobStreamStarterFilter(FilterJobStreams filterJobStreams, String timezone) throws Exception  {

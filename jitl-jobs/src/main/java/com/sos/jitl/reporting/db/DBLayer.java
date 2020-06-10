@@ -296,6 +296,8 @@ public class DBLayer {
         cl.add(com.sos.jitl.jobstreams.db.DBItemJobStreamStarterJob.class);
         cl.add(com.sos.jitl.jobstreams.db.DBItemJobStreamStarter.class);
         cl.add(com.sos.jitl.jobstreams.db.DBItemJobStreamTaskContext.class);
+        cl.add(DBItemInventoryInstance.class);
+
         return cl;
     }
 
