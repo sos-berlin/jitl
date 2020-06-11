@@ -138,8 +138,8 @@ public class Calendar2DB {
             initSchedulerConnection();
             fillListOfCalendars(false);
             final long timeStart = System.currentTimeMillis();
-            beginTransaction();
             store(null);
+            beginTransaction();
             processJobStreamStarterFilter();
             commit();
             final long timeEnd = System.currentTimeMillis();
@@ -353,6 +353,7 @@ public class Calendar2DB {
         LOGGER.debug(String.format("from: %s, to: %s", from, to));
 
         try {
+ 
             fillListOfCalendars(false);
 
             DailyPlanCalendarItem dailyPlanCalendarItem = listOfCalendars.get(0);
@@ -596,6 +597,8 @@ public class Calendar2DB {
 
     private void store(DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter) throws Exception {
 
+        beginTransaction();
+        
         DBLayerReporting dbLayerReporting = new DBLayerReporting(dailyPlanDBLayer.getSession());
 
         int i = 0;
@@ -735,7 +738,7 @@ public class Calendar2DB {
         }
 
         dailyPlanDBLayer.updateDailyPlanList(schedulerId);
-
+        commit();
     }
 
     private String getUniqueKey(DailyPlanDBItem dailyPlanEntry) {
