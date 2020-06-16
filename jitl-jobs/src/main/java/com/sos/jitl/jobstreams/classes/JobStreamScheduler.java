@@ -37,12 +37,12 @@ public class JobStreamScheduler {
         String toDate = dateAsString(to);
         SOSXMLXPath xml = new SOSXMLXPath(new StringBuffer(xmlMapper.writeValueAsString(XmlSerializer.serializeAbstractSchedule(runTime))));
         RuntimeResolver r = new RuntimeResolver();
-        LOGGER.debug("------->get plan: from " + from +  " to " + to + " timezone: " + timeZoneId);
+        LOGGER.trace("------->get plan: from " + from +  " to " + to + " timezone: " + timeZoneId);
         plan = r.resolve(xml, fromDate, toDate, timeZoneId);
         if (resolve) {
             PeriodResolver periodResolver = new PeriodResolver();
             for (Period p : plan.getPeriods()) {
-                LOGGER.debug("-------> period" + p.getAbsoluteRepeat() + " " + p.getSingleStart());
+                LOGGER.trace("-------> period" + p.getAbsoluteRepeat() + " " + p.getSingleStart());
                 periodResolver.addStartTimes(p); 
             }
 
