@@ -177,13 +177,15 @@ public class FactModel extends ReportingModel implements IReportingModel {
             try {
                 if (!finisched && reportingVariable != null && !SOSString.isEmpty(reportingVariable.getTextValue())) {
                     String oldDateFrom = getWithoutLocked(reportingVariable.getTextValue());
-                    LOGGER.info(String.format("[%s][%s][%s]reset synchronizing on exception", method, reportingVariable.getTextValue(), oldDateFrom));
+                    LOGGER.info(String.format("[%s][%s][%s][reset synchronizing on exception]%s", method, reportingVariable.getTextValue(),
+                            oldDateFrom, e.toString()), e);
                     finishSynchronizing(reportingVariable, oldDateFrom);
                 } else {
-                    LOGGER.info(String.format("[%s][%s][%s][skip]reset synchronizing on exception", method, reportingVariable, finisched));
+                    LOGGER.info(String.format("[%s][%s][%s][skip][reset synchronizing on exception]%s", method, reportingVariable, finisched, e
+                            .toString()), e);
                 }
             } catch (Throwable ee) {
-                LOGGER.warn(String.format("error occured during reset synchronizing on exception: %s", method, ee.toString()));
+                LOGGER.warn(String.format("[%s][error occured during reset synchronizing on exception]%s", method, ee.toString()), ee);
             }
             Exception ex = SOSHibernate.findLockException(e);
             if (ex == null) {
@@ -480,27 +482,26 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 int counterInsertedTasks = 0;
                 int counterUpdatedTasks = 0;
 
+                // copy and use subList from copy - because the uncompletedTaskHistoryIds will be modified/reduced in synchronizeTaskHistory
+                ArrayList<Long> copy = (ArrayList<Long>) uncompletedTaskHistoryIds.stream().collect(Collectors.toList());
                 for (int i = 0; i < size; i += SOSHibernate.LIMIT_IN_CLAUSE) {
                     List<Long> subList;
-                    size = uncompletedTaskHistoryIds.size();
-                    if (i < size) {
-                        if (size > i + SOSHibernate.LIMIT_IN_CLAUSE) {
-                            subList = uncompletedTaskHistoryIds.subList(i, (i + SOSHibernate.LIMIT_IN_CLAUSE));
-                        } else {
-                            subList = uncompletedTaskHistoryIds.subList(i, size);
-                        }
-                        Query<DBItemSchedulerHistory> query = getDbLayer().getSchedulerHistoryTasksQuery(schedulerSession,
-                                largeResultFetchSizeScheduler, schedulerId, subList);
-                        CounterSynchronize counter = synchronizeTaskHistory(method, query, TaskSync.UNCOMPLETED, schedulerId, dateToAsMinutes);
-                        counterTotal += counter.getTotal();
-                        counterSkip += counter.getSkip();
-                        counterInsertedTriggers += counter.getInsertedTriggers();
-                        counterUpdatedTriggers += counter.getUpdatedTriggers();
-                        counterInsertedExecutions += counter.getInsertedExecutions();
-                        counterUpdatedExecutions += counter.getUpdatedExecutions();
-                        counterInsertedTasks += counter.getInsertedTasks();
-                        counterUpdatedTasks += counter.getUpdatedTasks();
+                    if (size > i + SOSHibernate.LIMIT_IN_CLAUSE) {
+                        subList = copy.subList(i, (i + SOSHibernate.LIMIT_IN_CLAUSE));
+                    } else {
+                        subList = copy.subList(i, size);
                     }
+                    Query<DBItemSchedulerHistory> query = getDbLayer().getSchedulerHistoryTasksQuery(schedulerSession, largeResultFetchSizeScheduler,
+                            schedulerId, subList);
+                    CounterSynchronize counter = synchronizeTaskHistory(method, query, TaskSync.UNCOMPLETED, schedulerId, dateToAsMinutes);
+                    counterTotal += counter.getTotal();
+                    counterSkip += counter.getSkip();
+                    counterInsertedTriggers += counter.getInsertedTriggers();
+                    counterUpdatedTriggers += counter.getUpdatedTriggers();
+                    counterInsertedExecutions += counter.getInsertedExecutions();
+                    counterUpdatedExecutions += counter.getUpdatedExecutions();
+                    counterInsertedTasks += counter.getInsertedTasks();
+                    counterUpdatedTasks += counter.getUpdatedTasks();
                 }
                 counterTaskSyncUncompleted.setTotal(counterTotal);
                 counterTaskSyncUncompleted.setSkip(counterSkip);
