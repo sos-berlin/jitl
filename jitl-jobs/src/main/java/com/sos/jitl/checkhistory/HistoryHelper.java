@@ -132,7 +132,7 @@ public class HistoryHelper {
         if (d == null) {
             return false;
         } else {
-            return today.getDayOfYear() == d.getDayOfYear();
+            return (today.getYear() == d.getYear()) && (today.getDayOfYear() == d.getDayOfYear());
         }
     }
 
@@ -141,7 +141,7 @@ public class HistoryHelper {
         if (d == null) {
             return false;
         } else {
-            return today.getDayOfYear() == d.getDayOfYear();
+            return (today.getYear() == d.getYear()) && (today.getDayOfYear() == d.getDayOfYear());
         }
     }
 
