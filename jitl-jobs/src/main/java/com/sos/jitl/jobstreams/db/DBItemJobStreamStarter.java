@@ -66,7 +66,7 @@ public class DBItemJobStreamStarter {
         this.endOfJobStream = endOfJobStream;
     }    
    
-    @Column(name = "[MANDATORY_JOB]", nullable = false)
+    @Column(name = "[REQUIRED_JOB]", nullable = false)
     public String getRequiredJob() {
         return requiredJob;
     }
