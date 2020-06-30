@@ -221,6 +221,7 @@ public class DBLayerJobStreams {
             DBItemJobStreamStarter dbItemJobStreamStarter = new DBItemJobStreamStarter();
             dbItemJobStreamStarter.setCreated(new Date());
             dbItemJobStreamStarter.setJobStream(newId);
+            dbItemJobStreamStarter.setId(jobstreamStarter.getJobStreamStarterId());
             dbItemJobStreamStarter.setRequiredJob(jobstreamStarter.getRequiredJob());
             dbItemJobStreamStarter.setEndOfJobStream(jobstreamStarter.getEndOfJobStream());
             dbItemJobStreamStarter.setTitle(jobstreamStarter.getTitle());

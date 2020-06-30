@@ -121,17 +121,19 @@ public class DBLayerJobStreamStarters {
     }
 
     public Long store(DBItemJobStreamStarter dbItemJobStreamStarter) throws SOSHibernateException {
-        FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
-        filterJobStreamStarters.setId(dbItemJobStreamStarter.getJobStream());
-        delete(filterJobStreamStarters);
+        if (dbItemJobStreamStarter.getId() != null) {
+            FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
+            filterJobStreamStarters.setId(dbItemJobStreamStarter.getId());
+            delete(filterJobStreamStarters);
+        }
         sosHibernateSession.save(dbItemJobStreamStarter);
         return dbItemJobStreamStarter.getId();
     }
 
-    
-    public Date getNextStartTime(ObjectMapper objectMapper, String timeZone, String runTimeString) throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, Exception {
+    public Date getNextStartTime(ObjectMapper objectMapper, String timeZone, String runTimeString) throws JsonParseException, JsonMappingException,
+            JsonProcessingException, IOException, Exception {
         JobStreamScheduler jobStreamScheduler = new JobStreamScheduler(timeZone);
-        RunTime runTime=null;
+        RunTime runTime = null;
         if (runTimeString != null) {
             runTime = objectMapper.readValue(runTimeString, RunTime.class);
         }
@@ -151,7 +153,7 @@ public class DBLayerJobStreamStarters {
                 to = c.getTime();
             } while (jobStreamScheduler.getListOfStartTimes().isEmpty() && to.before(maxDate));
         }
-        
+
         Date now = new Date();
         if (jobStreamScheduler.getListOfStartTimes() != null) {
             for (Long start : jobStreamScheduler.getListOfStartTimes()) {
@@ -162,7 +164,7 @@ public class DBLayerJobStreamStarters {
         }
         return null;
     }
- 
+
     public void deleteInsert(JobStreamStarters jobStreamStarters, String timezone) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         DBLayerJobStreamHistory dbLayerJobStreamHistory = new DBLayerJobStreamHistory(sosHibernateSession);
@@ -200,12 +202,11 @@ public class DBLayerJobStreamStarters {
             dbItemJobStreamStarter.setRequiredJob(jobStreamStarter.getRequiredJob());
             dbItemJobStreamStarter.setTitle(jobStreamStarter.getTitle());
             dbItemJobStreamStarter.setState(jobStreamStarter.getState());
-            
+
             if (jobStreamStarter.getRunTime() != null) {
                 dbItemJobStreamStarter.setRunTime(objectMapper.writeValueAsString(jobStreamStarter.getRunTime()));
             }
-            dbItemJobStreamStarter.setNextStart(getNextStartTime(objectMapper,timezone, dbItemJobStreamStarter.getRunTime()));
-            
+            dbItemJobStreamStarter.setNextStart(getNextStartTime(objectMapper, timezone, dbItemJobStreamStarter.getRunTime()));
 
             sosHibernateSession.save(dbItemJobStreamStarter);
             Long newId = dbItemJobStreamStarter.getId();
