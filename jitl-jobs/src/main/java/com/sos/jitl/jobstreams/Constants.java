@@ -74,7 +74,7 @@ public class Constants {
 
     public static Calendar getSessionCalendar() {
         if (periodBegin == null) {
-            periodBegin = "11:00";
+            periodBegin = "00:00";
         } 
 
         TimeZone timeZone = TimeZone.getTimeZone("UTC");
