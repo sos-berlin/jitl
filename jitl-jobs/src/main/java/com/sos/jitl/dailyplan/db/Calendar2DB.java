@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.hibernate.query.Query;
 import org.joda.time.DateTime;
@@ -22,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.classes.SearchStringHelper;
 import com.sos.hibernate.classes.UtcTimeHelper;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.hibernate.exceptions.SOSHibernateObjectOperationException;
@@ -43,6 +46,7 @@ import com.sos.jitl.reporting.db.DBItemInventoryJob;
 import com.sos.jitl.reporting.db.DBItemInventoryOrder;
 import com.sos.jitl.reporting.db.DBItemInventorySchedule;
 import com.sos.jitl.reporting.db.DBLayerReporting;
+import com.sos.joc.model.plan.PlanFilter;
 import com.sos.scheduler.model.SchedulerObjectFactory;
 import com.sos.scheduler.model.answers.Calendar;
 import com.sos.scheduler.model.answers.Order;
@@ -62,6 +66,7 @@ public class Calendar2DB {
     private static final int DEFAULT_LIMIT = 30;
     private static final Logger LOGGER = LoggerFactory.getLogger(Calendar2DB.class);
     private static final int MAX_DAY_OFFSET = 2000;
+    private static final int MAX_LIST_SIZE = 20000;
     private static SchedulerObjectFactory schedulerObjectFactory = null;
     private Date from;
     private Date to;
@@ -109,17 +114,12 @@ public class Calendar2DB {
         dailyPlanDBLayer.getSession().rollback();
     }
 
-    public List<DailyPlanDBItem> getStartTimesFromScheduler(Date from, Date to) throws ParseException, SOSHibernateException {
+    public List<DailyPlanDBItem> getStartTimesFromScheduler(Date from, Date to, PlanFilter planFilter) throws ParseException, SOSHibernateException {
         initSchedulerConnection();
-
-        String fromTimeZoneString = "UTC";
-        String toTimeZoneString = DateTimeZone.getDefault().getID();
-
-        DateTimeZone fromZone = DateTimeZone.forID(fromTimeZoneString);
-
-        this.from = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(from).withZone(fromZone));
-        this.to = UtcTimeHelper.convertTimeZonesToDate(fromTimeZoneString, toTimeZoneString, new DateTime(to).withZone(fromZone));
-
+ 
+        this.from = from;
+        this.to = to;
+        
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.setTime(this.from);
         calendar.add(GregorianCalendar.DAY_OF_MONTH, MAX_DAY_OFFSET);
@@ -129,7 +129,7 @@ public class Calendar2DB {
         }
 
         fillListOfCalendars(true);
-        return getCalendarFromJobScheduler();
+        return getCalendarFromJobScheduler(planFilter);
     }
 
     public void store() throws Exception {
@@ -745,7 +745,24 @@ public class Calendar2DB {
         return dailyPlanEntry.getPlannedStart() + dailyPlanEntry.getJob() + dailyPlanEntry.getJobOrJobchain() + dailyPlanEntry.getSchedulerId();
     }
 
-    private List<DailyPlanDBItem> getCalendarFromJobScheduler() throws ParseException, SOSHibernateException {
+    private List<DailyPlanDBItem> getCalendarFromJobScheduler(PlanFilter planFilter) throws ParseException, SOSHibernateException {
+        
+        Matcher regExMatcherJob = null;
+        if (planFilter.getJob() != null && !planFilter.getJob().isEmpty()) {
+            planFilter.setJob(SearchStringHelper.getRegexValue(planFilter.getJob()));
+            regExMatcherJob = Pattern.compile(planFilter.getJob()).matcher("");
+        }
+        Matcher regExMatcherOrderId = null;
+        if (planFilter.getOrderId() != null && !planFilter.getOrderId().isEmpty()) {
+            planFilter.setOrderId(SearchStringHelper.getRegexValue(planFilter.getOrderId()));
+            regExMatcherOrderId = Pattern.compile(planFilter.getOrderId()).matcher("");
+        }
+        Matcher regExMatcherJobChain = null;
+        if (planFilter.getJobChain() != null && !planFilter.getJobChain().isEmpty()) {
+            planFilter.setJobChain(SearchStringHelper.getRegexValue(planFilter.getJobChain()));
+            regExMatcherJobChain = Pattern.compile(planFilter.getJobChain()).matcher("");
+        }
+        
         DBLayerReporting dbLayerReporting = new DBLayerReporting(dailyPlanDBLayer.getSession());
         dailyPlanList = new ArrayList<DailyPlanDBItem>();
         String fromTimeZoneString = DateTimeZone.getDefault().getID();
@@ -822,10 +839,26 @@ public class Calendar2DB {
                             dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
                             dailyPlanDBItem.setIsAssigned(false);
                             dailyPlanDBItem.setModified(new Date());
-                            if (dailyPlanList.size() > MAX_DAY_OFFSET) {
+                            if (dailyPlanList.size() > MAX_LIST_SIZE) {
                                 break;
                             }
-                            dailyPlanList.add(dailyPlanDBItem);
+
+                            boolean add = true;
+                            if (regExMatcherJob != null) {
+                                regExMatcherJob.reset(dailyPlanDBItem.getJob());
+                                add = add && regExMatcherJob.matches();
+                            }
+                            if (regExMatcherJobChain != null) {
+                                regExMatcherJobChain.reset(dailyPlanDBItem.getJobChain());
+                                add = add && regExMatcherJobChain.matches();
+                            }
+                            if (regExMatcherOrderId != null) {
+                                regExMatcherOrderId.reset(dailyPlanDBItem.getOrderId());
+                                add = add && regExMatcherOrderId.matches();
+                            }                           
+                            if (add) {
+                                dailyPlanList.add(dailyPlanDBItem);
+                            }
 
                         }
                     }
