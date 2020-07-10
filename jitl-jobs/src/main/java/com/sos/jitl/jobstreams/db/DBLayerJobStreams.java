@@ -221,6 +221,7 @@ public class DBLayerJobStreams {
             DBItemJobStreamStarter dbItemJobStreamStarter = new DBItemJobStreamStarter();
             dbItemJobStreamStarter.setCreated(new Date());
             dbItemJobStreamStarter.setJobStream(newId);
+            dbItemJobStreamStarter.setId(jobstreamStarter.getJobStreamStarterId());
             dbItemJobStreamStarter.setTitle(jobstreamStarter.getTitle());
             if (jobstreamStarter.getRunTime() != null) {
                 dbItemJobStreamStarter.setRunTime(objectMapper.writeValueAsString(jobstreamStarter.getRunTime()));

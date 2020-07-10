@@ -121,9 +121,11 @@ public class DBLayerJobStreamStarters {
     }
 
     public Long store(DBItemJobStreamStarter dbItemJobStreamStarter) throws SOSHibernateException {
-        FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
-        filterJobStreamStarters.setId(dbItemJobStreamStarter.getJobStream());
-        delete(filterJobStreamStarters);
+        if (dbItemJobStreamStarter.getId() != null) {
+            FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
+            filterJobStreamStarters.setId(dbItemJobStreamStarter.getId());
+            delete(filterJobStreamStarters);
+        }
         sosHibernateSession.save(dbItemJobStreamStarter);
         return dbItemJobStreamStarter.getId();
     }
