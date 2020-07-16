@@ -105,6 +105,12 @@
 			<artifactId>engine-kernel</artifactId>
             <version>${sos.engine.version}</version>
 			<scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.intellij</groupId>
+                    <artifactId>annotations</artifactId>
+                </exclusion>
+            </exclusions>
 		</dependency>
 
 		<!-- 3rd party jar files -->
