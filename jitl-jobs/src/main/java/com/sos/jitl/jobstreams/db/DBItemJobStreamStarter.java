@@ -26,6 +26,8 @@ public class DBItemJobStreamStarter {
     private String state;
     private String runTime;
     private Date nextStart;
+    private String endOfJobStream;
+    private String requiredJob;
     private Date created;
 
     public DBItemJobStreamStarter() {
@@ -53,6 +55,24 @@ public class DBItemJobStreamStarter {
 
     public void setState(String state) {
         this.state = state;
+    }    
+    
+    @Column(name = "[END_OF_JOBSTREAM]", nullable = false)
+    public String getEndOfJobStream() {
+        return endOfJobStream;
+    }
+
+    public void setEndOfJobStream(String endOfJobStream) {
+        this.endOfJobStream = endOfJobStream;
+    }    
+   
+    @Column(name = "[REQUIRED_JOB]", nullable = false)
+    public String getRequiredJob() {
+        return requiredJob;
+    }
+
+    public void setRequiredJob(String requiredJob) {
+        this.requiredJob = requiredJob;
     }    
    
     @Column(name = "[TITLE]", nullable = false)
