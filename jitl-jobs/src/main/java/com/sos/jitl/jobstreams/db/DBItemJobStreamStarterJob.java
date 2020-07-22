@@ -12,6 +12,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.annotations.Type;
+
 import com.sos.jitl.jobstreams.Constants;
 
 @Entity
@@ -24,6 +26,8 @@ public class DBItemJobStreamStarterJob {
     private Long jobStreamStarter;
     private String job;
     private Long delay;
+    private Boolean skipOutCondition;
+    private Date nextPeriod;
     private Date created;
 
     public DBItemJobStreamStarterJob() {
@@ -41,6 +45,27 @@ public class DBItemJobStreamStarterJob {
     @Column(name = "[ID]")
     public void setId(Long id) {
         this.id = id;
+    }
+
+    @Column(name = "[SKIP_NOT_IN_PERIOD_OUT_COND]", nullable = false)
+    @Type(type = "numeric_boolean")
+    public Boolean getSkipOutCondition() {
+        return this.skipOutCondition;
+    }
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "[NEXT_PERIOD]", nullable = false)
+    public Date getNextPeriod() {
+        return nextPeriod;
+    }
+
+    @Column(name = "[NEXT_PERIOD]", nullable = false)
+    public void setNextPeriod(Date nextPeriod) {
+        this.nextPeriod = nextPeriod;
+    }
+
+    public void setSkipOutCondition(Boolean skipOutCondition) {
+        this.skipOutCondition = skipOutCondition;
     }
 
       
