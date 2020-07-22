@@ -42,6 +42,7 @@ public class JSStarter {
         jobStreamScheduler = new JobStreamScheduler(timeZoneId);
         RunTime runtime = this.getRunTime();
         if (runtime != null) {
+            LOGGER.debug("schedule for:" + this.itemJobStreamStarter.getTitle());
             jobStreamScheduler.schedule(from,to,runtime, false);
         }
     }

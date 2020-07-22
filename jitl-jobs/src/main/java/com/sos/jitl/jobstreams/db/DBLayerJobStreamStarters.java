@@ -18,7 +18,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.dailyplan.db.Calendar2DB;
-import com.sos.jitl.jobstreams.Constants;
 import com.sos.jitl.jobstreams.classes.JobStreamScheduler;
 import com.sos.joc.model.common.NameValuePair;
 import com.sos.joc.model.jobstreams.JobStreamJob;
@@ -138,12 +137,15 @@ public class DBLayerJobStreamStarters {
             runTime = objectMapper.readValue(runTimeString, RunTime.class);
         }
         if (runTime != null) {
+            Calendar c = Calendar.getInstance();
             Date from = new Date();
             Date to = new Date();
+            c.setTime(to);
+            c.add(Calendar.DATE, 3);
+            to = c.getTime();
             SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
             String max = MAX_DATE;
             Date maxDate = formatter.parse(max);
-            Calendar c = Calendar.getInstance();
 
             do {
                 jobStreamScheduler.schedule(from, to, runTime, true);
@@ -223,6 +225,7 @@ public class DBLayerJobStreamStarters {
                 dbItemJobStreamStarterJob.setDelay(jobStreamJob.getStartDelay());
                 dbItemJobStreamStarterJob.setJob(jobStreamJob.getJob());
                 dbItemJobStreamStarterJob.setJobStreamStarter(dbItemJobStreamStarter.getId());
+                dbItemJobStreamStarterJob.setSkipOutCondition(jobStreamJob.getSkipOutCondition());
                 Long newJobId = dbLayerJobStreamsStarterJobs.store(dbItemJobStreamStarterJob);
                 jobStreamJob.setJobId(newJobId);
             }

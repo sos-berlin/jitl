@@ -23,7 +23,7 @@ public class PeriodResolver {
     private static final Logger LOGGER = LoggerFactory.getLogger(PeriodResolver.class);
     private List<Long> listOfStartTimes;
     private Map<Long, Period> listOfPeriods;
-
+    private Date now;
     private SimpleDateFormat dateFormat;
 
     public PeriodResolver() {
@@ -45,11 +45,12 @@ public class PeriodResolver {
     }
 
     private void add(Long start, Period period) {
-        Date now = new Date();
+        if (now == null){
+            now = new Date();
+        }
         Date startDate = new Date(start);
-        if (startDate.after(now)) {
+        if (startDate.after(now) || (startDate.compareTo(now) == 0)) {
 
-            LOGGER.debug("Adding " + start);
             Period p = listOfPeriods.get(start);
             if (p == null) {
                 listOfPeriods.put(start, period);
@@ -58,7 +59,7 @@ public class PeriodResolver {
                 logPeriod(p);
                 logPeriod(period);
             }
-        }
+       }
     }
 
     private void addRepeat(Period period) throws ParseException {

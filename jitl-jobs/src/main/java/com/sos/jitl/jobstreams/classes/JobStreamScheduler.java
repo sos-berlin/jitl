@@ -42,7 +42,12 @@ public class JobStreamScheduler {
         if (resolve) {
             PeriodResolver periodResolver = new PeriodResolver();
             for (Period p : plan.getPeriods()) {
-                LOGGER.trace("-------> period" + p.getAbsoluteRepeat() + " " + p.getSingleStart());
+                if (p.getAbsoluteRepeat() != null) {
+                    LOGGER.trace("-------> period repeat" + p.getAbsoluteRepeat());
+                }
+                if (p.getSingleStart() != null) {
+                    LOGGER.trace("-------> period single" + p.getSingleStart());
+                }
                 periodResolver.addStartTimes(p); 
             }
 
