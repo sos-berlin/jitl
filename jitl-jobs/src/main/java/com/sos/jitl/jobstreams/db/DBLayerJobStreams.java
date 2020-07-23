@@ -228,6 +228,8 @@ public class DBLayerJobStreams {
             if (jobstreamStarter.getRunTime() != null) {
                 dbItemJobStreamStarter.setRunTime(objectMapper.writeValueAsString(jobstreamStarter.getRunTime()));
             }
+            dbItemJobStreamStarter.setNextStart(dbLayerJobStreamStarters.getNextStartTime(objectMapper, timezone, dbItemJobStreamStarter.getRunTime()));
+
             dbItemJobStreamStarter.setState(jobstreamStarter.getState());
             Long newStarterId = dbLayerJobStreamStarters.store(dbItemJobStreamStarter);
             Long oldStarterId = jobstreamStarter.getJobStreamStarterId();
