@@ -123,7 +123,7 @@ public class DBLayerInConditions {
         }
 
     }
-    
+
     public void deleteCascading(FilterInConditions filterInConditions) throws SOSHibernateException {
         DBLayerInConditionCommands dbLayerInConditionCommands = new DBLayerInConditionCommands(sosHibernateSession);
         DBLayerConsumedInConditions dbLayerConsumedInConditions = new DBLayerConsumedInConditions(sosHibernateSession);
@@ -137,18 +137,21 @@ public class DBLayerInConditions {
         filterConsumedInConditions.setJobStream(filterInConditions.getJobStream());
         filterConsumedInConditions.setFolder(filterInConditions.getFolder());
         dbLayerConsumedInConditions.deleteConsumedInConditions(filterConsumedInConditions);
-        
-        delete(filterInConditions) ;
+
+        delete(filterInConditions);
     }
 
     public void deleteInsert(InConditions inConditions) throws SOSHibernateException {
-        
+
         DBLayerInConditionCommands dbLayerInConditionCommands = new DBLayerInConditionCommands(sosHibernateSession);
         DBLayerConsumedInConditions dbLayerConsumedInConditions = new DBLayerConsumedInConditions(sosHibernateSession);
         for (JobInCondition jobInCondition : inConditions.getJobsInconditions()) {
+
+            if ("".equals(jobInCondition.getJob())) {
+                continue;
+            }
             String folder = Paths.get(jobInCondition.getJob()).getParent().toString().replace('\\', '/');
 
-            
             DBLayerInConditions dbLayerInConditions = new DBLayerInConditions(sosHibernateSession);
             FilterInConditions filterInConditions = new FilterInConditions();
             filterInConditions.setJob(jobInCondition.getJob());
@@ -167,7 +170,7 @@ public class DBLayerInConditions {
                 dbItemInCondition.setExpression(expression);
                 dbItemInCondition.setJob(jobInCondition.getJob());
                 dbItemInCondition.setSchedulerId(inConditions.getJobschedulerId());
-                //dbItemInCondition.setJobStream(Paths.get(inCondition.getJobStream()).getFileName().toString());
+                // dbItemInCondition.setJobStream(Paths.get(inCondition.getJobStream()).getFileName().toString());
                 dbItemInCondition.setJobStream(inCondition.getJobStream());
                 dbItemInCondition.setFolder(folder);
                 dbItemInCondition.setMarkExpression(getBoolean(inCondition.getMarkExpression(), true));

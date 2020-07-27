@@ -46,8 +46,8 @@ public class DBLayerOutConditions {
             if (s.getJobStream().isEmpty()) {
                 sql.append("e.globalEvent = " + s.getGlobalEvent() + " and e.event = " + "'" + s.getEvent() + "'").append(" or ");
             } else {
-                sql.append("(e.globalEvent = " + s.getGlobalEvent() + " and e.event = " + "'" + s.getEvent() + "'").append(" and ").append("o.jobStream = " + "'" + s.getJobStream() + "')").append(
-                        " or ");
+                sql.append("(e.globalEvent = " + s.getGlobalEvent() + " and e.event = " + "'" + s.getEvent() + "'").append(" and ").append(
+                        "o.jobStream = " + "'" + s.getJobStream() + "')").append(" or ");
             }
         }
         sql.append("1=0");
@@ -105,9 +105,10 @@ public class DBLayerOutConditions {
         return query;
     }
 
-    public List<DBItemOutConditionWithConfiguredEvent> getOutConditionsList(FilterOutConditions filter, final int limit) throws SOSHibernateException {
-        String q = "select new com.sos.jitl.jobstreams.db.DBItemOutConditionWithConfiguredEvent(o,e) from " + DBItemOutCondition + " o, " + DBItemOutConditionEvent
-                + " e " + getWhere(filter) + " and o.id=e.outConditionId";
+    public List<DBItemOutConditionWithConfiguredEvent> getOutConditionsList(FilterOutConditions filter, final int limit)
+            throws SOSHibernateException {
+        String q = "select new com.sos.jitl.jobstreams.db.DBItemOutConditionWithConfiguredEvent(o,e) from " + DBItemOutCondition + " o, "
+                + DBItemOutConditionEvent + " e " + getWhere(filter) + " and o.id=e.outConditionId";
         Query<DBItemOutConditionWithConfiguredEvent> query = sosHibernateSession.createQuery(q);
         query = bindParameters(filter, query);
 
@@ -145,6 +146,10 @@ public class DBLayerOutConditions {
         DBLayerEvents dbLayerEvents = new DBLayerEvents(sosHibernateSession);
         for (JobOutCondition jobOutCondition : outConditions.getJobsOutconditions()) {
 
+            if ("".equals(jobOutCondition.getJob())) {
+                continue;
+            }
+            
             String folder = Paths.get(jobOutCondition.getJob()).getParent().toString().replace('\\', '/');
 
             FilterOutConditions filterOutConditions = new FilterOutConditions();
@@ -196,7 +201,7 @@ public class DBLayerOutConditions {
         filterOutConditionEvents.setJobStream(filterOutConditions.getJobStream());
         filterOutConditionEvents.setFolder(filterOutConditions.getFolder());
         dbLayerOutConditionEvents.deleteByJobstream(filterOutConditionEvents);
-        delete(filterOutConditions) ;
+        delete(filterOutConditions);
     }
 
 }
