@@ -245,8 +245,12 @@ public class DBLayerJobStreams {
                 dbItemJobStreamStarterJob.setDelay(jobStreamJob.getStartDelay());
                 dbItemJobStreamStarterJob.setJob(jobStreamJob.getJob());
                 dbItemJobStreamStarterJob.setJobStreamStarter(newStarterId);
-                dbItemJobStreamStarterJob.setSkipOutCondition(jobStreamJob.getSkipOutCondition());
-                 Long newJobId = dbLayerJobStreamsStarterJobs.store(dbItemJobStreamStarterJob);
+                if (jobStreamJob.getSkipOutCondition() == null) {
+                    dbItemJobStreamStarterJob.setSkipOutCondition(false);
+                }else {
+                    dbItemJobStreamStarterJob.setSkipOutCondition(jobStreamJob.getSkipOutCondition());
+                }
+                Long newJobId = dbLayerJobStreamsStarterJobs.store(dbItemJobStreamStarterJob);
                 jobStreamJob.setJobId(newJobId);
             }
 
