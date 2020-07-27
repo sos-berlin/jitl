@@ -108,7 +108,7 @@ public class DBLayerJobStreamHistory {
     }
 
     public List<DBItemJobStreamHistory> getJobStreamHistoryList(FilterJobStreamHistory filter, final int limit) throws SOSHibernateException {
-        String q = "  from " + DBItemJobStreamHistory + getWhere(filter);
+        String q = "  from " + DBItemJobStreamHistory + getWhere(filter) + " order by id desc";
 
         Query<DBItemJobStreamHistory> query = sosHibernateSession.createQuery(q);
         query = bindParameters(filter, query);
