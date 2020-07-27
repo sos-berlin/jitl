@@ -13,6 +13,7 @@ import javax.persistence.TemporalType;
 import org.hibernate.query.Query;
 import org.joda.time.DateTime;
 
+import com.sos.hibernate.classes.SOSHibernateFactory.Dbms;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SearchStringHelper;
 import com.sos.hibernate.classes.UtcTimeHelper;
@@ -176,7 +177,11 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
         }
         if (filter.isJobStream() != null) {
             if (filter.isJobStream()) {
-                where += and + " p.jobStream is not null and p.jobStream <> ''";
+                if (sosHibernateSession.getFactory().getDbms().equals(Dbms.ORACLE)) {
+                    where += and + " p.jobStream is not null";
+                } else {
+                    where += and + " p.jobStream is not null or p.jobStream <> ''";
+                }
 
             }
             and = " and ";
@@ -232,7 +237,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
             query.setParameter("jobChain", SearchStringHelper.getSearchPathValue(filter.getJobChain()));
         }
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
-            query.setParameter("jobStream",  SearchStringHelper.getSearchPathValue(filter.getJobStream()));
+            query.setParameter("jobStream", SearchStringHelper.getSearchPathValue(filter.getJobStream()));
         }
         if (filter.getOrderId() != null && !"".equals(filter.getOrderId())) {
             query.setParameter("orderId", filter.getOrderId());
