@@ -180,7 +180,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
                 if (sosHibernateSession.getFactory().getDbms().equals(Dbms.ORACLE)) {
                     where += and + " p.jobStream is not null";
                 } else {
-                    where += and + " p.jobStream is not null or p.jobStream <> ''";
+                    where += and + " (p.jobStream is not null or p.jobStream <> '')";
                 }
 
             }
