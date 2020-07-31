@@ -10,6 +10,7 @@ import javax.json.JsonObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.sos.hibernate.classes.SOSHibernate;
 import com.sos.hibernate.classes.SOSHibernateFactory;
@@ -200,7 +201,8 @@ public class FactEventHandler extends LoopEventHandler {
             options.configuration_file.setValue(getSettings().getHibernateConfigurationReporting().toFile().getCanonicalPath());
         } catch (Exception e) {
         }
-
+        String pluginContext = MDC.get("plugin");
+        MDC.put("plugin", "dailyplan");
         DailyPlanAdjustment dp = new DailyPlanAdjustment(reportingSession);
         dp.setOptions(options);
         dp.setTo(new Date());
@@ -237,6 +239,11 @@ public class FactEventHandler extends LoopEventHandler {
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("[%s]daily plan was not changed", method));
             }
+        }
+        if (pluginContext != null) {
+            MDC.put("plugin", pluginContext);
+        } else {
+            MDC.remove("plugin");
         }
     }
 

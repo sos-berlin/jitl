@@ -2,6 +2,7 @@ package com.sos.jitl.dailyplan.job;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.sos.JSHelper.Basics.IJSCommands;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
@@ -43,7 +44,7 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
         getOptions().checkMandatory();
         LOGGER.debug(getOptions().dirtyString());
         SOSHibernateSession session = getSession(createDailyPlanOptions.getconfiguration_file().getValue());
-
+        MDC.put("plugin", "dailyplan");
         Calendar2DB calendar2Db = new Calendar2DB(session,this.schedulerId);
         calendar2Db.setOptions(createDailyPlanOptions);
         calendar2Db.setSpooler(spooler);
@@ -56,6 +57,7 @@ public class CreateDailyPlan extends JSJobUtilitiesClass<CreateDailyPlanOptions>
                 session.close();
                 factory.close();
             }
+            MDC.remove("plugin");
         }
     }
 

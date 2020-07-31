@@ -20,6 +20,7 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -89,6 +90,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
     @Override
     public void onPrepare() {
+        MDC.put("plugin", "inventory");
         try {
             if (variables.apply(HIBERNATE_CFG_REPORTING_KEY) != null && !variables.apply(HIBERNATE_CFG_REPORTING_KEY).isEmpty()) {
                 hibernateConfigReporting = variables.apply(HIBERNATE_CFG_REPORTING_KEY);
@@ -100,6 +102,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
                 @Override
                 public void run() {
+                    MDC.put("plugin", "inventory");
                     try {
                         initFirst();
                         LOGGER.info("*** initial inventory instance update started ***");
@@ -120,16 +123,19 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             LOGGER.error("Fatal Error in InventoryPlugin @OnPrepare:" + t.toString(), t);
         }
         super.onPrepare();
+        MDC.remove("plugin");
     }
 
     @Override
     public void onActivate() {
+        MDC.put("plugin", "inventory");
         Map<String, String> mailDefaults = mapAsJavaMap(scheduler.mailDefaults());
         try {
             Runnable inventoryEventThread = new Runnable() {
 
                 @Override
                 public void run() {
+                    MDC.put("plugin", "inventory");
                     Mailer mailer = new Mailer("inventory", mailDefaults);
                     try {
                         executeInventoryModelProcessing();
@@ -175,6 +181,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             LOGGER.error("Fatal Error in InventoryPlugin @OnActivate:" + t.toString(), t);
         }
         super.onActivate();
+        MDC.remove("plugin");
     }
 
     public void executeInitialInventoryProcessing() throws Exception {
@@ -309,6 +316,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
 
     @Override
     public void close() {
+        MDC.put("plugin", "inventory");
         LOGGER.info("[inventory] executeClose");
         closeConnections();
         try {
@@ -323,6 +331,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
             LOGGER.error(e.toString(), e);
         }
         super.close();
+        MDC.remove("plugin");
     }
     
     private void setGlobalProperties(SOSXMLXPath xPath) throws Exception {

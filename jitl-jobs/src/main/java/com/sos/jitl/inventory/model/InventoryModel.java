@@ -26,6 +26,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -1492,8 +1493,15 @@ public class InventoryModel {
     }
     
     private void updateDailyPlan (SOSHibernateSession session) throws Exception {
+        String pluginContext = MDC.get("plugin");
+        MDC.put("plugin", "dailyplan");
         Calendar2DB calendar2Db = Calendar2DBHelper.initCalendar2Db(inventoryDbLayer, inventoryInstance, httpHost, httpPort);
         calendar2Db.store();
+        if (pluginContext != null) {
+            MDC.put("plugin", pluginContext);
+        } else {
+            MDC.remove("plugin");
+        }
     }
     
     public void setLiveDirectory(Path liveDirectory) {

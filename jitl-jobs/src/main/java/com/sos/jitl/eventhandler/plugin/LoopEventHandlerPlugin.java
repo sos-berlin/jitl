@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.sos.exception.SOSNoResponseException;
 import com.sos.jitl.eventhandler.handler.EventHandlerSettings;
@@ -69,6 +70,7 @@ public class LoopEventHandlerPlugin extends AbstractPlugin {
 
     /** C++ thread */
     public void onPrepare(ILoopEventHandler eventHandler) {
+        MDC.put("plugin", eventHandler.getIdentifier());
         String method = getMethodName("onPrepare");
 
         readJobSchedulerVariables();
@@ -77,6 +79,7 @@ public class LoopEventHandlerPlugin extends AbstractPlugin {
 
             @Override
             public void run() {
+                MDC.put("plugin", eventHandler.getIdentifier());
                 String name = Thread.currentThread().getName();
                 LOGGER.info(String.format("%s[run][thread]%s", method, name));
                 try {
@@ -91,10 +94,12 @@ public class LoopEventHandlerPlugin extends AbstractPlugin {
         threadPool.submit(thread);
 
         super.onPrepare();
+        MDC.remove("plugin");
     }
 
     /** C++ thread */
     public void onActivate(ILoopEventHandler eventHandler) {
+        MDC.put("plugin", eventHandler.getIdentifier());
         String method = getMethodName("onActivate");
 
         activeHandlers.add(eventHandler);
@@ -108,6 +113,7 @@ public class LoopEventHandlerPlugin extends AbstractPlugin {
 
             @Override
             public void run() {
+                MDC.put("plugin", eventHandler.getIdentifier());
                 String name = Thread.currentThread().getName();
                 LOGGER.info(String.format("%s[run][thread]%s", method, name));
                 try {
@@ -129,6 +135,7 @@ public class LoopEventHandlerPlugin extends AbstractPlugin {
         threadPool.submit(thread);
 
         super.onActivate();
+        MDC.remove("plugin");
     }
 
     /** C++ thread */
@@ -166,6 +173,7 @@ public class LoopEventHandlerPlugin extends AbstractPlugin {
 
                     @Override
                     public void run() {
+                        MDC.put("plugin", eh.getIdentifier());
                         String name = Thread.currentThread().getName();
                         if (isDebugEnabled) {
                             LOGGER.debug(String.format("%s[%s][run][thread]%s", method, eh.getIdentifier(), name));
@@ -174,6 +182,7 @@ public class LoopEventHandlerPlugin extends AbstractPlugin {
                         if (isDebugEnabled) {
                             LOGGER.debug(String.format("%s[%s][end][thread]%s", method, eh.getIdentifier(), name));
                         }
+                        MDC.remove("plugin");
                     }
                 };
                 threadPool.submit(thread);
