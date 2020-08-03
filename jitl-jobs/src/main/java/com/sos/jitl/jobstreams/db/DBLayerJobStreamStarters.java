@@ -252,4 +252,39 @@ public class DBLayerJobStreamStarters {
         filterJobStreams.setJobStreamId(jobStreamStarters.getJobStreamId());
         calendar2Db.processJobStreamStarterFilter(filterJobStreams, timezone);
     }
+
+    public void deleteStarters(JobStreamStarters jobStreamStarters, String timezone) throws Exception {
+        DBLayerJobStreamParameters dbLayerJobStreamParameters = new DBLayerJobStreamParameters(sosHibernateSession);
+        DBLayerJobStreamsStarterJobs dbLayerJobStreamsStarterJobs = new DBLayerJobStreamsStarterJobs(sosHibernateSession);
+        Calendar2DB calendar2Db = new Calendar2DB(sosHibernateSession, jobStreamStarters.getJobschedulerId());
+
+        for (JobStreamStarter jobStreamStarter : jobStreamStarters.getJobstreamStarters()) {
+
+            FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
+            filterJobStreamStarters.setJobStreamId(jobStreamStarters.getJobStreamId());
+            filterJobStreamStarters.setId(jobStreamStarter.getJobStreamStarterId());
+
+            List<DBItemJobStreamStarter> lStarters = getJobStreamStartersList(filterJobStreamStarters, 0);
+            if (lStarters.size() > 1) {
+
+                for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {
+                    FilterJobStreamStarterJobs filterJobStreamStarterJobs = new FilterJobStreamStarterJobs();
+                    filterJobStreamStarterJobs.setJobStreamStarter(dbItemJobStreamStarter.getId());
+                    dbLayerJobStreamsStarterJobs.delete(filterJobStreamStarterJobs);
+                }
+
+                for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {
+                    FilterJobStreamParameters filterJobStreamParameters = new FilterJobStreamParameters();
+                    filterJobStreamParameters.setJobStreamStarterId(dbItemJobStreamStarter.getId());
+                    dbLayerJobStreamParameters.delete(filterJobStreamParameters);
+                }
+
+                this.delete(filterJobStreamStarters);
+            }
+
+        }
+        FilterJobStreams filterJobStreams = new FilterJobStreams();
+        filterJobStreams.setJobStreamId(jobStreamStarters.getJobStreamId());
+        calendar2Db.processJobStreamStarterFilter(filterJobStreams, timezone);
+    }
 }
