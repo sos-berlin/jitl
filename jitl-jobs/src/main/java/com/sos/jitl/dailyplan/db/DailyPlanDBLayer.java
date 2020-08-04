@@ -69,7 +69,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
 
     public int delete(boolean onlyWhereAuditLogIdIsNull) throws SOSHibernateException {
         String hql = "delete from " + DailyPlanDBItem + " p " + getWhere(onlyWhereAuditLogIdIsNull);
-        ;
+         
         int row = 0;
         Query<DailyPlanDBItem> query = sosHibernateSession.createQuery(hql);
         if (filter.getPlannedStart() != null) {

@@ -199,7 +199,7 @@ public class DBLayerJobStreams {
 
     }
 
-    public void deleteInsert(JobStream jobStream, String timezone) throws Exception  {
+    public Long deleteInsert(JobStream jobStream, String timezone) throws Exception  {
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         DBLayerJobStreamStarters dbLayerJobStreamStarters = new DBLayerJobStreamStarters(sosHibernateSession);
         DBLayerJobStreamsStarterJobs dbLayerJobStreamsStarterJobs = new DBLayerJobStreamsStarterJobs(sosHibernateSession);
@@ -252,6 +252,7 @@ public class DBLayerJobStreams {
                 }
                 Long newJobId = dbLayerJobStreamsStarterJobs.store(dbItemJobStreamStarterJob);
                 jobStreamJob.setJobId(newJobId);
+
             }
 
             FilterJobStreams filterJobStreams = new FilterJobStreams();
@@ -271,5 +272,6 @@ public class DBLayerJobStreams {
             }
 
         }
+        return newId;
     }
 }
