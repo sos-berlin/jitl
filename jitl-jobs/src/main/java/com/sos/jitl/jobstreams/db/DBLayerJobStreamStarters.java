@@ -262,11 +262,10 @@ public class DBLayerJobStreamStarters {
 
             FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
             filterJobStreamStarters.setJobStreamId(jobStreamStarters.getJobStreamId());
-            filterJobStreamStarters.setId(jobStreamStarter.getJobStreamStarterId());
-
             List<DBItemJobStreamStarter> lStarters = getJobStreamStartersList(filterJobStreamStarters, 0);
             if (lStarters.size() > 1) {
-
+                filterJobStreamStarters.setId(jobStreamStarter.getJobStreamStarterId());
+                lStarters = getJobStreamStartersList(filterJobStreamStarters, 0);
                 for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {
                     FilterJobStreamStarterJobs filterJobStreamStarterJobs = new FilterJobStreamStarterJobs();
                     filterJobStreamStarterJobs.setJobStreamStarter(dbItemJobStreamStarter.getId());
