@@ -19,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.AppenderRef;
 import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -434,15 +435,25 @@ public class LoopEventHandlerPlugin extends AbstractPlugin {
             if (appenderRef.isPresent() && appenderRef.get().getLevel().isLessSpecificThan(Level.OFF) && context.getRootLogger().getLevel()
                     .isMoreSpecificThan(appenderRef.get().getLevel())) {
                 //Configurator.setRootLevel(appenderRef.get().getLevel());
-                configuration.getRootLogger().setLevel(appenderRef.get().getLevel());
-                if (appenderRef.get().getLevel().isLessSpecificThan(Level.DEBUG)) {
-                    configuration.getLoggerConfig("com.mchange").setLevel(Level.DEBUG);
-                    configuration.getLoggerConfig("org.hibernate").setLevel(Level.DEBUG);
-                    configuration.getLoggerConfig("org.hibernate.type.descriptor.sql").setLevel(Level.TRACE);
-                    LOGGER.info("Adjust org.hibernate log level to DEBUG (otherwise too talkative)");
-                    LOGGER.info("Adjust org.hibernate.type.descriptor.sql log level to TRACE");
+                //configuration.getRootLogger().setLevel(appenderRef.get().getLevel());
+                Configurator.setRootLevel(appenderRef.get().getLevel());
+                if (appenderRef.get().getLevel().isLessSpecificThan(Level.INFO)) {
+                    Configurator.setLevel("com.mchange", Level.INFO);
+                    Configurator.setLevel("org.hibernate", Level.INFO);
+                    LOGGER.info("Adjust the log level of 'org.hibernate' to INFO");
+                    Configurator.setLevel("org.hibernate.persister.entity.AbstractEntityPersister", Level.DEBUG);
+                    Configurator.setLevel("org.hibernate.SQL", Level.DEBUG);
+                    Configurator.setLevel("org.hibernate.loader.entity.plan.EntityLoader", Level.DEBUG);
+                } else if (appenderRef.get().getLevel().isLessSpecificThan(Level.DEBUG)) {
+                    Configurator.setLevel("com.mchange", Level.INFO);
+                    Configurator.setLevel("org.hibernate", Level.INFO);
+                    LOGGER.info("Adjust the log level of 'org.hibernate' to INFO");
+                    Configurator.setLevel("org.hibernate.persister.entity.AbstractEntityPersister", Level.DEBUG);
+                    Configurator.setLevel("org.hibernate.SQL", Level.DEBUG);
+                    Configurator.setLevel("org.hibernate.loader.entity.plan.EntityLoader", Level.DEBUG);
+                    Configurator.setLevel("org.hibernate.type.descriptor.sql", Level.TRACE);
                 }
-                context.updateLoggers();
+                //context.updateLoggers();
                 LOGGER.info("Adjust the root log level to the plugin's log level: " + context.getRootLogger().getLevel());
             }
         } catch (Exception e) {
