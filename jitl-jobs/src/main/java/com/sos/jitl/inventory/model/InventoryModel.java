@@ -1595,7 +1595,7 @@ public class InventoryModel {
     private void writeFile(String xml, Path path) {
         if (xml != null && !xml.isEmpty()) {
             try {
-                Files.write(path, xml.getBytes(StandardCharsets.ISO_8859_1));
+                Files.write(path, xml.getBytes(StandardCharsets.UTF_8));
             } catch (IOException e) {
                 LOGGER.error(String.format("Error: %1$s - occurred during update of file %2$s, file not updated!", e.getMessage(), path));
             }
