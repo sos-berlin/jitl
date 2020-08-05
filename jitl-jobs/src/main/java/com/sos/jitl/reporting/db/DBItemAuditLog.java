@@ -28,6 +28,7 @@ public class DBItemAuditLog extends DbItem implements Serializable {
     private String parameters;
     private String job;
     private String jobChain;
+    private String jobStream;
     private String orderId;
     private String folder;
     private String comment;
@@ -111,6 +112,15 @@ public class DBItemAuditLog extends DbItem implements Serializable {
     @Column(name = "[JOB_CHAIN]",  nullable = true)
     public void setJobChain(String jobChain) {
         this.jobChain = jobChain;
+    }
+    @Column(name = "[JOB_STREAM]",  nullable = true)
+    public String getJobStream() {
+        return jobStream;
+    }
+    
+    @Column(name = "[JOB_Stream]",  nullable = true)
+    public void setJobStream(String jobStream) {
+        this.jobStream = jobStream;
     }
     
     @Column(name = "[ORDER_ID]",  nullable = true)
