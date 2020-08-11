@@ -121,7 +121,7 @@ public class SchedulerOrderStepHistoryDBLayer extends SOSHibernateDBLayer {
         if (filter.getEndTime() != null && !"".equals(filter.getEndTime())) {
             query.setParameter("endTime", filter.getEndTime(), TemporalType.TIMESTAMP);
         }
-        if (limit != 0) {
+        if (limit > 0) {
             query.setMaxResults(limit);
         }
         List<SchedulerOrderStepHistoryDBItem> historyList = sosHibernateSession.getResultList(query);

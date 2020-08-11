@@ -236,7 +236,9 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemRepo
 
         query = bindParameters(query);
 
-        query.setMaxResults(limit);
+        if (limit > 0){
+            query.setMaxResults(limit);
+        }
         return sosHibernateSession.getResultList(query);
     }
 
