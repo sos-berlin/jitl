@@ -42,10 +42,11 @@ public class PeriodResolver {
         LOGGER.info(p.getBegin() + " - " + p.getEnd());
         LOGGER.info("Single Start: " + p.getSingleStart());
         LOGGER.info("Repeat: " + p.getRepeat());
+        LOGGER.info("Absolute Repeat: " + p.getAbsoluteRepeat());
     }
 
     private void add(Long start, Period period) {
-        if (now == null){
+        if (now == null) {
             now = new Date();
         }
         Date startDate = new Date(start);
@@ -59,7 +60,7 @@ public class PeriodResolver {
                 logPeriod(p);
                 logPeriod(period);
             }
-       }
+        }
     }
 
     private void addRepeat(Period period) throws ParseException {
@@ -67,6 +68,7 @@ public class PeriodResolver {
         if (period.getAbsoluteRepeat() != null && !period.getAbsoluteRepeat().isEmpty() && !"00:00:00".equals(period.getAbsoluteRepeat())) {
             Long start = getDate(period.getBegin()).getTime();
             Long end = getDate(period.getEnd()).getTime();
+
             Date repeat = getDate("2001-01-01T" + period.getAbsoluteRepeat() + "Z");
             Calendar calendar = GregorianCalendar.getInstance();
             calendar.setTime(repeat);
@@ -87,9 +89,14 @@ public class PeriodResolver {
             p.setEnd("24:00:00");
         }
 
-        if (p.getRepeat() == null || p.getRepeat().isEmpty()) {
-            p.setRepeat("00:00:00");
+        if (p.getAbsoluteRepeat() == null || p.getAbsoluteRepeat().isEmpty()) {
+            p.setAbsoluteRepeat("00:00:00");
+        } else {
+            String d = p.getAbsoluteRepeat() + ":00:00:00";
+            d = d.replaceAll("::", ":").substring(0, 8);
+            p.setAbsoluteRepeat(d);
         }
+
         return p;
     }
 
