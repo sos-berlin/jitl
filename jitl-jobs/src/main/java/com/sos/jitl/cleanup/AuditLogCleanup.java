@@ -9,7 +9,7 @@ public class AuditLogCleanup {
     public static void showUsage() {
         System.out.println("Usage: hibernateFile age");
 
-        System.out.println("- Remove entries older as n (14) days:");
+        System.out.println("- Remove entries older than n (14) days:");
         System.out.println("      hibernateFile 14");
         System.out.println("");
         System.out.println("- Remove all entries:");
@@ -38,7 +38,7 @@ public class AuditLogCleanup {
         if (age.equals("0")) {
             System.out.print("Remove all entries");
         } else {
-            System.out.print("Remove entries older as " + age + " days");
+            System.out.print("Remove entries older than " + age + " days");
         }
         System.out.println("");
 
