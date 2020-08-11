@@ -70,6 +70,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
     public int delete(boolean onlyWhereAuditLogIdIsNull) throws SOSHibernateException {
         String hql = "delete from " + DailyPlanDBItem + " p " + getWhere(onlyWhereAuditLogIdIsNull);
          
+        LOGGER.info("Lösche: " + hql + " --> " + filter.getJobStreamStarterId());
         int row = 0;
         Query<DailyPlanDBItem> query = sosHibernateSession.createQuery(hql);
         if (filter.getPlannedStart() != null) {
@@ -96,6 +97,9 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
         }
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
             query.setParameter("jobStream", filter.getJobStream());
+        }
+        if (filter.getJobStreamStarterId() != null) {
+            query.setParameter("jobStreamStarterId", filter.getJobStreamStarterId());
         }
         row = sosHibernateSession.executeUpdate(query);
         return row;
@@ -161,6 +165,10 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
         }
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
             where += String.format(and + " p.jobStream %s :jobStream", SearchStringHelper.getSearchPathOperator(filter.getJobStream()));
+            and = " and ";
+        }
+        if (filter.getJobStreamStarterId() != null) {
+            where += String.format(and + " p.jobStreamStarterId = :jobStreamStarterId");
             and = " and ";
         }
         if (filter.getOrderId() != null && !"".equals(filter.getOrderId())) {

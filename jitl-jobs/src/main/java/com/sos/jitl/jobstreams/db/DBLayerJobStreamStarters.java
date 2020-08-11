@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.dailyplan.db.Calendar2DB;
+import com.sos.jitl.dailyplan.db.DailyPlanDBLayer;
 import com.sos.jitl.jobstreams.classes.JobStreamScheduler;
 import com.sos.joc.model.common.NameValuePair;
 import com.sos.joc.model.jobstreams.JobStreamJob;
@@ -218,6 +219,10 @@ public class DBLayerJobStreamStarters {
             }
 
             jobStreamStarter.setJobStreamStarterId(dbItemJobStreamStarter.getId());
+            
+            DailyPlanDBLayer dailyPlanDBLayer = new DailyPlanDBLayer(sosHibernateSession);
+            dailyPlanDBLayer.getFilter().setJobStreamStarterId(oldId);
+            dailyPlanDBLayer.delete(false);
 
             for (JobStreamJob jobStreamJob : jobStreamStarter.getJobs()) {
                 DBItemJobStreamStarterJob dbItemJobStreamStarterJob = new DBItemJobStreamStarterJob();
@@ -264,6 +269,11 @@ public class DBLayerJobStreamStarters {
             filterJobStreamStarters.setJobStreamId(jobStreamStarters.getJobStreamId());
             List<DBItemJobStreamStarter> lStarters = getJobStreamStartersList(filterJobStreamStarters, 0);
             if (lStarters.size() > 1) {
+                
+                DailyPlanDBLayer dailyPlanDBLayer = new DailyPlanDBLayer(sosHibernateSession);
+                dailyPlanDBLayer.getFilter().setJobStreamStarterId(jobStreamStarter.getJobStreamStarterId());
+                dailyPlanDBLayer.delete(false);
+                
                 filterJobStreamStarters.setId(jobStreamStarter.getJobStreamStarterId());
                 lStarters = getJobStreamStartersList(filterJobStreamStarters, 0);
                 for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {

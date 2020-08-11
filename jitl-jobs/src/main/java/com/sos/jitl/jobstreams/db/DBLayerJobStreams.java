@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.dailyplan.db.Calendar2DB;
+import com.sos.jitl.dailyplan.db.DailyPlanDBLayer;
 import com.sos.joc.model.common.NameValuePair;
 import com.sos.joc.model.jobstreams.JobStream;
 import com.sos.joc.model.jobstreams.JobStreamJob;
@@ -94,11 +95,11 @@ public class DBLayerJobStreams {
 
         return query;
     }
-    
+
     public Long getJobStreamCount() throws SOSHibernateException {
         String q = "select count(*) from " + DBItemJobStream;
         Query<?> query = sosHibernateSession.createQuery(q);
-        Long count = (Long) sosHibernateSession.getResultList(query).get(0);  
+        Long count = (Long) sosHibernateSession.getResultList(query).get(0);
         return count;
     }
 
@@ -123,7 +124,8 @@ public class DBLayerJobStreams {
         DBLayerInConditions dbLayerInConditions = new DBLayerInConditions(sosHibernateSession);
         DBLayerOutConditions dbLayerOutConditions = new DBLayerOutConditions(sosHibernateSession);
         DBLayerJobStreamHistory dbLayerJobStreamHistory = new DBLayerJobStreamHistory(sosHibernateSession);
-        
+        DailyPlanDBLayer dailyPlanDBLayer = new DailyPlanDBLayer(sosHibernateSession);
+
         List<DBItemJobStream> lJobStreams = getJobStreamsList(filter, 0);
         for (DBItemJobStream dbItemJobStream : lJobStreams) {
             FilterJobStreamStarterJobs filterJobStreamStarterJobs = new FilterJobStreamStarterJobs();
@@ -133,12 +135,20 @@ public class DBLayerJobStreams {
                 filter.setFolder(dbItemJobStream.getFolder());
             }
 
-            
             if (withConditions) {
                 FilterJobStreamHistory filterJobStreamHistory = new FilterJobStreamHistory();
                 filterJobStreamHistory.setJobStreamId(dbItemJobStream.getId());
                 filterJobStreamHistory.setSchedulerId(filter.getSchedulerId());
                 dbLayerJobStreamHistory.deleteCascading(filterJobStreamHistory);
+                dailyPlanDBLayer.getFilter().setJobStream(filter.getJobStream());
+                if (filter.getJobStreamId() != null && (filter.getJobStream() == null || "".equals(filter.getJobStream()))) {
+                    DBItemJobStream jobstream = this.getJobStreamsDbItem(filter.getJobStreamId());
+                    if (jobstream != null) {
+                        dailyPlanDBLayer.getFilter().setJobStream(jobstream.getJobStream());
+                    }
+                }
+                dailyPlanDBLayer.delete(true);
+
             }
 
             FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
@@ -199,14 +209,13 @@ public class DBLayerJobStreams {
 
     }
 
-    public Long deleteInsert(JobStream jobStream, String timezone) throws Exception  {
+    public Long deleteInsert(JobStream jobStream, String timezone) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         DBLayerJobStreamStarters dbLayerJobStreamStarters = new DBLayerJobStreamStarters(sosHibernateSession);
         DBLayerJobStreamsStarterJobs dbLayerJobStreamsStarterJobs = new DBLayerJobStreamsStarterJobs(sosHibernateSession);
         DBLayerJobStreamParameters dbLayerJobStreamParameters = new DBLayerJobStreamParameters(sosHibernateSession);
-        DBLayerJobStreamHistory dbLayerJobStreamHistory = new DBLayerJobStreamHistory(sosHibernateSession); 
+        DBLayerJobStreamHistory dbLayerJobStreamHistory = new DBLayerJobStreamHistory(sosHibernateSession);
         Calendar2DB calendar2Db = new Calendar2DB(sosHibernateSession, jobStream.getJobschedulerId());
-        
 
         DBItemJobStream dbItemJobStream = new DBItemJobStream();
         dbItemJobStream.setCreated(new Date());
@@ -228,7 +237,8 @@ public class DBLayerJobStreams {
             if (jobstreamStarter.getRunTime() != null) {
                 dbItemJobStreamStarter.setRunTime(objectMapper.writeValueAsString(jobstreamStarter.getRunTime()));
             }
-            dbItemJobStreamStarter.setNextStart(dbLayerJobStreamStarters.getNextStartTime(objectMapper, timezone, dbItemJobStreamStarter.getRunTime()));
+            dbItemJobStreamStarter.setNextStart(dbLayerJobStreamStarters.getNextStartTime(objectMapper, timezone, dbItemJobStreamStarter
+                    .getRunTime()));
 
             dbItemJobStreamStarter.setState(jobstreamStarter.getState());
             Long newStarterId = dbLayerJobStreamStarters.store(dbItemJobStreamStarter);
@@ -238,7 +248,13 @@ public class DBLayerJobStreams {
             }
             jobstreamStarter.setJobStreamStarterId(newStarterId);
             jobstreamStarter.setTitle(jobstreamStarter.getTitle());
-                     
+
+            if (oldStarterId != null) {
+                DailyPlanDBLayer dailyPlanDBLayer = new DailyPlanDBLayer(sosHibernateSession);
+                dailyPlanDBLayer.getFilter().setJobStreamStarterId(oldStarterId);
+                dailyPlanDBLayer.delete(false);
+            }
+
             for (JobStreamJob jobStreamJob : jobstreamStarter.getJobs()) {
                 DBItemJobStreamStarterJob dbItemJobStreamStarterJob = new DBItemJobStreamStarterJob();
                 dbItemJobStreamStarterJob.setCreated(new Date());
@@ -247,7 +263,7 @@ public class DBLayerJobStreams {
                 dbItemJobStreamStarterJob.setJobStreamStarter(newStarterId);
                 if (jobStreamJob.getSkipOutCondition() == null) {
                     dbItemJobStreamStarterJob.setSkipOutCondition(false);
-                }else {
+                } else {
                     dbItemJobStreamStarterJob.setSkipOutCondition(jobStreamJob.getSkipOutCondition());
                 }
                 Long newJobId = dbLayerJobStreamsStarterJobs.store(dbItemJobStreamStarterJob);
@@ -258,7 +274,7 @@ public class DBLayerJobStreams {
             FilterJobStreams filterJobStreams = new FilterJobStreams();
             filterJobStreams.setJobStreamId(jobStream.getJobStreamId());
             calendar2Db.processJobStreamStarterFilter(filterJobStreams, timezone);
-             
+
             for (NameValuePair param : jobstreamStarter.getParams()) {
 
                 if (param.getName() != null && !param.getName().isEmpty()) {

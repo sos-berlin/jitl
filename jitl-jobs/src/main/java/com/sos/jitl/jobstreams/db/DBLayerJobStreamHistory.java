@@ -173,6 +173,7 @@ public class DBLayerJobStreamHistory {
         row = sosHibernateSession.executeUpdate(query);
         return row;
     }
+
     public int updateHistoryWithJobStream(Long oldId, Long newId) throws SOSHibernateException {
         String hql = "update " + DBItemJobStreamHistory + " set jobStream=" + newId + " where jobStream=:oldId";
         int row = 0;
@@ -190,6 +191,7 @@ public class DBLayerJobStreamHistory {
         query.setParameter("oldStarterId", oldStarterId);
 
         row = sosHibernateSession.executeUpdate(query);
-        return row;    }
+        return row;
+    }
 
 }

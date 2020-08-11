@@ -25,6 +25,7 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter {
     private Boolean isJobStream;
     private String orderId;
     private String jobStream;
+    private Long jobStreamStarterId;
     private String job;
     private List<String> states;
     private Set<Folder> listOfFolders;
@@ -244,6 +245,16 @@ public class DailyPlanFilter extends SOSHibernateIntervalFilter {
     
     public void setIsJobStream(Boolean isJobStream) {
         this.isJobStream = isJobStream;
+    }
+
+    
+    public Long getJobStreamStarterId() {
+        return jobStreamStarterId;
+    }
+
+    
+    public void setJobStreamStarterId(Long jobStreamStarterId) {
+        this.jobStreamStarterId = jobStreamStarterId;
     }
 
 }

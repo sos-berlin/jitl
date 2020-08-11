@@ -226,6 +226,7 @@ public class Calendar2DB {
                     dailyPlanDBItem.setSchedulerId(this.schedulerId);
                     dailyPlanDBItem.setIsAssigned(false);
                     dailyPlanDBItem.setIsLate(false);
+                    dailyPlanDBItem.setJobStreamStarterId(dbItemJobStreamStarter.getId());
                     dailyPlanDBItem.setJob(dbItemJobStreamStarterJob.getJob());
                     LOGGER.trace("map get jobstream: " + dbItemJobStreamStarter.getJobStream());
                     if (mapOfJobStreams.get(dbItemJobStreamStarter.getJobStream()) != null){
@@ -288,6 +289,7 @@ public class Calendar2DB {
 
     
     public void processJobStreamStarterFilter(FilterJobStreams filterJobStreams, String timezone) throws Exception  {
+        dayOffset = DEFAULT_DAYS_OFFSET;
         setFrom();
         setTo();
         storeJobStreamStarters(filterJobStreams, timezone);
