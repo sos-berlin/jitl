@@ -37,8 +37,11 @@ public class AccessTokenProvider {
     }
 
     private void setSpoolerVariable(Spooler spooler, String name, String value) {
+        LOGGER.debug("Setting" + name + "=" + value);
         if (spooler != null) {
             spooler.variables().set_value(name, value);
+        }else {
+            LOGGER.debug("spooler is null "  + name + "=" + value + " not set");
         }
 
     }
@@ -172,6 +175,11 @@ public class AccessTokenProvider {
                 } catch (ConfigException e) {
                     userDecodedAccount = sosPrivateConf.getDecodedValue("joc.account");
                 }
+            }
+            String[] account = userDecodedAccount.split(":");
+            jocApiUser = account[0];
+            if (account.length > 1) {
+                jocApiPassword = userDecodedAccount.split(":")[1];
             }
         }
 

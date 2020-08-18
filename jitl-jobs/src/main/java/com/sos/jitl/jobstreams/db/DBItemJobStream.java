@@ -25,7 +25,7 @@ public class DBItemJobStream {
     private String jobStream;
     private String folder;
     private String state;
-    private String version="1.13.4";
+    private String version="1.13.7";
     private Date created;
 
     public DBItemJobStream() {
