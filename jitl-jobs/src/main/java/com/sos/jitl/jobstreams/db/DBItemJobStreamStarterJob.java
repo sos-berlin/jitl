@@ -26,7 +26,7 @@ public class DBItemJobStreamStarterJob {
     private Long jobStreamStarter;
     private String job;
     private Long delay;
-    private Boolean skipOutCondition;
+    private boolean skipOutCondition;
     private Date nextPeriod;
     private Date created;
 
@@ -49,7 +49,7 @@ public class DBItemJobStreamStarterJob {
 
     @Column(name = "[SKIP_NOT_IN_PERIOD_OUT_COND]", nullable = false)
     @Type(type = "numeric_boolean")
-    public Boolean getSkipOutCondition() {
+    public boolean getSkipOutCondition() {
         return this.skipOutCondition;
     }
     
@@ -64,7 +64,7 @@ public class DBItemJobStreamStarterJob {
         this.nextPeriod = nextPeriod;
     }
 
-    public void setSkipOutCondition(Boolean skipOutCondition) {
+    public void setSkipOutCondition(boolean skipOutCondition) {
         this.skipOutCondition = skipOutCondition;
     }
 
