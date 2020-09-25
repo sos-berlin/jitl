@@ -73,7 +73,7 @@ public class Constants {
     public static String periodBegin;
 
     public static Calendar getSessionCalendar() {
-        if (periodBegin == null) {
+         if (periodBegin == null) {
             periodBegin = "00:00";
         } 
 
@@ -105,17 +105,8 @@ public class Constants {
             }
         } 
         
-        if (hours==0) {
-            hours = 24;
-        }
-        if (minutes==0) {
-            minutes = 60;
-        }
-        int diffHour = (hours-24);
-        int diffMinute = (minutes-60);
-        
-        calendar.add(Calendar.HOUR_OF_DAY, diffHour);
-        calendar.add(Calendar.MINUTE, diffMinute);
+        calendar.add(Calendar.HOUR_OF_DAY, (-1)*hours);
+        calendar.add(Calendar.MINUTE, (-1)*minutes);
  
         return calendar;
     }
