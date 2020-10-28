@@ -194,4 +194,16 @@ public class DBLayerJobStreamHistory {
         return row;
     }
 
+    public int updateRunning(FilterJobStreamHistory filter,boolean valueRunning) throws SOSHibernateException {
+        
+        String hql = "update " + DBItemJobStreamHistory + " set running=:valueRunning" + getWhere(filter);;
+        int row = 0;
+        Query<DBItemJobStreamHistory> query = sosHibernateSession.createQuery(hql);
+        query = bindParameters(filter, query);
+        query.setParameter("valueRunning", valueRunning);
+
+        row = sosHibernateSession.executeUpdate(query);
+        return row;        
+    }
+
 }
