@@ -57,6 +57,11 @@ public class DBLayerJobStreamStarters {
             and = " and ";
         }
 
+        if (filter.getTitle() != null && !"".equals(filter.getTitle())) {
+            where += and + " title = :title";
+            and = " and ";
+        }
+
         if (filter.getId() != null) {
             where += and + " id  = :id";
             and = " and ";
@@ -79,6 +84,9 @@ public class DBLayerJobStreamStarters {
 
         if (filter.getStatus() != null && !"".equals(filter.getStatus())) {
             query.setParameter("status", filter.getStatus());
+        }
+        if (filter.getTitle() != null && !"".equals(filter.getTitle())) {
+            query.setParameter("title", filter.getTitle());
         }
         if (filter.getJobStreamId() != null) {
             query.setParameter("jobStream", filter.getJobStreamId());

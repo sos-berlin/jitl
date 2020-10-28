@@ -52,20 +52,7 @@ public class JSStarter {
         return jobStreamScheduler.getPlan();
     }
 
-    public Date getNextStartFromList() {
-        if (jobStreamScheduler.getListOfStartTimes() != null) {
-            jobStreamScheduler.getListOfStartTimes().sort(null);
-            Date now = new Date();
-            for (Long start : jobStreamScheduler.getListOfStartTimes()) {
-                if (start > now.getTime()) {
-                    return  new Date(start);
-                }
-            }
-        }
-        return null;
-
-    }
-
+  
     public JobStreamScheduler getJobStreamScheduler() {
         return jobStreamScheduler;
     }
