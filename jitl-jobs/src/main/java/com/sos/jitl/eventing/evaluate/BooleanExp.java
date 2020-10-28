@@ -113,6 +113,7 @@ public class BooleanExp {
                                                       // Leerzeichen
         boolExp = boolExp.trim();
         this.boolExp = boolExp;
+        
     }
 
     
