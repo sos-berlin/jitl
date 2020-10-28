@@ -40,9 +40,9 @@ public class BooleanExp {
         allowedToken.put("false)", "");
 
         boolExp = boolExp_;
-        boolExp = boolExp.replaceAll(" and ", " && ");
-        boolExp = boolExp.replaceAll("not ", "! ");
-        boolExp = boolExp.replaceAll(" or ", " || ");
+        boolExp = boolExp.replaceAll(" (?i)and ", " && ");
+        boolExp = boolExp.replaceAll("(?i)not ", "! ");
+        boolExp = boolExp.replaceAll(" (?i)or ", " || ");
         boolExp = boolExp.replaceAll("\\(", "( ");
         boolExp = boolExp.replaceAll("\\)", " )");
 
@@ -103,9 +103,9 @@ public class BooleanExp {
     }
 
     public void setBoolExp(String boolExp) {
-        boolExp = boolExp.replaceAll(" and ", " && ");
-        boolExp = boolExp.replaceAll("not ", "! ");
-        boolExp = boolExp.replaceAll(" or ", " || ");
+        boolExp = boolExp.replaceAll(" (?i)and ", " && ");
+        boolExp = boolExp.replaceAll("(?i)not ", "! ");
+        boolExp = boolExp.replaceAll(" (?i)or ", " || ");
         boolExp = boolExp.replaceAll("\\(", "( ");
         boolExp = boolExp.replaceAll("\\)", " )");
 
