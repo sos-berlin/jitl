@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
+import com.sos.hibernate.classes.SearchStringHelper;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 
 public class DBLayerJobStreamHistory {
@@ -25,7 +26,6 @@ public class DBLayerJobStreamHistory {
 
     public FilterJobStreamHistory resetFilter() {
         FilterJobStreamHistory filter = new FilterJobStreamHistory();
-        filter.setContextId("");
         return filter;
     }
 
@@ -43,9 +43,18 @@ public class DBLayerJobStreamHistory {
             and = " and ";
         }
 
-        if (filter.getContextId() != null && !filter.getContextId().isEmpty()) {
-            where += and + " contextId  = :contextId";
+        if (filter.getListContextIds() != null && !filter.getListContextIds().isEmpty()) {
+            if (filter.getListContextIds().size() == 1) {
+                where += and + " contextId  = :contextId";
+            }
             and = " and ";
+        }
+
+        if (filter.getListContextIds() != null && !filter.getListContextIds().isEmpty()) {
+            if (filter.getListContextIds().size() > 1) {
+                where += and + SearchStringHelper.getStringListSql(filter.getListContextIds(), "contextId");
+                and = " and ";
+            }
         }
 
         if (filter.getSchedulerId() != null && !filter.getSchedulerId().isEmpty()) {
@@ -71,6 +80,7 @@ public class DBLayerJobStreamHistory {
             where += and + " started < :startedTo ";
             and = " and ";
         }
+
         if (!"".equals(where.trim())) {
             where = " where " + where;
         }
@@ -91,9 +101,7 @@ public class DBLayerJobStreamHistory {
         if (filter.getJobStreamId() != null) {
             query.setParameter("jobStream", filter.getJobStreamId());
         }
-        if (filter.getContextId() != null && !filter.getContextId().isEmpty()) {
-            query.setParameter("contextId", filter.getContextId());
-        }
+
         if (filter.getSchedulerId() != null && !filter.getSchedulerId().isEmpty()) {
             query.setParameter("schedulerId", filter.getSchedulerId());
         }
@@ -102,6 +110,12 @@ public class DBLayerJobStreamHistory {
         }
         if (filter.getStartedTo() != null) {
             query.setParameter("startedTo", filter.getStartedTo());
+        }
+
+        if (filter.getListContextIds() != null && !filter.getListContextIds().isEmpty()) {
+            if (filter.getListContextIds().size() == 1) {
+                query.setParameter("contextId", filter.getListContextIds().get(0));
+            }
         }
 
         return query;
@@ -144,10 +158,12 @@ public class DBLayerJobStreamHistory {
         DBLayerJobStreamsTaskContext dbLayerJobStreamTasksContext = new DBLayerJobStreamsTaskContext(sosHibernateSession);
         DBLayerEvents dbLayerEvents = new DBLayerEvents(sosHibernateSession);
         List<DBItemJobStreamHistory> lHistory = getJobStreamHistoryList(filterJobStreamHistory, 0);
-        if (filterJobStreamHistory.getContextId() != null && !filterJobStreamHistory.getContextId().isEmpty()) {
-            FilterJobStreamTaskContext filterJobStreamTaskContext = new FilterJobStreamTaskContext();
-            filterJobStreamTaskContext.setJobstreamHistoryId(filterJobStreamHistory.getContextId());
-            dbLayerJobStreamTasksContext.delete(filterJobStreamTaskContext);
+        if (filterJobStreamHistory.getListContextIds() != null && !filterJobStreamHistory.getListContextIds().isEmpty()) {
+            for (String contextId : filterJobStreamHistory.getListContextIds()) {
+                FilterJobStreamTaskContext filterJobStreamTaskContext = new FilterJobStreamTaskContext();
+                filterJobStreamTaskContext.setJobstreamHistoryId(contextId);
+                dbLayerJobStreamTasksContext.delete(filterJobStreamTaskContext);
+            }
         } else {
             for (DBItemJobStreamHistory dbItemJobStreamHistory : lHistory) {
                 FilterJobStreamTaskContext filterJobStreamTaskContext = new FilterJobStreamTaskContext();
@@ -194,16 +210,17 @@ public class DBLayerJobStreamHistory {
         return row;
     }
 
-    public int updateRunning(FilterJobStreamHistory filter,boolean valueRunning) throws SOSHibernateException {
-        
-        String hql = "update " + DBItemJobStreamHistory + " set running=:valueRunning" + getWhere(filter);;
+    public int updateRunning(FilterJobStreamHistory filter, boolean valueRunning) throws SOSHibernateException {
+
+        String hql = "update " + DBItemJobStreamHistory + " set running=:valueRunning" + getWhere(filter);
+        ;
         int row = 0;
         Query<DBItemJobStreamHistory> query = sosHibernateSession.createQuery(hql);
         query = bindParameters(filter, query);
         query.setParameter("valueRunning", valueRunning);
 
         row = sosHibernateSession.executeUpdate(query);
-        return row;        
+        return row;
     }
 
 }

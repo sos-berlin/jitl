@@ -1,13 +1,15 @@
 package com.sos.jitl.jobstreams.db;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class FilterJobStreamHistory {
 
     private Long id;
     private Long jobStreamId;
     private Long jobStreamStarter;
-    private String contextId;
+    private List<String> listOfContextIds;
     private String schedulerId;
     private Date startedFrom;
     private Date startedTo;
@@ -21,12 +23,15 @@ public class FilterJobStreamHistory {
         this.jobStreamStarter = jobStreamStarter;
     }
        
-    public String getContextId() {
-        return contextId;
+    public List<String> getListContextIds() {
+        return listOfContextIds;
     }
     
-    public void setContextId(String contextId) {
-        this.contextId = contextId;
+    public void addContextId(String contextId) {
+        if (this.listOfContextIds == null) {
+            this.listOfContextIds = new ArrayList<String>();
+        }
+        this.listOfContextIds.add(contextId);
     }
     
     public Boolean getRunning() {
