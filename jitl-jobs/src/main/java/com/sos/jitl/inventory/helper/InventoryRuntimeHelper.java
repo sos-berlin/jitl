@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sos.exception.SOSInvalidDataException;
 import com.sos.exception.SOSMissingDataException;
@@ -52,6 +53,7 @@ public class InventoryRuntimeHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(InventoryRuntimeHelper.class);
     private static final String RUN_TIME_NODE_NAME = "run_time";
     private static final String CALENDARS_NODE_NAME = "calendars";
+    private static final ObjectMapper OM = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     public static void recalculateRuntime(DBLayerInventory inventoryDbLayer, String type, String path, String fileExtension,
             List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages, Path liveDirectory, String timezone) throws Exception {
@@ -62,7 +64,6 @@ public class InventoryRuntimeHelper {
             List<DBItemInventoryClusterCalendarUsage> dbCalendarUsages, Path liveDirectory, String timezone, String calendarsXML,
             boolean forceUpdateCalendarsElem) throws IOException, DocumentException, TransformerException, SOSHibernateException,
             SOSMissingDataException, SOSInvalidDataException {
-        ObjectMapper om = new ObjectMapper();
         Long calendarId = null;
         DBItemInventoryClusterCalendar dbCalendar = null;
         Path filePath = liveDirectory.resolve(path.substring(1) + fileExtension);
@@ -76,7 +77,7 @@ public class InventoryRuntimeHelper {
                 for (DBItemInventoryClusterCalendarUsage dbCalendarUsage : dbCalendarUsages) {
                     if (dbCalendarUsage.getObjectType().equalsIgnoreCase(type) && dbCalendarUsage.getPath().equalsIgnoreCase(path)) {
                         calendarId = dbCalendarUsage.getCalendarId();
-                        Calendar calendarUsage = om.readValue(dbCalendarUsage.getConfiguration(), Calendar.class);
+                        Calendar calendarUsage = OM.readValue(dbCalendarUsage.getConfiguration(), Calendar.class);
                         RuntimeCalendar rc = null;
                         if (calendarId != null) {
                             dbCalendar = inventoryDbLayer.getCalendar(calendarId);
@@ -98,10 +99,10 @@ public class InventoryRuntimeHelper {
                                 }
                                 Dates dates = null;
                                 if (dbCalendarUsage.getConfiguration() != null && !dbCalendarUsage.getConfiguration().isEmpty()) {
-                                    dates = new FrequencyResolver().resolveRestrictionsFromUTCYesterday(om.readValue(dbCalendar.getConfiguration(),
+                                    dates = new FrequencyResolver().resolveRestrictionsFromUTCYesterday(OM.readValue(dbCalendar.getConfiguration(),
                                             Calendar.class), calendarUsage);
                                 } else {
-                                    dates = new FrequencyResolver().resolveFromUTCYesterday(om.readValue(dbCalendar.getConfiguration(),
+                                    dates = new FrequencyResolver().resolveFromUTCYesterday(OM.readValue(dbCalendar.getConfiguration(),
                                             Calendar.class));
                                 }
                                 if (dates != null && dates.getDates() != null && !dates.getDates().isEmpty()) {
@@ -176,9 +177,8 @@ public class InventoryRuntimeHelper {
         if (xPath == null) {
             return;
         }
-        ObjectMapper mapper = new ObjectMapper();
         // set only if json should be pretty printed (results in a lot of lines)
-        // mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        // OM.enable(SerializationFeature.INDENT_OUTPUT);
         LOGGER.debug("*** Method createOrUpdateCalendarUsage started");
         String calendarUsagesFromConfigFile = null; 
         Node falseNodeToDelete = null;
@@ -202,7 +202,7 @@ public class InventoryRuntimeHelper {
         List<DBItemInventoryClusterCalendarUsage> deletedUsages = new ArrayList<DBItemInventoryClusterCalendarUsage>();
         for (DBItemInventoryClusterCalendarUsage dbUsages : dbCalendarUsages) {
             if (dbUsages.getConfiguration() != null) {
-                Calendar cal = mapper.readValue(dbUsages.getConfiguration(), Calendar.class);
+                Calendar cal = OM.readValue(dbUsages.getConfiguration(), Calendar.class);
                 if (cal != null) {
                     DBItemInventoryClusterCalendar dbCal = dbLayer.getCalendar(dbUsages.getCalendarId());
                     cal.setType(CalendarType.fromValue(dbCal.getType()));
@@ -225,7 +225,7 @@ public class InventoryRuntimeHelper {
         Calendars calendarsFromXML = null;
         if (calendarUsagesFromConfigFile != null && !calendarUsagesFromConfigFile.isEmpty()) {
             // Map to 'json' pojo for comparison
-            calendarsFromXML = mapper.readValue(calendarUsagesFromConfigFile, Calendars.class);
+            calendarsFromXML = OM.readValue(calendarUsagesFromConfigFile, Calendars.class);
             try {
                 if (falseNodeToDelete != null) {
                     falseNodeToDelete.getParentNode().removeChild(falseNodeToDelete);
@@ -253,14 +253,14 @@ public class InventoryRuntimeHelper {
 
         if (isCalendarEvent != null && isCalendarEvent) {
             LOGGER.debug("*** [createOrUpdateCalendarUsage] processing Calendar event: " + path + fileExtension);
-            InventoryRuntimeHelper.recalculateRuntime(dbLayer, type, path, fileExtension, dbCalendarUsages, liveDirectory, timezone, mapper
+            InventoryRuntimeHelper.recalculateRuntime(dbLayer, type, path, fileExtension, dbCalendarUsages, liveDirectory, timezone, OM
                     .writeValueAsString(jsonCalendarsFromDB), forceUpdateCalendarsElem);
         } else {
 
             if (!dbCalendarUsages.isEmpty()) {
                 LOGGER.debug("*** [createOrUpdateCalendarUsage] referenced calendar and usage found in DB");
                 LOGGER.debug("*** [createOrUpdateCalendarUsage] update metainfo in XML and recalculate runtimes");
-                InventoryRuntimeHelper.recalculateRuntime(dbLayer, type, path, fileExtension, dbCalendarUsages, liveDirectory, timezone, mapper
+                InventoryRuntimeHelper.recalculateRuntime(dbLayer, type, path, fileExtension, dbCalendarUsages, liveDirectory, timezone, OM
                         .writeValueAsString(jsonCalendarsFromDB), forceUpdateCalendarsElem);
             } else {
 
@@ -276,7 +276,7 @@ public class InventoryRuntimeHelper {
                                 LOGGER.debug("*** [createOrUpdateCalendarUsage] referenced calendar found in DB: " + calendarFromXML.getBasedOn());
                                 LOGGER.debug("*** [createOrUpdateCalendarUsage] create new calendar usage in DB");
                                 DBItemInventoryClusterCalendarUsage newCalendarUsage = new DBItemInventoryClusterCalendarUsage();
-                                newCalendarUsage.setConfiguration(mapper.writeValueAsString(calendarFromXML));
+                                newCalendarUsage.setConfiguration(OM.writeValueAsString(calendarFromXML));
                                 newCalendarUsage.setSchedulerId(schedulerId);
                                 newCalendarUsage.setObjectType(type);
                                 newCalendarUsage.setPath(path);
@@ -297,7 +297,7 @@ public class InventoryRuntimeHelper {
                     }
                     jsonCalendarsFromDB.setCalendars(calendarUsageList);
                     boolean forceUpdateCalendarsElem2 = !jsonCalendarsFromDB.equals(calendarsFromXML);
-                    InventoryRuntimeHelper.recalculateRuntime(dbLayer, type, path, fileExtension, dbCalendarUsages, liveDirectory, timezone, mapper
+                    InventoryRuntimeHelper.recalculateRuntime(dbLayer, type, path, fileExtension, dbCalendarUsages, liveDirectory, timezone, OM
                             .writeValueAsString(jsonCalendarsFromDB), forceUpdateCalendarsElem2);
 
                 } else {
