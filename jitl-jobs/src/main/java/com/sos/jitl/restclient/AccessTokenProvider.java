@@ -37,7 +37,7 @@ public class AccessTokenProvider {
     }
 
     private void setSpoolerVariable(Spooler spooler, String name, String value) {
-        LOGGER.debug("Setting" + name + "=" + value);
+        LOGGER.debug("Setting:" + name + "=" + value);
         if (spooler != null) {
             spooler.variables().set_value(name, value);
         }else {
