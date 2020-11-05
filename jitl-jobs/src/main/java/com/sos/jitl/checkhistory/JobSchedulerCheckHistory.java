@@ -96,7 +96,6 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
             String endTime = "00:00:00";
             String query = options().query.getValue();
             String[] queries = query.split("(;|,)");
-            //HistoryHelper jobHistoryHelper = new HistoryHelper();
             String methodName = HistoryHelper.getMethodName(options().query.getValue());
             if (options().start_time.isDirty()) {
                 startTime = options().start_time.getValue();

@@ -42,6 +42,7 @@ public abstract class HistoryDataSource extends WebserviceExecuter {
 
 	protected HistoryEntry json2HistoryEntry(String answer) throws Exception {
 		HistoryEntry historyEntry = new HistoryEntry();
+		LOGGER.debug("Get json from " + answer);
 		JsonObject history = jsonFromString(answer);
 		if (history.getJsonArray("history") != null && history.getJsonArray("history").size() > 0) {
 			JsonObject entry = history.getJsonArray("history").getJsonObject(0);
@@ -65,7 +66,7 @@ public abstract class HistoryDataSource extends WebserviceExecuter {
 				historyEntry.setEndTime(entry.getString("endTime", ""));
 			}
 		} else {
-			if (history.getJsonArray("history") == null && !history.getBoolean("isPermitted")) {
+			if (history.getJsonArray("history") == null  && !history.getBoolean("isPermitted",true)) {
 				throw new Exception("User is not allowed to execute restservice /tasks/history");
 			}
 		}

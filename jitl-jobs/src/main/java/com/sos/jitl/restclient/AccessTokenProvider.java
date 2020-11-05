@@ -60,7 +60,8 @@ public class AccessTokenProvider {
 
         String schedulerId = "";
         webserviceCredentials = this.getWebServiceVCredentials();
-
+        
+        LOGGER.debug("User:" + webserviceCredentials.getUser());
         String xAccessToken;
         if (webserviceCredentials.getUser() != null && !webserviceCredentials.getUser().isEmpty()) {
             xAccessToken = getSpoolerVariable(spooler, webserviceCredentials.getUser() + "_" + X_ACCESS_TOKEN);
@@ -77,8 +78,9 @@ public class AccessTokenProvider {
 
         ApiAccessToken apiAccessToken = new ApiAccessToken(webserviceCredentials.getJocUrl());
 
-        LOGGER.debug("Check whether accessToken is valid");
+        LOGGER.debug("Check whether accessToken " + xAccessToken + " is valid");
         if (xAccessToken.isEmpty() || !apiAccessToken.isValidAccessToken(xAccessToken)) {
+            LOGGER.debug("---> not valid. Execute login");
             xAccessToken = executeLogin();
             apiAccessToken.setJocUrl(webserviceCredentials.getJocUrl());
 
