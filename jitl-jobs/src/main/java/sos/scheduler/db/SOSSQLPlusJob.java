@@ -205,7 +205,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
         if (shell.isWindows()) {
             return createCommands(options, shell, "comspec", "cmd.exe", "/C");
         } else {
-            return createCommands(options, shell, "SHELL", "bin.sh", "-c");
+            return createCommands(options, shell, "SHELL", "/bin/sh", "-c");
         }
     }
 
