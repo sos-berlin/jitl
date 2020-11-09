@@ -74,10 +74,11 @@ public class Constants {
 
     public static Calendar getSessionCalendar() {
         if (periodBegin == null) {
-            periodBegin = "00:00";
+            periodBegin = "11:41";
         } 
-
-        TimeZone timeZone = TimeZone.getTimeZone("UTC");
+        
+        LOGGER.debug("Timezone for period is " + settings.getTimezone());
+        TimeZone timeZone = TimeZone.getTimeZone(settings.getTimezone());
         Calendar calendar = Calendar.getInstance(timeZone);
         
         String[] period = periodBegin.split(":");
@@ -104,18 +105,9 @@ public class Constants {
                 periodBegin = "00:00";
             }
         } 
-        
-        if (hours==0) {
-            hours = 24;
-        }
-        if (minutes==0) {
-            minutes = 60;
-        }
-        int diffHour = (hours-24);
-        int diffMinute = (minutes-60);
-        
-        calendar.add(Calendar.HOUR_OF_DAY, diffHour);
-        calendar.add(Calendar.MINUTE, diffMinute);
+
+        calendar.add(Calendar.HOUR_OF_DAY, hours *-1);
+        calendar.add(Calendar.MINUTE, minutes *-1);
  
         return calendar;
     }
@@ -126,7 +118,7 @@ public class Constants {
         int month = calendar.get(Calendar.MONTH) + 1;
         int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
  
-        LOGGER.debug("Period starts at  " + periodBegin + " (UTC)");
+        LOGGER.debug("Period starts at  " + periodBegin + " " + settings.getTimezone());
         String result = String.valueOf(month) + "." + String.valueOf(dayOfMonth);
         LOGGER.debug("period session is: " + result);
 
