@@ -38,11 +38,11 @@ public class DBLayerJobStreamHistory {
             and = " and ";
         }
 
-        if (filter.getRunning() != null) {
+        if ((filter.getRunning() != null && filter.getRunning()) || (filter.getCompleted() != null && filter.getCompleted()) ) {
             where += and + " running = :running";
             and = " and ";
         }
-
+        
         if (filter.getListContextIds() != null && !filter.getListContextIds().isEmpty()) {
             if (filter.getListContextIds().size() == 1) {
                 where += and + " contextId  = :contextId";
@@ -92,8 +92,11 @@ public class DBLayerJobStreamHistory {
             query.setParameter("id", filter.getId());
         }
 
-        if (filter.getRunning() != null) {
-            query.setParameter("running", filter.getRunning());
+        if (filter.getRunning() != null && filter.getRunning()) {
+            query.setParameter("running", true);
+        }
+        if (filter.getCompleted() != null && filter.getCompleted()) {
+            query.setParameter("running", false);
         }
         if (filter.getJobStreamStarter() != null) {
             query.setParameter("jobStreamStarter", filter.getJobStreamStarter());

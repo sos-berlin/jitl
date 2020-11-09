@@ -14,7 +14,8 @@ public class FilterJobStreamHistory {
     private Date startedFrom;
     private Date startedTo;
     private Boolean running;
-    
+    private Boolean completed;
+
     public Long getJobStreamStarter() {
         return jobStreamStarter;
     }
@@ -90,6 +91,16 @@ public class FilterJobStreamHistory {
     
     public void setSchedulerId(String schedulerId) {
         this.schedulerId = schedulerId;
+    }
+
+    
+    public Boolean getCompleted() {
+        return completed;
+    }
+
+    
+    public void setCompleted(Boolean completed) {
+        this.completed = completed;
     }
 
     
