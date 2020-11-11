@@ -68,6 +68,7 @@ public class ApiAccessToken {
 
     public boolean isValidAccessToken(String xAccessToken) throws SOSException, URISyntaxException {
 
+        boolean valid = false;
         if (xAccessToken == null || xAccessToken.isEmpty() || jocUrl == null || jocUrl.isEmpty()) {
             LOGGER.debug("Empty Access-Token or empty jocUrl");
             return false;
@@ -82,7 +83,17 @@ public class ApiAccessToken {
         LOGGER.debug("answer:" + answer);
 
         JsonObject userByTokenAnswer = jsonFromString(answer);
-        return isValid(userByTokenAnswer);
+        valid = isValid(userByTokenAnswer);
+        if (valid) {
+            s = jocUrl + "/jobscheduler/ids";
+            LOGGER.debug("uri:" + s);
+            answer = jobSchedulerRestApiClient.postRestService(new URI(s), "");
+            LOGGER.debug("answer:" + answer);
+
+            JsonObject schedulerIds = jsonFromString(answer);
+            valid = (schedulerIds.get("error") == null);
+        }
+        return valid;
 
     }
 
