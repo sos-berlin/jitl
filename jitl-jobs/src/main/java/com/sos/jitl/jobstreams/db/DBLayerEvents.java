@@ -1,14 +1,18 @@
 package com.sos.jitl.jobstreams.db;
 
 import java.util.List;
+import java.util.Set;
+
 import org.hibernate.query.Query;
+import org.hibernate.transform.Transformers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.jobstreams.classes.JSEvent;
- 
+import com.sos.jitl.jobstreams.classes.JSEventKey;
+
 public class DBLayerEvents {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DBLayerEvents.class);
@@ -32,9 +36,21 @@ public class DBLayerEvents {
         return filter;
     }
 
+    public String getContextListSql(List<String> list) {
+        StringBuilder sql = new StringBuilder();
+
+        for (String s : list) {
+            sql.append("e.session = '" + s + "'").append(" or ");
+        }
+
+        String s = sql.toString();
+        s = s.substring(0, s.length() - 4);
+        return " (" + s + ") ";
+    }
+
     private String getWhere(FilterEvents filter) {
-        String where = "1=1";
-        String and = " and ";
+        String where = "";
+        String and = "";
 
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             if (filter.getIncludingGlobalEvent()) {
@@ -79,6 +95,14 @@ public class DBLayerEvents {
             where += and + " e.jobStreamHistoryId = :jobStreamHistoryId";
             and = " and ";
         }
+        if (filter.getListOfSession() != null && filter.getListOfSession().size() > 0) {
+            where += and + getContextListSql(filter.getListOfSession());
+            and = " and ";
+        }
+        if (filter.getJoin() != null && !"".equals(filter.getJoin())) {
+            where += and + filter.getJoin();
+            and = " and ";
+        }
 
         if (!"".equals(where.trim())) {
             where = "where " + where;
@@ -104,7 +128,7 @@ public class DBLayerEvents {
             where += and + " jobStream = :jobStream";
             and = " and ";
         }
-        
+
         if (filter.getJobStreamHistoryId() != null) {
             where += and + " e.jobStreamHistoryId = :jobStreamHistoryId";
             and = " and ";
@@ -143,11 +167,15 @@ public class DBLayerEvents {
     }
 
     public List<DBItemOutConditionWithEvent> getEventsList(FilterEvents filter, final int limit) throws SOSHibernateException {
-        String q = "select new com.sos.jitl.jobstreams.db.DBItemOutConditionWithEvent(o,e) from " + DBItemOutCondition + " o, " + DBItemEvents + " e "
-                + getWhere(filter) + " and o.id=e.outConditionId";
-
+        filter.setJoin("e.outConditionId=o.id");
+        String q = "select e.id as eventId,e.outConditionId as outConditionId,"
+                + "e.jobStreamHistoryId as jobStreamHistoryId,e.session as session,e.event as event, e.created as created, "
+                + "e.jobStream as jobStream,e.globalEvent as globalEvent,o.schedulerId as jobSchedulerId " + " from " + DBItemEvents + " e, "
+                + DBItemOutCondition + " o " + getWhere(filter);
         Query<DBItemOutConditionWithEvent> query = sosHibernateSession.createQuery(q);
         query = bindParameters(filter, query);
+
+        query.setResultTransformer(Transformers.aliasToBean(DBItemOutConditionWithEvent.class));
 
         if (limit > 0) {
             query.setMaxResults(limit);

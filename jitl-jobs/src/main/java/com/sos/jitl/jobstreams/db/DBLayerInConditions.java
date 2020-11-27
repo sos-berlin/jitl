@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.hibernate.query.Query;
+import org.hibernate.transform.Transformers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,8 +60,15 @@ public class DBLayerInConditions {
             where += and + " i.folder = :folder";
             and = " and ";
         }
+        if (filter.getJoin() != null && !"".equals(filter.getJoin())) {
+            where += and + filter.getJoin();
+            and = " and ";
+        }
 
-        where = "where 1=1 " + and + where;
+        if (!"".equals(where.trim())) {
+            where = "where " + where;
+        }
+
         return where;
     }
 
@@ -83,9 +91,13 @@ public class DBLayerInConditions {
     }
 
     public List<DBItemInConditionWithCommand> getInConditionsList(FilterInConditions filter, final int limit) throws SOSHibernateException {
-        String q = "select new com.sos.jitl.jobstreams.db.DBItemInConditionWithCommand(i,c) from " + DBItemInCondition + " i, "
-                + DBItemInConditionCommand + " c " + getWhere(filter) + " and i.id=c.inConditionId";
+        filter.setJoin("i.id=c.inConditionId");
+        String q =
+                "select i.id as incId,i.schedulerId as jobSchedulerId,i.job as job,i.expression as expression,i.markExpression as markExpression,i.skipOutCondition as skipOutCondition,"
+                        + "i.jobStream as jobStream,i.folder as folder,i.nextPeriod as nextPeriod,c.id as commandId,c.inConditionId as inConditionId,c.command as command,c.commandParam  as commandParam from "
+                        + DBItemInCondition + " i, " + DBItemInConditionCommand + " c " + getWhere(filter);
         Query<DBItemInConditionWithCommand> query = sosHibernateSession.createQuery(q);
+        query.setResultTransformer(Transformers.aliasToBean(DBItemInConditionWithCommand.class));
         query = bindParameters(filter, query);
 
         if (limit > 0) {

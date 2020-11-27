@@ -6,6 +6,7 @@ public class FilterInConditions {
     private String job;
     private String jobStream;
     private String folder;
+    private String join;
 
     public String getJobSchedulerId() {
         return jobSchedulerId;
@@ -39,6 +40,16 @@ public class FilterInConditions {
     
     public void setFolder(String folder) {
         this.folder = folder;
+    }
+
+    
+    public String getJoin() {
+        return join;
+    }
+
+    
+    public void setJoin(String join) {
+        this.join = join;
     }
 
 }

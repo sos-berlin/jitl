@@ -48,7 +48,12 @@ public class DBLayerConsumedInConditions {
             and = " and ";
         }
 
-        where = " where 1=1 " + and + where;
+        if (filter.getJoin() != null && !"".equals(filter.getJoin())) {
+            where += and + filter.getJoin();
+            and = " and ";
+        }
+
+        where = " where "  + where;
         return where;
     }
 
@@ -106,7 +111,8 @@ public class DBLayerConsumedInConditions {
     public List<DBItemConsumedInCondition> getConsumedInConditionsList(FilterConsumedInConditions filter, final int limit)
             throws SOSHibernateException {
 
-        String q = "select c from " + DBItemInCondition + " i, " + DBItemConsumedInCondition + " c " + getWhere(filter) + " and i.id=c.inConditionId";
+        filter.setJoin("i.id=c.inConditionId");
+        String q = "select c from " + DBItemInCondition + " i, " + DBItemConsumedInCondition + " c " + getWhere(filter);
 
         Query<DBItemConsumedInCondition> query = sosHibernateSession.createQuery(q);
         query = bindParameters(filter, query);

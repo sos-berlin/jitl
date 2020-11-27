@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.hibernate.query.Query;
+import org.hibernate.transform.Transformers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,9 +51,10 @@ public class DBLayerOutConditions {
                         "o.jobStream = " + "'" + s.getJobStream() + "')").append(" or ");
             }
         }
-        sql.append("1=0");
 
-        return " (" + sql.toString() + ") ";
+        String s = sql.toString();
+        s = s.substring(0, s.length() - 4);
+        return " (" + s + ") ";
     }
 
     private String getWhere(FilterOutConditions filter) {
@@ -82,7 +84,14 @@ public class DBLayerOutConditions {
             where += and + getEventListSql(filter.getListOfEvents());
         }
 
-        where = "where 1=1 " + and + where;
+        if (filter.getJoin() != null && !"".equals(filter.getJoin())) {
+            where += and + filter.getJoin();
+            and = " and ";
+        }
+
+        if (!"".equals(where)) {
+            where = "where  " + where;
+        }
         return where;
     }
 
@@ -107,10 +116,15 @@ public class DBLayerOutConditions {
 
     public List<DBItemOutConditionWithConfiguredEvent> getOutConditionsList(FilterOutConditions filter, final int limit)
             throws SOSHibernateException {
-        String q = "select new com.sos.jitl.jobstreams.db.DBItemOutConditionWithConfiguredEvent(o,e) from " + DBItemOutCondition + " o, "
-                + DBItemOutConditionEvent + " e " + getWhere(filter) + " and o.id=e.outConditionId";
+
+        filter.setJoin("o.id=e.outConditionId");
+        String q =
+                "select o.id as outId, o.schedulerId as jobSchedulerId, o.job as job, o.expression as expression, o.jobStream as jobStream, o.folder as folder, o.created as created, "
+                        + "e.id as oEventId, e.outConditionId as outConditionId, e.event as event, e.command as command, e.globalEvent as globalEvent from "
+                        + DBItemOutCondition + " o, " + DBItemOutConditionEvent + " e " + getWhere(filter);
         Query<DBItemOutConditionWithConfiguredEvent> query = sosHibernateSession.createQuery(q);
         query = bindParameters(filter, query);
+        query.setResultTransformer(Transformers.aliasToBean(DBItemOutConditionWithConfiguredEvent.class));
 
         if (limit > 0) {
             query.setMaxResults(limit);
@@ -149,7 +163,7 @@ public class DBLayerOutConditions {
             if ("".equals(jobOutCondition.getJob())) {
                 continue;
             }
-            
+
             String folder = Paths.get(jobOutCondition.getJob()).getParent().toString().replace('\\', '/');
 
             FilterOutConditions filterOutConditions = new FilterOutConditions();

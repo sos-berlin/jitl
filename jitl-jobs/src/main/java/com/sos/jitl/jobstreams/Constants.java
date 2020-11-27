@@ -71,10 +71,11 @@ public class Constants {
     public static EventHandlerSettings settings = null;
     public static String baseUrl;
     public static String periodBegin;
+    public static Integer testDelay;
 
     public static Calendar getSessionCalendar() {
         if (periodBegin == null) {
-            periodBegin = "11:41";
+            periodBegin = "00:00";
         } 
         
         LOGGER.debug("Timezone for period is " + settings.getTimezone());

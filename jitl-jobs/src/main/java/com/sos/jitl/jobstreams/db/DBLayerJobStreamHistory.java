@@ -30,8 +30,8 @@ public class DBLayerJobStreamHistory {
     }
 
     private String getWhere(FilterJobStreamHistory filter) {
-        String where = "1=1";
-        String and = " and ";
+        String where = " ";
+        String and = "  ";
 
         if (filter.getId() != null) {
             where += and + " id = :id";
@@ -46,8 +46,8 @@ public class DBLayerJobStreamHistory {
         if (filter.getListContextIds() != null && !filter.getListContextIds().isEmpty()) {
             if (filter.getListContextIds().size() == 1) {
                 where += and + " contextId  = :contextId";
+                and = " and ";
             }
-            and = " and ";
         }
 
         if (filter.getListContextIds() != null && !filter.getListContextIds().isEmpty()) {
@@ -216,7 +216,7 @@ public class DBLayerJobStreamHistory {
     public int updateRunning(FilterJobStreamHistory filter, boolean valueRunning) throws SOSHibernateException {
 
         String hql = "update " + DBItemJobStreamHistory + " set running=:valueRunning" + getWhere(filter);
-        ;
+        
         int row = 0;
         Query<DBItemJobStreamHistory> query = sosHibernateSession.createQuery(hql);
         query = bindParameters(filter, query);

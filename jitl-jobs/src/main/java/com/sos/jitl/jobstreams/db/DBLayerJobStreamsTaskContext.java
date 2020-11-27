@@ -31,8 +31,8 @@ public class DBLayerJobStreamsTaskContext {
     }
 
     private String getWhere(FilterJobStreamTaskContext filter) {
-        String where = "1=1";
-        String and = " and ";
+        String where = "";
+        String and = " ";
 
         if (filter.getId() != null) {
             where += and + " id = :id";

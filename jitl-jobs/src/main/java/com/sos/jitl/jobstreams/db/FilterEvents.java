@@ -1,15 +1,20 @@
 package com.sos.jitl.jobstreams.db;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class FilterEvents {
 
     private String event;
     private Boolean globalEvent;
-    private Boolean includingGlobalEvent=false;
+    private Boolean includingGlobalEvent = false;
     private Long outConditionId;
     private Long jobStreamHistoryId;
     private String jobStream;
     private String session;
+    private List<String> listOfSession;
     private String job;
+    private String join;
 
     public String getEvent() {
         return event;
@@ -73,7 +78,7 @@ public class FilterEvents {
     }
 
     public String getGlobalEventAsString() {
-      
+
         if (globalEvent) {
             return "true";
         } else {
@@ -81,24 +86,41 @@ public class FilterEvents {
         }
     }
 
-    
     public Boolean getIncludingGlobalEvent() {
         return includingGlobalEvent;
     }
 
-    
     public void setIncludingGlobalEvent(Boolean includingGlobalEvent) {
         this.includingGlobalEvent = includingGlobalEvent;
     }
 
-    
     public Long getJobStreamHistoryId() {
         return jobStreamHistoryId;
     }
 
-    
     public void setJobStreamHistoryId(Long jobStreamHistoryId) {
         this.jobStreamHistoryId = jobStreamHistoryId;
+    }
+
+    public void addSession(String session) {
+        if (this.listOfSession == null) {
+            this.listOfSession = new ArrayList<String>();
+        }
+        this.listOfSession.add(session);
+    }
+
+    public List<String> getListOfSession() {
+        return listOfSession;
+    }
+
+    
+    public String getJoin() {
+        return join;
+    }
+
+    
+    public void setJoin(String join) {
+        this.join = join;
     }
 
 }

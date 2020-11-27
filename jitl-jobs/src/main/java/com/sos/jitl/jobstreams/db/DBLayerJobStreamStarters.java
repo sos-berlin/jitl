@@ -49,8 +49,8 @@ public class DBLayerJobStreamStarters {
     }
 
     private String getWhere(FilterJobStreamStarters filter) {
-        String where = "1=1";
-        String and = " and ";
+        String where = " ";
+        String and = " ";
 
         if (filter.getStatus() != null && !"".equals(filter.getStatus())) {
             where += and + " status = :status";
