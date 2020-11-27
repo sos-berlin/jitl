@@ -8,6 +8,7 @@ public class FilterConsumedInConditions {
     private String folder="";
     private String job="";
     private String session;
+    private String join;
 
     public Long getInConditionId() {
         return inConditionId;
@@ -61,6 +62,16 @@ public class FilterConsumedInConditions {
     
     public void setFolder(String folder) {
         this.folder = folder;
+    }
+
+    
+    public String getJoin() {
+        return join;
+    }
+
+    
+    public void setJoin(String join) {
+        this.join = join;
     }
 
 }

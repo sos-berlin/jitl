@@ -40,13 +40,11 @@ public class DBLayerJobStreams {
     }
 
     private String getWhere(FilterJobStreams filter) {
-        String where = "1=1";
-        String and = " and ";
+        String where = " ";
+        String and = " ";
 
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
-
             where += and + " schedulerId = :schedulerId";
-
             and = " and ";
         }
 

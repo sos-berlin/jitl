@@ -30,8 +30,8 @@ public class DBLayerJobStreamParameters {
     }
 
     private String getWhere(FilterJobStreamParameters filter) {
-        String where = "1=1";
-        String and = " and ";
+        String where = "";
+        String and = " ";
 
         if (filter.getName() != null && !"".equals(filter.getName())) {
             where += and + " name = :name";

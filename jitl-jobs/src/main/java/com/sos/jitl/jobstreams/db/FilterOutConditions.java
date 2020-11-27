@@ -12,6 +12,7 @@ public class FilterOutConditions {
     private String job;
     private String jobStream;
     private String folder;
+    private String join;
     private Set<JSEventKey> events;
 
     public String getJobSchedulerId() {
@@ -58,5 +59,15 @@ public class FilterOutConditions {
     
     public void setFolder(String folder) {
         this.folder = folder;
+    }
+
+    
+    public String getJoin() {
+        return join;
+    }
+
+    
+    public void setJoin(String join) {
+        this.join = join;
     }
 }

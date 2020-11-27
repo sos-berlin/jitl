@@ -1,33 +1,46 @@
 package com.sos.jitl.jobstreams.db;
 
-import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendar;
-import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendarUsage;
-
 public class DBItemCalendarWithUsages {
 
-    private DBItemInventoryClusterCalendar dbItemInventoryClusterCalendar;
-    private DBItemInventoryClusterCalendarUsage dbItemInventoryClusterCalendarUsage;
+    private String name;
+    private String path;
+    private String restrictionConfiguration;
+    private String calendarConfiguration;
 
-    public DBItemCalendarWithUsages(DBItemInventoryClusterCalendar dbItemInventoryClusterCalendar,
-            DBItemInventoryClusterCalendarUsage dbItemInventoryClusterCalendarUsage) {
-        this.dbItemInventoryClusterCalendar = dbItemInventoryClusterCalendar;
-        this.dbItemInventoryClusterCalendarUsage = dbItemInventoryClusterCalendarUsage;
+    public DBItemCalendarWithUsages() {
+
     }
 
-    public DBItemInventoryClusterCalendar getDBItemInventoryClusterCalendar() {
-        return dbItemInventoryClusterCalendar;
+    public String getName() {
+        return name;
     }
 
-    public void setDBItemInventoryClusterCalendar(DBItemInventoryClusterCalendar dbItemInCondition) {
-        this.dbItemInventoryClusterCalendar = dbItemInCondition;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public DBItemInventoryClusterCalendarUsage getDBItemInventoryClusterCalendarUsage() {
-        return dbItemInventoryClusterCalendarUsage;
+    public String getPath() {
+        return path;
     }
 
-    public void setDBItemInventoryClusterCalendarUsage(DBItemInventoryClusterCalendarUsage dbItemInConditionCommand) {
-        this.dbItemInventoryClusterCalendarUsage = dbItemInConditionCommand;
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public String getRestrictionConfiguration() {
+        return restrictionConfiguration;
+    }
+
+    public void setRestrictionConfiguration(String restrictionConfiguration) {
+        this.restrictionConfiguration = restrictionConfiguration;
+    }
+
+    public String getCalendarConfiguration() {
+        return calendarConfiguration;
+    }
+
+    public void setCalendarConfiguration(String calendarConfiguration) {
+        this.calendarConfiguration = calendarConfiguration;
     }
 
 }
