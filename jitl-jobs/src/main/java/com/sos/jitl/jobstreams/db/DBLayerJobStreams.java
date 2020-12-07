@@ -75,6 +75,12 @@ public class DBLayerJobStreams {
     }
 
     private <T> Query<T> bindParameters(FilterJobStreams filter, Query<T> query) {
+       
+        if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
+            query.setParameter("schedulerId", filter.getSchedulerId());
+        }
+
+            
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setParameter("schedulerId", filter.getSchedulerId());
         }
