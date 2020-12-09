@@ -79,7 +79,7 @@ public class DBLayerJobStreamsTaskContext {
 
     public List<DBItemJobStreamTaskContext> getJobStreamStarterJobsList(FilterJobStreamTaskContext filter, final int limit)
             throws SOSHibernateException {
-        String q = "  from " + DBItemJobStreamTaskContext + getWhere(filter);
+        String q = "  from " + DBItemJobStreamTaskContext + getWhere(filter) + filter.getOrderCriteria() + filter.getSortMode();
 
         Query<DBItemJobStreamTaskContext> query = sosHibernateSession.createQuery(q);
         query = bindParameters(filter, query);

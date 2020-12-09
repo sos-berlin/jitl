@@ -1,6 +1,8 @@
 package com.sos.jitl.jobstreams.db;
 
-public class FilterJobStreamTaskContext {
+import com.sos.hibernate.classes.SOSHibernateFilter;
+
+public class FilterJobStreamTaskContext extends SOSHibernateFilter {
 
     private Long id;
     private Long taskId;
