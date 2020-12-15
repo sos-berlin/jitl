@@ -222,16 +222,6 @@ public class DBLayerEvents {
         sosHibernateSession.save(event.getItemEvent());
     }
 
-    public int deleteEventsWithOutConditions(FilterEvents filterEvents) throws SOSHibernateException {
-        filterEvents.setSession("");
-        String select = "select id from " + DBItemOutCondition + getDeleteWhere(filterEvents);
-        String hql = "delete from " + DBItemEvents + " where outConditionId in ( " + select + ")";
-        Query<DBItemOutConditionEvent> query = sosHibernateSession.createQuery(hql);
-        bindParameters(filterEvents, query);
-        int row = sosHibernateSession.executeUpdate(query);
-        return row;
-    }
-
     public int updateEvents(Long oldId, Long newId) throws SOSHibernateException {
         String hql = "update " + DBItemEvents + " set outConditionId=" + newId + " where outConditionId=:oldId";
         int row = 0;
