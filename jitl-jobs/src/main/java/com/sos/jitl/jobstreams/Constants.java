@@ -71,7 +71,8 @@ public class Constants {
     public static EventHandlerSettings settings = null;
     public static String baseUrl;
     public static String periodBegin;
-    public static Integer testDelay;
+    public static Integer testDelay=0;
+    public static Integer pollInterval=2;
 
     public static Calendar getSessionCalendar() {
         if (periodBegin == null) {
