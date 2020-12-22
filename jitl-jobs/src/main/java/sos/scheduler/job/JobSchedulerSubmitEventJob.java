@@ -1,6 +1,7 @@
 package sos.scheduler.job;
 
 import java.io.File;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -48,9 +49,7 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
         try {
             processEvent(spooler, spooler_job, spooler_task, spooler_log);
         } catch (Exception e) {
-            LOGGER.error("Error occured in event job: " + e.getMessage(), e);
-            spooler_log.warn("Error occured in event job: " + e);
-            return false;
+            throw new JobSchedulerException("-->" + e.getMessage(), e);
         }
         return signalSuccess(spooler_task.order());
     }
@@ -154,6 +153,14 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
             }
             if (parameters.var(PARAM_SCHEDULER_EXPIRES_TIMEZONE) != null && !parameters.var(PARAM_SCHEDULER_EXPIRES_TIMEZONE).isEmpty()) {
                 expires_timezone = parameters.var(PARAM_SCHEDULER_EXPIRES_TIMEZONE);
+                if (ZoneId.SHORT_IDS.get(expires_timezone) != null) {
+                    expires_timezone = ZoneId.SHORT_IDS.get(expires_timezone);
+                }
+
+                if (!ZoneId.getAvailableZoneIds().contains(expires_timezone)) {
+                    throw new Exception("Wrong value for timezone:" + expires_timezone);
+                }
+
                 spooler_log.debug1("...parameter[scheduler_expires_timezone]: " + expires_timezone);
                 parameterNames.add(PARAM_SCHEDULER_EXPIRES_TIMEZONE);
             }
@@ -216,10 +223,10 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
         }
     }
 
-    private static String createAddOrder(final String eventClass, final String eventId, final String jobChain,
-            final String orderId, final String jobName, final String schedulerHost, final String schedulerHTTPPort,
-            final String action, final String expires,final String expires_timezone, String expirationCycle, String expirationPeriod,
-            final String exitCode, final List<Element> eventParameters, final String supervisorJobChain) throws Exception {
+    private static String createAddOrder(final String eventClass, final String eventId, final String jobChain, final String orderId,
+            final String jobName, final String schedulerHost, final String schedulerHTTPPort, final String action, final String expires,
+            final String expires_timezone, String expirationCycle, String expirationPeriod, final String exitCode,
+            final List<Element> eventParameters, final String supervisorJobChain) throws Exception {
         try {
             Element addOrderElement = DocumentHelper.createElement("add_order").addAttribute("job_chain", supervisorJobChain);
             Document addOrderDocument = DocumentHelper.createDocument(addOrderElement);
@@ -249,7 +256,6 @@ public class JobSchedulerSubmitEventJob extends JobSchedulerJobAdapter {
             throw new JobSchedulerException("Error creating add_order xml: " + e.getMessage(), e);
         }
     }
-
 
     private static void addParam(final Element paramsElement, final String name, final String value) {
         if (value != null && !value.isEmpty()) {

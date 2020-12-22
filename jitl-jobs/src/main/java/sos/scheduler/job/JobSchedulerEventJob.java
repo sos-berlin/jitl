@@ -82,9 +82,9 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
         return rc;
     }
 
-	@Override
-	public boolean spooler_process() throws Exception {
-		super.spooler_process();
+    @Override
+    public boolean spooler_process() throws Exception {
+        super.spooler_process();
         filter = new SchedulerEventFilter();
 
         boolean rc = true;
