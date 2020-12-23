@@ -125,7 +125,7 @@ public class DBLayerJobStreamStarters {
     }
 
     public void update(DBItemJobStreamStarter dbItemJobStreamStarter) throws SOSHibernateException {
-        this.sosHibernateSession.update(dbItemJobStreamStarter);
+         this.sosHibernateSession.update(dbItemJobStreamStarter);
     }
 
     public Long store(DBItemJobStreamStarter dbItemJobStreamStarter) throws SOSHibernateException {
@@ -227,7 +227,7 @@ public class DBLayerJobStreamStarters {
             }
 
             jobStreamStarter.setJobStreamStarterId(dbItemJobStreamStarter.getId());
-            
+
             DailyPlanDBLayer dailyPlanDBLayer = new DailyPlanDBLayer(sosHibernateSession);
             dailyPlanDBLayer.getFilter().setJobStreamStarterId(oldId);
             dailyPlanDBLayer.delete(false);
@@ -277,11 +277,11 @@ public class DBLayerJobStreamStarters {
             filterJobStreamStarters.setJobStreamId(jobStreamStarters.getJobStreamId());
             List<DBItemJobStreamStarter> lStarters = getJobStreamStartersList(filterJobStreamStarters, 0);
             if (lStarters.size() > 1) {
-                
+
                 DailyPlanDBLayer dailyPlanDBLayer = new DailyPlanDBLayer(sosHibernateSession);
                 dailyPlanDBLayer.getFilter().setJobStreamStarterId(jobStreamStarter.getJobStreamStarterId());
                 dailyPlanDBLayer.delete(false);
-                
+
                 filterJobStreamStarters.setId(jobStreamStarter.getJobStreamStarterId());
                 lStarters = getJobStreamStartersList(filterJobStreamStarters, 0);
                 for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {
