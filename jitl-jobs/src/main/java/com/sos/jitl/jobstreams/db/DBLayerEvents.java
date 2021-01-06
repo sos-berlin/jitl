@@ -231,5 +231,15 @@ public class DBLayerEvents {
         row = sosHibernateSession.executeUpdate(query);
         return row;
     }
+    
+    public int updateEventsWithJobStream(String oldJobStream, String newJobStream) throws SOSHibernateException {
+        String hql = "update " + DBItemEvents + " set jobStream='" + newJobStream + "' where jobStream=:oldJobStream";
+        int row = 0;
+        Query<DBItemJobStreamHistory> query = sosHibernateSession.createQuery(hql);
+        query.setParameter("oldJobStream", oldJobStream);
+
+        row = sosHibernateSession.executeUpdate(query);
+        return row;
+    }
 
 }

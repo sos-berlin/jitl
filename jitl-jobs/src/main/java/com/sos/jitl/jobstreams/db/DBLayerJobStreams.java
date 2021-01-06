@@ -133,6 +133,21 @@ public class DBLayerJobStreams {
             if (filter.getJobStreamId() != null) {
                 filter.setFolder(dbItemJobStream.getFolder());
             }
+            
+            
+            
+            FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
+            filterJobStreamStarters.setJobStreamId(dbItemJobStream.getId());
+            List<DBItemJobStreamStarter> lStarters = dbLayerJobStreamStarters.getJobStreamStartersList(filterJobStreamStarters, 0);
+           
+            for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {
+                filterJobStreamStarterJobs.setJobStreamStarter(dbItemJobStreamStarter.getId());
+                dbLayerJobStreamsStarterJobs.delete(filterJobStreamStarterJobs);
+
+                filterJobStreamParameters.setJobStreamStarterId(dbItemJobStreamStarter.getId());
+                dbLayerJobStreamParameters.delete(filterJobStreamParameters);
+            }
+            
 
             if (withConditionsAndStarters) {
                 FilterJobStreamHistory filterJobStreamHistory = new FilterJobStreamHistory();
@@ -150,19 +165,9 @@ public class DBLayerJobStreams {
 
             }
 
-            FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
-            filterJobStreamStarters.setJobStreamId(dbItemJobStream.getId());
-            List<DBItemJobStreamStarter> lStarters = dbLayerJobStreamStarters.getJobStreamStartersList(filterJobStreamStarters, 0);
-
-            for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {
-                filterJobStreamStarterJobs.setJobStreamStarter(dbItemJobStreamStarter.getId());
-                dbLayerJobStreamsStarterJobs.delete(filterJobStreamStarterJobs);
-
-                filterJobStreamParameters.setJobStreamStarterId(dbItemJobStreamStarter.getId());
-                dbLayerJobStreamParameters.delete(filterJobStreamParameters);
-            }
-
             if (withConditionsAndStarters) {
+            
+
                 FilterInConditions filterInConditions = new FilterInConditions();
                 filterInConditions.setJobStream(dbItemJobStream.getJobStream());
                 filterInConditions.setJobSchedulerId(filter.getSchedulerId());
@@ -174,9 +179,7 @@ public class DBLayerJobStreams {
                 filterOutConditions.setJobSchedulerId(filter.getSchedulerId());
                 filterOutConditions.setFolder(filter.getFolder());
                 dbLayerOutConditions.deleteCascading(filterOutConditions);
-            }
 
-            if (withConditionsAndStarters) {
                 dbLayerJobStreamStarters.delete(filterJobStreamStarters);
             }
         }
@@ -225,21 +228,24 @@ public class DBLayerJobStreams {
         dbItemJobStream.setState(jobStream.getState());
 
         Long newId = this.store(dbItemJobStream);
+        LOGGER.debug("Store Jobstream with new id:" + newId);
         jobStream.setJobStreamId(newId);
         for (JobStreamStarter jobstreamStarter : jobStream.getJobstreamStarters()) {
-          
+
             Long oldId = jobstreamStarter.getJobStreamStarterId();
 
             boolean isNew = false;
 
             DBItemJobStreamStarter dbItemJobStreamStarter = dbLayerJobStreamStarters.getJobStreamStartersDbItem(oldId);
             if (dbItemJobStreamStarter == null) {
+                LOGGER.debug("new Jobstream starter found");
+
                 isNew = true;
                 dbItemJobStreamStarter = new DBItemJobStreamStarter();
                 dbItemJobStreamStarter.setCreated(new Date());
             }
 
-            dbItemJobStreamStarter.setJobStream(jobStream.getJobStreamId());
+            dbItemJobStreamStarter.setJobStream(newId);
             dbItemJobStreamStarter.setEndOfJobStream(jobstreamStarter.getEndOfJobStream());
             dbItemJobStreamStarter.setRequiredJob(jobstreamStarter.getRequiredJob());
             dbItemJobStreamStarter.setTitle(jobstreamStarter.getTitle());
@@ -250,14 +256,18 @@ public class DBLayerJobStreams {
             }
             dbItemJobStreamStarter.setNextStart(dbLayerJobStreamStarters.getNextStartTime(objectMapper, timezone, dbItemJobStreamStarter
                     .getRunTime()));
-            if (isNew){
+            
+            
+            if (isNew) {
+                LOGGER.debug("save jobstream starter with jobstream id: " + dbItemJobStreamStarter.getJobStream()); 
                 dbLayerJobStreamStarters.save(dbItemJobStreamStarter);
-            }else {
-                dbLayerJobStreamStarters.update(dbItemJobStreamStarter);
+            } else {
+                LOGGER.debug("update jobstream starter with jobstream id: " + dbItemJobStreamStarter.getJobStream()); 
+                dbLayerJobStreamStarters.updateJobStream(dbItemJobStreamStarter);
             }
-            
+
             jobstreamStarter.setJobStreamStarterId(dbItemJobStreamStarter.getId());
-            
+
             for (JobStreamJob jobStreamJob : jobstreamStarter.getJobs()) {
                 DBItemJobStreamStarterJob dbItemJobStreamStarterJob = new DBItemJobStreamStarterJob();
                 dbItemJobStreamStarterJob.setCreated(new Date());
@@ -273,19 +283,7 @@ public class DBLayerJobStreams {
                 jobStreamJob.setJobId(newJobId);
             }
             
-            
-          
-            if (!isNew) {
-                DailyPlanDBLayer dailyPlanDBLayer = new DailyPlanDBLayer(sosHibernateSession);
-                dailyPlanDBLayer.getFilter().setJobStreamStarterId(oldId);
-                dailyPlanDBLayer.delete(false);
-            }
-
-
-            FilterJobStreams filterJobStreams = new FilterJobStreams();
-            filterJobStreams.setJobStreamId(jobStream.getJobStreamId());
-            calendar2Db.processJobStreamStarterFilter(filterJobStreams, timezone);
-
+           
             for (NameValuePair param : jobstreamStarter.getParams()) {
 
                 if (param.getName() != null && !param.getName().isEmpty()) {
@@ -298,7 +296,20 @@ public class DBLayerJobStreams {
                 }
             }
 
+            if (!isNew) {
+                DailyPlanDBLayer dailyPlanDBLayer = new DailyPlanDBLayer(sosHibernateSession);
+                dailyPlanDBLayer.getFilter().setJobStreamStarterId(oldId);
+                dailyPlanDBLayer.delete(false);
+            }
+
+            FilterJobStreams filterJobStreams = new FilterJobStreams();
+            filterJobStreams.setJobStreamId(jobStream.getJobStreamId());
+            calendar2Db.processJobStreamStarterFilter(filterJobStreams, timezone);
+
+     
         }
+        
+        
         return newId;
     }
 }

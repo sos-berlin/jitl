@@ -6,6 +6,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.LockModeType;
+
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,11 +129,60 @@ public class DBLayerJobStreamStarters {
     public void save(DBItemJobStreamStarter dbItemJobStreamStarter) throws SOSHibernateException {
         sosHibernateSession.save(dbItemJobStreamStarter);
     }
-
+    
     public void update(DBItemJobStreamStarter dbItemJobStreamStarter) throws SOSHibernateException {
-        this.sosHibernateSession.update(dbItemJobStreamStarter);
+        sosHibernateSession.update(dbItemJobStreamStarter);
     }
 
+    public Integer updateJobStream(DBItemJobStreamStarter dbItemJobStreamStarter) throws SOSHibernateException {
+        
+        FilterJobStreamStarters filter = new FilterJobStreamStarters();
+        filter.setId(dbItemJobStreamStarter.getId());
+        
+        String q = "  from " + DBItemJobStreamStarter + getWhere(filter);
+
+        Query<DBItemJobStreamStarter> query = sosHibernateSession.createQuery(q);
+        query = bindParameters(filter, query);
+        query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+        query.setHint("javax.persistence.lock.timeout", 1000);
+        
+        sosHibernateSession.getResultList(query);
+          
+        q = " update " + DBItemJobStreamStarter + " set jobStream=:jobStream, nextStart=:nextStart" + getWhere(filter);
+
+        filter.setJobStreamId(dbItemJobStreamStarter.getJobStream());
+        query = sosHibernateSession.createQuery(q);
+        query = bindParameters(filter, query);
+        query.setParameter("nextStart", dbItemJobStreamStarter.getNextStart());
+
+        int row = sosHibernateSession.executeUpdate(query);
+        return row;
+    }
+
+    public Integer updateNextStart(DBItemJobStreamStarter dbItemJobStreamStarter) throws SOSHibernateException {
+        
+        FilterJobStreamStarters filter = new FilterJobStreamStarters();
+        filter.setId(dbItemJobStreamStarter.getId());
+        
+        String q = "  from " + DBItemJobStreamStarter + getWhere(filter);
+
+        Query<DBItemJobStreamStarter> query = sosHibernateSession.createQuery(q);
+        query = bindParameters(filter, query);
+        query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
+        query.setHint("javax.persistence.lock.timeout", 1000);
+        
+        sosHibernateSession.getResultList(query);
+        
+        q = " update " + DBItemJobStreamStarter + " set nextStart=:nextStart " + getWhere(filter);
+        query = sosHibernateSession.createQuery(q);
+        query = bindParameters(filter, query);
+        query.setParameter("nextStart", dbItemJobStreamStarter.getNextStart());
+       
+        int row = sosHibernateSession.executeUpdate(query);
+        return row;
+ 
+    }
+    
     public Date getNextStartTime(ObjectMapper objectMapper, String timeZone, String runTimeString) throws JsonParseException, JsonMappingException,
             JsonProcessingException, IOException, Exception {
         JobStreamScheduler jobStreamScheduler = new JobStreamScheduler(timeZone);
@@ -211,6 +262,11 @@ public class DBLayerJobStreamStarters {
             dailyPlanDBLayer.getFilter().setJobStreamStarterId(oldId);
             dailyPlanDBLayer.delete(false);
 
+
+            FilterJobStreamStarterJobs filterJobStreamStarterJobs = new FilterJobStreamStarterJobs();
+            filterJobStreamStarterJobs.setJobStreamStarter(dbItemJobStreamStarter.getId());
+            dbLayerJobStreamsStarterJobs.delete(filterJobStreamStarterJobs);
+            
             for (JobStreamJob jobStreamJob : jobStreamStarter.getJobs()) {
                 DBItemJobStreamStarterJob dbItemJobStreamStarterJob = new DBItemJobStreamStarterJob();
                 dbItemJobStreamStarterJob.setCreated(new Date());
@@ -226,6 +282,11 @@ public class DBLayerJobStreamStarters {
                 jobStreamJob.setJobId(newJobId);
             }
 
+            DBLayerJobStreamParameters dbLayerJobStreamParameters = new DBLayerJobStreamParameters(sosHibernateSession);
+            FilterJobStreamParameters filterJobStreamParameters = new FilterJobStreamParameters();
+            filterJobStreamParameters.setJobStreamStarterId(dbItemJobStreamStarter.getId());
+            dbLayerJobStreamParameters.delete(filterJobStreamParameters);
+            
             for (NameValuePair param : jobStreamStarter.getParams()) {
                 DBItemJobStreamParameter dbItemJobStreamParameter = new DBItemJobStreamParameter();
                 dbItemJobStreamParameter.setCreated(new Date());
