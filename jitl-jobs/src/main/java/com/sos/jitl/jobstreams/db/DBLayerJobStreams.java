@@ -263,7 +263,7 @@ public class DBLayerJobStreams {
                 dbLayerJobStreamStarters.save(dbItemJobStreamStarter);
             } else {
                 LOGGER.debug("update jobstream starter with jobstream id: " + dbItemJobStreamStarter.getJobStream()); 
-                dbLayerJobStreamStarters.updateJobStream(dbItemJobStreamStarter);
+                dbLayerJobStreamStarters.update(dbItemJobStreamStarter);
             }
 
             jobstreamStarter.setJobStreamStarterId(dbItemJobStreamStarter.getId());
