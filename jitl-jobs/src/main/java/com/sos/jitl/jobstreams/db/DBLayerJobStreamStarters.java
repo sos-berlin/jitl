@@ -305,7 +305,7 @@ public class DBLayerJobStreamStarters {
             FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
             filterJobStreamStarters.setJobStreamId(jobStreamStarters.getJobStreamId());
             List<DBItemJobStreamStarter> lStarters = getJobStreamStartersList(filterJobStreamStarters, 0);
-            if (lStarters.size() > 1) {
+            if (lStarters.size() > 0) {
 
                 DailyPlanDBLayer dailyPlanDBLayer = new DailyPlanDBLayer(sosHibernateSession);
                 dailyPlanDBLayer.getFilter().setJobStreamStarterId(jobStreamStarter.getJobStreamStarterId());
