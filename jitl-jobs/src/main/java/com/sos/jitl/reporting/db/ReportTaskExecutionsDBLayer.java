@@ -377,15 +377,18 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
         int limit = this.getFilter().getLimit();
         Query<DBItemReportTask> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s", DBLayer.DBITEM_REPORT_TASKS, getWhere(),
                 filter.getOrderCriteria(), filter.getSortMode()));
-
+ 
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setParameter("schedulerId", filter.getSchedulerId());
         }
         if (filter.getStartTime() != null) {
             query.setParameter("startTime", filter.getStartTime(), TemporalType.TIMESTAMP);
         }
-        if (filter.getEndTime() != null && !"".equals(filter.getEndTime())) {
+        if (filter.getEndTime() != null) {
             query.setParameter("endTime", filter.getEndTime(), TemporalType.TIMESTAMP);
+        }
+        if (filter.getTaskIds() != null && !filter.getTaskIds().isEmpty()) {
+            query.setParameterList("taskIds", filter.getTaskIds());
         }
         if (limit > 0) {
             query.setMaxResults(limit);
@@ -406,7 +409,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
         if (filter.getStartTime() != null) {
             query.setParameter("startTime", filter.getStartTime(), TemporalType.TIMESTAMP);
         }
-        if (filter.getEndTime() != null && !"".equals(filter.getEndTime())) {
+        if (filter.getEndTime() != null ) {
             query.setParameter("endTime", filter.getEndTime(), TemporalType.TIMESTAMP);
         }
         if (limit > 0) {
