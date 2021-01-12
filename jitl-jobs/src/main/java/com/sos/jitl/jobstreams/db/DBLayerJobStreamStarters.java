@@ -161,15 +161,19 @@ public class DBLayerJobStreamStarters {
         query.setLockMode(LockModeType.PESSIMISTIC_WRITE);
         query.setHint("javax.persistence.lock.timeout", LOCK_TIMEOUT);
 
-        sosHibernateSession.getResultList(query);
+        List<DBItemJobStreamStarter>  l = sosHibernateSession.getResultList(query);
+        if ((l.size() > 0) && (dbItemJobStreamStarter.getRunTime().equals(l.get(0).getRunTime()))) {
+            q = " update " + DBItemJobStreamStarter + " set nextStart=:nextStart " + getWhere(filter);
+            query = sosHibernateSession.createQuery(q);
+            query = bindParameters(filter, query);
+            query.setParameter("nextStart", dbItemJobStreamStarter.getNextStart());
 
-        q = " update " + DBItemJobStreamStarter + " set nextStart=:nextStart " + getWhere(filter);
-        query = sosHibernateSession.createQuery(q);
-        query = bindParameters(filter, query);
-        query.setParameter("nextStart", dbItemJobStreamStarter.getNextStart());
+            int row = sosHibernateSession.executeUpdate(query);
+            return row;    
+        }
 
-        int row = sosHibernateSession.executeUpdate(query);
-        return row;
+       
+        return 0;
 
     }
 
