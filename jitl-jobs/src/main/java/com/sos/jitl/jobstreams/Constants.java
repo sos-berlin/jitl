@@ -1,5 +1,7 @@
 package com.sos.jitl.jobstreams;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.TimeZone;
 
@@ -7,7 +9,7 @@ import com.sos.hibernate.classes.ClassList;
 import com.sos.jitl.eventhandler.handler.EventHandlerSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+ 
 public class Constants {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Constants.class);
@@ -143,5 +145,9 @@ public class Constants {
         cl.add(com.sos.jitl.jobstreams.db.DBItemJobStreamStarter.class);
         cl.add(com.sos.jitl.jobstreams.db.DBItemJobStreamTaskContext.class);
         return cl;
+    }
+
+    public static LocalDate getToday() {
+         return LocalDate.now(ZoneId.of(settings.getTimezone()));
     }
 }

@@ -7,10 +7,11 @@ public class FilterJobStreams {
     private String jobStream;
     private String folder;
     private String status;
+    private Integer limit=0;
 
     public String getStatus() {
         return status;
-    }
+    } 
 
     public void setStatus(String status) {
         this.status = status;
@@ -50,6 +51,16 @@ public class FilterJobStreams {
     
     public void setJobStream(String jobStream) {
         this.jobStream = jobStream;
+    }
+
+    
+    public Integer getLimit() {
+        return limit;
+    }
+
+    
+    public void setLimit(Integer limit) {
+        this.limit = limit;
     }
 
    

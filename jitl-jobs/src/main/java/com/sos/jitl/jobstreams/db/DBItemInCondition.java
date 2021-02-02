@@ -106,12 +106,12 @@ public class DBItemInCondition implements IJSJobConditionKey {
     }
     
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "[NEXT_PERIOD]", nullable = false)
+    @Column(name = "[NEXT_PERIOD]", nullable = true)
     public Date getNextPeriod() {
         return nextPeriod;
     }
 
-    @Column(name = "[NEXT_PERIOD]", nullable = false)
+    @Column(name = "[NEXT_PERIOD]", nullable = true)
     public void setNextPeriod(Date nextPeriod) {
         this.nextPeriod = nextPeriod;
     }
