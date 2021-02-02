@@ -54,7 +54,7 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
     private void setRequired() {
         Variable_set  v = spooler.create_variable_set();
         v.merge(spooler_task.params());
-        v.merge(spooler_task.params());
+        v.merge(spooler_task.order().params());
         String stateParamName = spooler_task.order().job_chain().name() + SyncNodeList.CHAIN_ORDER_DELIMITER + jobSchedulerJoinOrdersOptions.getCurrentNodeName() + SyncNodeList.CONST_PARAM_PART_REQUIRED_ORDERS;
         String stateParamValue = v.value(stateParamName);
         LOGGER.debug("1stateParamName=stateParamValue" + stateParamName + "=" + stateParamValue);
