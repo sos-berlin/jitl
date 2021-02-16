@@ -247,7 +247,7 @@ public class Calendar2DB {
                             dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
                         }
 
-                        dailyPlanDBItem.setStartStart(false);
+                        dailyPlanDBItem.setStartStart(true);
                         dailyPlanDBItem.setState("PLANNED");
                         dailyPlanDBItem.setReportTriggerId(null);
                         dailyPlanDBItem.setReportExecutionId(null);
@@ -343,6 +343,7 @@ public class Calendar2DB {
     public void processDailyplan2DBFilter() throws Exception {
         long timeStartAll = System.currentTimeMillis();
         long timeStoreSum = 0L;
+        LOGGER.debug("processDailyplan2DBFilter: Start");
 
         if (listOfDailyPlanCalender2DBFilter == null) {
             listOfDailyPlanCalender2DBFilter = new HashMap<String, DailyPlanCalender2DBFilter>();
