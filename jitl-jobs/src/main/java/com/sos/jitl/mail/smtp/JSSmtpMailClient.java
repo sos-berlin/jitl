@@ -65,9 +65,8 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
                 pobjOptions.checkMandatory();
                 String log = "";
                 if (pobjOptions.tasklog_to_body.value()) {
-                    log =
-                            getTaskLog(pobjOptions.job_name.getValue(), pobjOptions.job_id.value(), pobjOptions.scheduler_host.getValue(),
-                                    pobjOptions.scheduler_port.value(), useCurrentTaskLog);
+                    log = getTaskLog(pobjOptions.job_name.getValue(), pobjOptions.job_id.value(), pobjOptions.scheduler_host.getValue(),
+                            pobjOptions.scheduler_port.value(), useCurrentTaskLog);
                 }
                 if (!pobjOptions.subject.isDirty()) {
                     String strT = "SOSJobScheduler: ${JobName} - ${JobTitle} - CC ${CC} ";
