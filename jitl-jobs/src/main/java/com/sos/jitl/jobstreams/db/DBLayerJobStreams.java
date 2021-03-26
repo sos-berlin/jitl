@@ -13,6 +13,7 @@ import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.dailyplan.db.Calendar2DB;
 import com.sos.jitl.dailyplan.db.DailyPlanDBLayer;
+import com.sos.jitl.reporting.db.DBItemInventoryClusterCalendarUsage;
 import com.sos.joc.model.common.NameValuePair;
 import com.sos.joc.model.jobstreams.JobStream;
 import com.sos.joc.model.jobstreams.JobStreamJob;
@@ -49,7 +50,7 @@ public class DBLayerJobStreams {
         }
 
         if (filter.getStatus() != null && !"".equals(filter.getStatus())) {
-            where += and + " status = :status";
+            where += and + " state = :state";
             and = " and ";
         }
 
@@ -86,7 +87,7 @@ public class DBLayerJobStreams {
             query.setParameter("folder", filter.getFolder());
         }
         if (filter.getStatus() != null && !"".equals(filter.getStatus())) {
-            query.setParameter("status", filter.getStatus());
+            query.setParameter("state", filter.getStatus());
         }
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
             query.setParameter("jobStream", filter.getJobStream());
@@ -212,6 +213,8 @@ public class DBLayerJobStreams {
         return dbItemJobStream.getId();
 
     }
+    
+    
 
     public Long deleteInsert(JobStream jobStream, String timezone) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -255,8 +258,7 @@ public class DBLayerJobStreams {
                 dbItemJobStreamStarter.setRunTime(objectMapper.writeValueAsString(jobstreamStarter.getRunTime()));
             }
             dbItemJobStreamStarter.setNextStart(dbLayerJobStreamStarters.getNextStartTime(objectMapper, timezone, dbItemJobStreamStarter
-                    .getRunTime()));
-            
+                    .getRunTime()));                    
             
             if (isNew) {
                 LOGGER.debug("save jobstream starter with jobstream id: " + dbItemJobStreamStarter.getJobStream()); 
