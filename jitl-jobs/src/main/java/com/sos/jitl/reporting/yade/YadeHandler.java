@@ -37,9 +37,6 @@ public class YadeHandler {
     }
 
     public Long process(SOSHibernateSession session, DBItemSchedulerHistory schedulerTask) throws SOSHibernateException {
-        if (SOSString.isEmpty(schedulerTask.getTransferHistory())) {
-            return null;
-        }
         String serialized = StringUtils.strip(schedulerTask.getTransferHistory(), "'");
         if (SOSString.isEmpty(serialized)) {
             return null;
