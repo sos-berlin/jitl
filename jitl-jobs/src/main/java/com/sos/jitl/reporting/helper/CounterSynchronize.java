@@ -10,13 +10,14 @@ public class CounterSynchronize {
     int updatedExecutions = 0;
     int insertedTasks = 0;
     int updatedTasks = 0;
-    
+    int transferHistory = 0;
+
     public int getTotal() {
         return total;
     }
 
     public void setTotal(int val) {
-        this.total = val;
+        total = val;
     }
 
     public int getSkip() {
@@ -24,7 +25,7 @@ public class CounterSynchronize {
     }
 
     public void setSkip(int val) {
-        this.skip = val;
+        skip = val;
     }
 
     public int getInsertedTriggers() {
@@ -32,7 +33,7 @@ public class CounterSynchronize {
     }
 
     public void setInsertedTriggers(int val) {
-        this.insertedTriggers = val;
+        insertedTriggers = val;
     }
 
     public int getUpdatedTriggers() {
@@ -40,15 +41,15 @@ public class CounterSynchronize {
     }
 
     public void setUpdatedTriggers(int val) {
-        this.updatedTriggers = val;
+        updatedTriggers = val;
     }
-    
+
     public int getInsertedExecutions() {
         return insertedExecutions;
     }
 
     public void setInsertedExecutions(int val) {
-        this.insertedExecutions = val;
+        insertedExecutions = val;
     }
 
     public int getUpdatedExecutions() {
@@ -56,7 +57,7 @@ public class CounterSynchronize {
     }
 
     public void setUpdatedExecutions(int val) {
-        this.updatedExecutions = val;
+        updatedExecutions = val;
     }
 
     public int getInsertedTasks() {
@@ -64,14 +65,22 @@ public class CounterSynchronize {
     }
 
     public void setInsertedTasks(int val) {
-        this.insertedTasks = val;
+        insertedTasks = val;
     }
-    
+
     public int getUpdatedTasks() {
         return updatedTasks;
     }
 
     public void setUpdatedTasks(int val) {
-        this.updatedTasks = val;
+        updatedTasks = val;
+    }
+
+    public int getTransferHistory() {
+        return transferHistory;
+    }
+
+    public void setTransferHistory(int val) {
+        transferHistory = val;
     }
 }

@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.sos-berlin</groupId>
 		<artifactId>jitl</artifactId>
-                <version>1.13.9-SNAPSHOT</version>
+		<version>1.13.9-SNAPSHOT</version>
 	</parent>
 
 	<groupId>com.sos-berlin.jitl</groupId>
@@ -104,12 +104,12 @@
 			<groupId>com.sos-berlin.jobscheduler.engine</groupId>
 			<artifactId>engine-kernel</artifactId>
 			<scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.intellij</groupId>
-                    <artifactId>annotations</artifactId>
-                </exclusion>
-            </exclusions>
+			<exclusions>
+				<exclusion>
+					<groupId>com.intellij</groupId>
+					<artifactId>annotations</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- 3rd party jar files -->
@@ -159,11 +159,11 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <scope>test</scope>
-        </dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<scope>test</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>com.googlecode.jsendnsca</groupId>
