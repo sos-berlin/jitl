@@ -22,6 +22,7 @@ public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
             setJobTitle(spooler_job.title());
         }
         this.getSchedulerParameters().put("SCHEDULER_JOB_NAME", spooler_job.name());
+        this.getSchedulerParameters().put("SCHEDULER_JOB_TITLE", spooler_job.title());
         this.getSchedulerParameters().put("SCHEDULER_TASK_ID", String.valueOf(spooler_task.id()));
 
     }
