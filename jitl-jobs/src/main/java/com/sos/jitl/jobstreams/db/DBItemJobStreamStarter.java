@@ -22,6 +22,7 @@ public class DBItemJobStreamStarter {
 
     private Long id;
     private Long jobStream;
+    private String starterName;
     private String title;
     private String state;
     private String runTime;
@@ -73,6 +74,15 @@ public class DBItemJobStreamStarter {
 
     public void setRequiredJob(String requiredJob) {
         this.requiredJob = requiredJob;
+    }    
+   
+    @Column(name = "[STARTER_NAME]", nullable = false)
+    public String getStarterName() {
+        return starterName;
+    }
+
+    public void setStarterName(String starterName) {
+        this.starterName = starterName;
     }    
    
     @Column(name = "[TITLE]", nullable = false)
