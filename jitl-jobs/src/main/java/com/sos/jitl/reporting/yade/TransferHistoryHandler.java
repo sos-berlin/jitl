@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.query.Query;
@@ -24,16 +25,18 @@ import com.sos.yade.commons.result.YadeTransferResultSerializer;
 
 import sos.util.SOSString;
 
-public class YadeHandler {
+public class TransferHistoryHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(YadeHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransferHistoryHandler.class);
 
     private static final String DBITEM_YADE_PROTOCOLS = DBItemYadeProtocols.class.getSimpleName();
 
     private final ConcurrentHashMap<String, Long> protocols;
+    private CopyOnWriteArrayList<Long> transferIds;
 
-    public YadeHandler() {
+    public TransferHistoryHandler() {
         this.protocols = new ConcurrentHashMap<String, Long>();
+        resetTransferIds();
     }
 
     public Long process(SOSHibernateSession session, DBItemSchedulerHistory schedulerTask) throws SOSHibernateException {
@@ -52,6 +55,7 @@ public class YadeHandler {
 
             Long transferId = saveTransfer(session, result);
             saveTransferEntries(session, transferId, result.getEntries());
+            transferIds.add(transferId);
             return transferId;
         } catch (SOSHibernateException e) {
             throw e;
@@ -190,4 +194,11 @@ public class YadeHandler {
         return new Date(timestamp - TimeZone.getDefault().getOffset(timestamp));
     }
 
+    public CopyOnWriteArrayList<Long> getTransferIds() {
+        return transferIds;
+    }
+
+    public void resetTransferIds() {
+        transferIds = new CopyOnWriteArrayList<Long>();
+    }
 }

@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -33,7 +34,7 @@ import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 public class FactEventHandler extends LoopEventHandler {
 
     public static enum CustomEventType {
-        DailyPlanChanged, ReportingChanged
+        DailyPlanChanged, ReportingChanged, YADETransferFinished // see yade-engine YadeHistory
     }
 
     public static enum CustomEventTypeValue {
@@ -277,8 +278,19 @@ public class FactEventHandler extends LoopEventHandler {
                 customEventValue = CustomEventTypeValue.standalone.name();
             }
             publishCustomEvent(CUSTOM_EVENT_KEY, CustomEventType.ReportingChanged.name(), customEventValue);
+            publishTransferHistory(factModel);
         }
         return factModel;
+    }
+
+    private void publishTransferHistory(FactModel factModel) {
+        if (factModel.getTransferHistory().getTransferIds().size() > 0) {
+            Iterator<Long> it = factModel.getTransferHistory().getTransferIds().iterator();
+            while (it.hasNext()) {
+                publishCustomEvent(CustomEventType.YADETransferFinished.name(), "transferId", String.valueOf(it.next()));
+            }
+            factModel.getTransferHistory().resetTransferIds();
+        }
     }
 
     private ArrayList<String> getCreateDailyPlanEvents(JsonArray events) throws Exception {

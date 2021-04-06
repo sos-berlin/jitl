@@ -45,7 +45,7 @@ import com.sos.jitl.reporting.job.report.FactJobOptions;
 import com.sos.jitl.reporting.model.IReportingModel;
 import com.sos.jitl.reporting.model.ReportingModel;
 import com.sos.jitl.reporting.plugin.FactNotificationPlugin;
-import com.sos.jitl.reporting.yade.YadeHandler;
+import com.sos.jitl.reporting.yade.TransferHistoryHandler;
 
 import sos.util.SOSString;
 
@@ -96,7 +96,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
     private Optional<Integer> largeResultFetchSizeReporting = Optional.empty();
     private Optional<Integer> largeResultFetchSizeScheduler = Optional.empty();
     private FactNotificationPlugin notificationPlugin;
-    private YadeHandler yadeHandler;
+    private TransferHistoryHandler transferHistory;
     private HashMap<Long, DBItemReportTask> endedOrderTasks4notification;
 
     public FactModel(SOSHibernateSession reportingSess, SOSHibernateSession schedulerSess, FactJobOptions opt, JsonArray es) throws Exception {
@@ -113,7 +113,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         orderHistoryMaxUncompletedAge = ReportUtil.resolveAge2Minutes(options.order_history_max_uncompleted_age.getValue());
         waitInterval = new Long(options.wait_interval.value());
         schedulerId = options.current_scheduler_id.getValue();
-        yadeHandler = new YadeHandler();
+        transferHistory = new TransferHistoryHandler();
         registerPlugin();
     }
 
@@ -1786,7 +1786,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
     }
 
     private boolean processTransferHistory(DBItemSchedulerHistory task, int counter) throws SOSHibernateException {
-        boolean result = yadeHandler.process(getDbLayer().getSession(), task) != null;
+        boolean result = transferHistory.process(getDbLayer().getSession(), task) != null;
         if (result) {
             counter++;
         }
@@ -1813,7 +1813,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         tmp.setJobName(step.getTaskJobName());
         tmp.setId(step.getTaskId());
         tmp.setTransferHistory(step.getTaskTransferHistory());
-        boolean result = yadeHandler.process(getDbLayer().getSession(), tmp) != null;
+        boolean result = transferHistory.process(getDbLayer().getSession(), tmp) != null;
         if (result) {
             counter++;
         }
@@ -1945,6 +1945,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
     public boolean isLocked() {
         return isLocked;
+    }
+
+    public TransferHistoryHandler getTransferHistory() {
+        return transferHistory;
     }
 
 }
