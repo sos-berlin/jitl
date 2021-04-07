@@ -250,8 +250,10 @@ public class DBLayerJobStreams {
             dbItemJobStreamStarter.setJobStream(newId);
             dbItemJobStreamStarter.setEndOfJobStream(jobstreamStarter.getEndOfJobStream());
             dbItemJobStreamStarter.setRequiredJob(jobstreamStarter.getRequiredJob());
+            dbItemJobStreamStarter.setStarterName(jobstreamStarter.getStarterName());
             dbItemJobStreamStarter.setTitle(jobstreamStarter.getTitle());
             dbItemJobStreamStarter.setState(jobstreamStarter.getState());
+            
 
             if (jobstreamStarter.getRunTime() != null) {
                 dbItemJobStreamStarter.setRunTime(objectMapper.writeValueAsString(jobstreamStarter.getRunTime()));

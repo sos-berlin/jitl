@@ -7,6 +7,7 @@ public class FilterJobStreamStarters {
     private String jobStream;
     private String status;
     private String title;
+    private String starterName;
     
 
     public String getJobStream() {
@@ -53,6 +54,16 @@ public class FilterJobStreamStarters {
     
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    
+    public String getStarterName() {
+        return starterName;
+    }
+
+    
+    public void setStarterName(String starterName) {
+        this.starterName = starterName;
     }
 
  

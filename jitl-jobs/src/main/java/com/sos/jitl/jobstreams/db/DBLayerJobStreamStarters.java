@@ -69,6 +69,11 @@ public class DBLayerJobStreamStarters {
             and = " and ";
         }
 
+        if (filter.getStarterName() != null && !"".equals(filter.getStarterName())) {
+            where += and + " starterName = :starterName";
+            and = " and ";
+        }
+
         if (filter.getId() != null) {
             where += and + " id  = :id";
             and = " and ";
@@ -94,6 +99,9 @@ public class DBLayerJobStreamStarters {
         }
         if (filter.getTitle() != null && !"".equals(filter.getTitle())) {
             query.setParameter("title", filter.getTitle());
+        }
+        if (filter.getStarterName() != null && !"".equals(filter.getStarterName())) {
+            query.setParameter("starterName", filter.getStarterName());
         }
         if (filter.getJobStreamId() != null) {
             query.setParameter("jobStream", filter.getJobStreamId());
@@ -234,6 +242,7 @@ public class DBLayerJobStreamStarters {
             }
 
             dbItemJobStreamStarter.setJobStream(jobStreamStarters.getJobStreamId());
+            dbItemJobStreamStarter.setStarterName(jobStreamStarter.getStarterName());
             dbItemJobStreamStarter.setEndOfJobStream(jobStreamStarter.getEndOfJobStream());
             dbItemJobStreamStarter.setRequiredJob(jobStreamStarter.getRequiredJob());
             dbItemJobStreamStarter.setTitle(jobStreamStarter.getTitle());
