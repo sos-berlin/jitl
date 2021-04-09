@@ -32,8 +32,14 @@ public class JSEvent {
     public JSEventKey getKey() {
         JSEventKey jsEventKey = new JSEventKey();
         jsEventKey.setSession(itemEvent.getSession());
-        jsEventKey.setEvent(itemEvent.getEvent());
-        jsEventKey.setJobStream(itemEvent.getJobStream());
+        String[] s = itemEvent.getEvent().split("\\.");
+        if (s.length == 2) {
+            jsEventKey.setEvent(s[1]);
+            jsEventKey.setJobStream(s[0]);
+        }else {
+            jsEventKey.setEvent(itemEvent.getEvent());
+            jsEventKey.setJobStream(itemEvent.getJobStream());
+        }
         jsEventKey.setSchedulerId(schedulerId);
         jsEventKey.setGlobalEvent(itemEvent.getGlobalEvent());
         return jsEventKey;
@@ -137,7 +143,7 @@ public class JSEvent {
             sosHibernateSession.beginTransaction();
             FilterEvents filterEvents = new FilterEvents();
             filterEvents.setSchedulerId(this.getSchedulerId());
-            filterEvents.setEvent(this.getEvent());
+            filterEvents.setEvent(this.getKey().getEvent());
             filterEvents.setSession(this.getSession());
             filterEvents.setGlobalEvent(this.isGlobalEvent());
 
