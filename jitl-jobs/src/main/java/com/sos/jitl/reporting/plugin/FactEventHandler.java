@@ -335,6 +335,7 @@ public class FactEventHandler extends LoopEventHandler {
         reportingFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
         reportingFactory.addClassMapping(DBLayer.getInventoryClassMapping());
+        reportingFactory.addClassMapping(DBLayer.getYadeClassMapping());
         reportingFactory.addClassMapping(com.sos.jitl.notification.db.DBLayer.getNotificationClassMapping());
         reportingFactory.build();
     }
