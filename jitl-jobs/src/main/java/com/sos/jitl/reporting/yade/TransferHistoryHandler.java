@@ -6,7 +6,6 @@ import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +39,8 @@ public class TransferHistoryHandler {
     }
 
     public Long process(SOSHibernateSession session, DBItemSchedulerHistory schedulerTask) throws SOSHibernateException {
-        String serialized = StringUtils.strip(schedulerTask.getTransferHistory(), "'");
+        // String serialized = StringUtils.strip(schedulerTask.getTransferHistory(), "'");
+        String serialized = schedulerTask.getTransferHistory();
         if (SOSString.isEmpty(serialized)) {
             return null;
         }
