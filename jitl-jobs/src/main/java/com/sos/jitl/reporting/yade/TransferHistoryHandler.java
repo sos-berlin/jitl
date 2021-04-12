@@ -1,5 +1,6 @@
 package com.sos.jitl.reporting.yade;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -38,31 +39,34 @@ public class TransferHistoryHandler {
         resetTransferIds();
     }
 
-    public Long process(SOSHibernateSession session, DBItemSchedulerHistory schedulerTask) throws SOSHibernateException {
+    public boolean process(SOSHibernateSession session, DBItemSchedulerHistory schedulerTask) throws SOSHibernateException {
         // String serialized = StringUtils.strip(schedulerTask.getTransferHistory(), "'");
         String serialized = schedulerTask.getTransferHistory();
         if (SOSString.isEmpty(serialized)) {
-            return null;
+            return false;
         }
 
         String logMsg = String.format("[%s][job name=%s, taskId=%s", schedulerTask.getSpoolerId(), schedulerTask.getJobName(), schedulerTask.getId());
         try {
-            YadeTransferResultSerializer<YadeEngineTransferResult> serializer = new YadeTransferResultSerializer<YadeEngineTransferResult>();
-            YadeEngineTransferResult result = serializer.deserialize(serialized);
+            YadeTransferResultSerializer<ArrayList<YadeEngineTransferResult>> serializer =
+                    new YadeTransferResultSerializer<ArrayList<YadeEngineTransferResult>>();
+            ArrayList<YadeEngineTransferResult> result = serializer.deserialize(serialized);
             if (result == null) {
-                return null;
+                return false;
             }
 
-            Long transferId = saveTransfer(session, result);
-            saveTransferEntries(session, transferId, result.getEntries());
-            transferIds.add(transferId);
-            return transferId;
+            for (YadeEngineTransferResult transfer : result) {
+                Long transferId = saveTransfer(session, transfer);
+                saveTransferEntries(session, transferId, transfer.getEntries());
+                transferIds.add(transferId);
+            }
+            return true;
         } catch (SOSHibernateException e) {
             throw e;
         } catch (Exception e) {
             LOGGER.error(String.format("[%s]%s", logMsg, e.toString()), e);
         }
-        return null;
+        return false;
     }
 
     private Long saveTransfer(SOSHibernateSession session, YadeEngineTransferResult result) throws SOSHibernateException {

@@ -1786,7 +1786,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
     }
 
     private boolean processTransferHistory(DBItemSchedulerHistory task, int counter) throws SOSHibernateException {
-        boolean result = transferHistory.process(getDbLayer().getSession(), task) != null;
+        boolean result = transferHistory.process(getDbLayer().getSession(), task);
         if (result) {
             counter++;
         }
@@ -1813,7 +1813,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         tmp.setJobName(step.getTaskJobName());
         tmp.setId(step.getTaskId());
         tmp.setTransferHistory(step.getTaskTransferHistory());
-        boolean result = transferHistory.process(getDbLayer().getSession(), tmp) != null;
+        boolean result = transferHistory.process(getDbLayer().getSession(), tmp);
         if (result) {
             counter++;
         }
