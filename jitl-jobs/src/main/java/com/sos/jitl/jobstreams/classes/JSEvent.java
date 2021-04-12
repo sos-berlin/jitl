@@ -33,9 +33,7 @@ public class JSEvent {
         JSEventKey jsEventKey = new JSEventKey();
         jsEventKey.setSession(itemEvent.getSession());
         String[] s = itemEvent.getEvent().split("\\.");
-        LOGGER.debug(("JSEventKey:"  + itemEvent.getEvent() + " split:" + s.length));
         if (s.length == 2) {
-            LOGGER.debug("use splitted values event:" + s[1]);
             jsEventKey.setEvent(s[1]);
             jsEventKey.setJobStream(s[0]);
         }else {
