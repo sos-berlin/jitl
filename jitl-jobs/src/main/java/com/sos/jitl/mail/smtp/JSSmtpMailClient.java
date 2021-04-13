@@ -87,7 +87,14 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
                 if (!pobjOptions.from.isDirty()) {
                     pobjOptions.from.setValue("JobScheduler@sos-berlin.com");
                 }
-                SOSMail objMail = new SOSMail(pobjOptions.host.getValue());
+
+                SOSMail objMail;
+                if ((pobjOptions.smtp_user.getValue() != null) && (!pobjOptions.smtp_user.getValue().isEmpty())) {
+                    objMail = new SOSMail(pobjOptions.host.getValue(), pobjOptions.smtp_user.getValue(), pobjOptions.smtp_password.getValue());
+                } else {
+                    objMail = new SOSMail(pobjOptions.host.getValue());
+                }
+
                 LOGGER.debug(pobjOptions.dirtyString());
                 objMail.sendMail(pobjOptions);
             } catch (Exception e) {
