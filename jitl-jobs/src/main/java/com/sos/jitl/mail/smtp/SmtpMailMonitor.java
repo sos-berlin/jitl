@@ -30,7 +30,7 @@ public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
     public boolean spooler_task_before() throws Exception {
         try {
             super.spooler_process();
-            createOptions(getSpoolerProcess().getOrder(),"task_before");
+            createOptions(getSpoolerProcess().getOrder(), "task_before");
             if (spooler_task.job().order_queue() == null && objO.MailOnJobStart()) {
                 objR.Execute(objO.getOptions(enuMailClasses.MailOnJobStart));
             }
@@ -44,7 +44,7 @@ public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
     public boolean spooler_process_after(final boolean spooler_process_return_code) throws Exception {
         try {
             super.spooler_process();
-            createOptions(getSpoolerProcess().getOrder(),"process_after");
+            createOptions(getSpoolerProcess().getOrder(), "process_after");
             if (spooler_task.job().order_queue() != null) {
                 if (!spooler_process_return_code) {
                     if (objO.MailOnError() && objO.MailOnError()) {
@@ -66,7 +66,7 @@ public class SmtpMailMonitor extends JSSmtpMailClientBaseClass {
     public boolean spooler_process_before() throws Exception {
         try {
             super.spooler_process();
-            createOptions(getSpoolerProcess().getOrder(),"process_before");
+            createOptions(getSpoolerProcess().getOrder(), "process_before");
             if (spooler_task.job().order_queue() != null && objO.MailOnJobStart()) {
                 objR.Execute(objO.getOptions(enuMailClasses.MailOnJobStart));
             }
