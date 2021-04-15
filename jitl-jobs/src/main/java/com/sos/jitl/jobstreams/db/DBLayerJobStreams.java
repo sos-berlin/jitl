@@ -68,6 +68,15 @@ public class DBLayerJobStreams {
             and = " and ";
         }
 
+        if (filter.getFolderItem() != null) {
+            if (filter.getFolderItem().getRecursive()) {
+                where += and + " folder like :folder";
+            } else {
+                where += and + " folder  = :folder";
+            }
+            and = " and ";
+        }
+
         if (!"".equals(where.trim())) {
             where = " where " + where;
         }
@@ -85,6 +94,14 @@ public class DBLayerJobStreams {
         if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
             query.setParameter("folder", filter.getFolder());
         }
+        if (filter.getFolderItem() != null) {
+            if (filter.getFolderItem().getRecursive()) {
+                query.setParameter("folder", filter.getFolderItem().getFolder() + "%");
+            } else {
+                query.setParameter("folder", filter.getFolderItem().getFolder());
+            }
+        }
+
         if (filter.getStatus() != null && !"".equals(filter.getStatus())) {
             query.setParameter("state", filter.getStatus());
         }
@@ -133,13 +150,11 @@ public class DBLayerJobStreams {
             if (filter.getJobStreamId() != null) {
                 filter.setFolder(dbItemJobStream.getFolder());
             }
-            
-            
-            
+
             FilterJobStreamStarters filterJobStreamStarters = new FilterJobStreamStarters();
             filterJobStreamStarters.setJobStreamId(dbItemJobStream.getId());
             List<DBItemJobStreamStarter> lStarters = dbLayerJobStreamStarters.getJobStreamStartersList(filterJobStreamStarters, 0);
-           
+
             for (DBItemJobStreamStarter dbItemJobStreamStarter : lStarters) {
                 filterJobStreamStarterJobs.setJobStreamStarter(dbItemJobStreamStarter.getId());
                 dbLayerJobStreamsStarterJobs.delete(filterJobStreamStarterJobs);
@@ -147,7 +162,6 @@ public class DBLayerJobStreams {
                 filterJobStreamParameters.setJobStreamStarterId(dbItemJobStreamStarter.getId());
                 dbLayerJobStreamParameters.delete(filterJobStreamParameters);
             }
-            
 
             if (withConditionsAndStarters) {
                 FilterJobStreamHistory filterJobStreamHistory = new FilterJobStreamHistory();
@@ -166,7 +180,6 @@ public class DBLayerJobStreams {
             }
 
             if (withConditionsAndStarters) {
-            
 
                 FilterInConditions filterInConditions = new FilterInConditions();
                 filterInConditions.setJobStream(dbItemJobStream.getJobStream());
@@ -212,8 +225,6 @@ public class DBLayerJobStreams {
         return dbItemJobStream.getId();
 
     }
-    
-    
 
     public Long deleteInsert(JobStream jobStream, String timezone) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -253,19 +264,18 @@ public class DBLayerJobStreams {
             dbItemJobStreamStarter.setStarterName(jobstreamStarter.getStarterName());
             dbItemJobStreamStarter.setTitle(jobstreamStarter.getTitle());
             dbItemJobStreamStarter.setState(jobstreamStarter.getState());
-            
 
             if (jobstreamStarter.getRunTime() != null) {
                 dbItemJobStreamStarter.setRunTime(objectMapper.writeValueAsString(jobstreamStarter.getRunTime()));
             }
             dbItemJobStreamStarter.setNextStart(dbLayerJobStreamStarters.getNextStartTime(objectMapper, timezone, dbItemJobStreamStarter
-                    .getRunTime()));                    
-            
+                    .getRunTime()));
+
             if (isNew) {
-                LOGGER.debug("save jobstream starter with jobstream id: " + dbItemJobStreamStarter.getJobStream()); 
+                LOGGER.debug("save jobstream starter with jobstream id: " + dbItemJobStreamStarter.getJobStream());
                 dbLayerJobStreamStarters.save(dbItemJobStreamStarter);
             } else {
-                LOGGER.debug("update jobstream starter with jobstream id: " + dbItemJobStreamStarter.getJobStream()); 
+                LOGGER.debug("update jobstream starter with jobstream id: " + dbItemJobStreamStarter.getJobStream());
                 dbLayerJobStreamStarters.update(dbItemJobStreamStarter);
             }
 
@@ -285,8 +295,7 @@ public class DBLayerJobStreams {
                 Long newJobId = dbLayerJobStreamsStarterJobs.store(dbItemJobStreamStarterJob);
                 jobStreamJob.setJobId(newJobId);
             }
-            
-           
+
             for (NameValuePair param : jobstreamStarter.getParams()) {
 
                 if (param.getName() != null && !param.getName().isEmpty()) {
@@ -309,10 +318,8 @@ public class DBLayerJobStreams {
             filterJobStreams.setJobStreamId(jobStream.getJobStreamId());
             calendar2Db.processJobStreamStarterFilter(filterJobStreams, timezone);
 
-     
         }
-        
-        
+
         return newId;
     }
 }

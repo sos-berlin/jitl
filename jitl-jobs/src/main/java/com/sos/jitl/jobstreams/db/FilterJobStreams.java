@@ -1,11 +1,14 @@
 package com.sos.jitl.jobstreams.db;
 
+import com.sos.joc.model.common.Folder;
+
 public class FilterJobStreams {
 
     private Long jobStreamId;
     private String schedulerId;
     private String jobStream;
     private String folder;
+    private Folder folderItem;
     private String status;
     private Integer limit=0;
 
@@ -61,6 +64,16 @@ public class FilterJobStreams {
     
     public void setLimit(Integer limit) {
         this.limit = limit;
+    }
+
+    
+    public Folder getFolderItem() {
+        return folderItem;
+    }
+
+    
+    public void setFolderItem(Folder folderItem) {
+        this.folderItem = folderItem;
     }
 
    
