@@ -1,8 +1,6 @@
 package com.sos.jitl.mail.smtp;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
-import sos.spooler.Job_chain;
-import sos.spooler.Job_chain_node;
 import sos.spooler.Order;
 
 public class JSSmtpMailClientBaseClass extends JobSchedulerJobAdapter {
