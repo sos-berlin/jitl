@@ -72,10 +72,14 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
                     String strT = "SOSJobScheduler: ${JobName} - ${JobTitle} - CC ${CC} ";
                     pobjOptions.subject.setValue(strT);
                 }
+
                 String strM = pobjOptions.subject.getValue();
-                pobjOptions.subject.setValue(objJSJobUtilities.replaceSchedulerVars(strM));
+                strM = pobjOptions.replaceVars(strM);
+                pobjOptions.subject.setValue(strM);
+                
                 strM = pobjOptions.body.getValue();
                 strM = pobjOptions.replaceVars(strM);
+   
                 Pattern pattern = Pattern.compile("[?%]log[?%]|[$%]\\{log\\}", Pattern.CASE_INSENSITIVE);
                 Matcher matcher = pattern.matcher(strM);
                 if (matcher.find()) {
