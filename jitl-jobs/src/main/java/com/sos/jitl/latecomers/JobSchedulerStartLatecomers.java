@@ -7,6 +7,7 @@ import com.sos.jitl.latecomers.classes.JobChainStartExecuter;
 import com.sos.jitl.latecomers.classes.JobStartExecuter;
 import com.sos.jitl.latecomers.classes.LateComersHelper;
 import com.sos.jitl.restclient.AccessTokenProvider;
+import com.sos.jitl.restclient.JobSchedulerCredentialStoreJOCParameters;
 import com.sos.jitl.restclient.WebserviceCredentials;
 import com.sos.joc.model.plan.PlanItem;
 import java.util.List;
@@ -51,7 +52,17 @@ public class JobSchedulerStartLatecomers extends JSJobUtilitiesClass<JobSchedule
 		getOptions().checkMandatory();
 		LOGGER.debug(getOptions().toString());
 		LateComersHelper lateComersHelper = new LateComersHelper(jobSchedulerStartLatecomersOptions);
-		AccessTokenProvider accessTokenProvider = new AccessTokenProvider();
+		
+		JobSchedulerCredentialStoreJOCParameters jobSchedulerCredentialStoreJOCParameters = new JobSchedulerCredentialStoreJOCParameters();
+    	jobSchedulerCredentialStoreJOCParameters.setCredentialStoreEntryPath(jobSchedulerStartLatecomersOptions.credential_store_entry_path.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setCredentialStoreFile(jobSchedulerStartLatecomersOptions.credential_store_file.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setCredentialStoreKeyFile(jobSchedulerStartLatecomersOptions.credential_store_key_file.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setCredentialStorePassword(jobSchedulerStartLatecomersOptions.credential_store_password.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setJocUrl(jobSchedulerStartLatecomersOptions.jocUrl.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setPassword(jobSchedulerStartLatecomersOptions.password.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setUser(jobSchedulerStartLatecomersOptions.user.getValue());
+		
+		AccessTokenProvider accessTokenProvider = new AccessTokenProvider(jobSchedulerCredentialStoreJOCParameters);
 		WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
 		if (jocUrl == null) {
 			Spooler schedulerInstance = (Spooler) objJSCommands.getSpoolerObject();
@@ -158,7 +169,7 @@ public class JobSchedulerStartLatecomers extends JSJobUtilitiesClass<JobSchedule
 	}
 
 	@Override
-	public void setJSParam(String pstrKey, StringBuffer pstrValue) {
+	public void setJSParam(String pstrKey, StringBuilder pstrValue) {
 	}
 
 	public void setJocUrl(String jocUrl) {

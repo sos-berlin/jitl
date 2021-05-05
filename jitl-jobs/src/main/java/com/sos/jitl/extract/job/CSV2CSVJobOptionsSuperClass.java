@@ -72,8 +72,7 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
         record_separator = val;
     }
 
-    @JSOptionDefinition(name = "input_file_record_separator", description = "", key = "input_file_record_separator", type = "SOSOptionString",
-            mandatory = false)
+    @JSOptionDefinition(name = "input_file_record_separator", description = "", key = "input_file_record_separator", type = "SOSOptionString", mandatory = false)
     public SOSOptionString input_file_record_separator = new SOSOptionString(this, conClassName + ".input_file_record_separator", "", "\r\n", "\r\n",
             false);
 
@@ -107,8 +106,7 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
         quote_character = val;
     }
 
-    @JSOptionDefinition(name = "input_file_quote_character", description = "", key = "input_file_quote_character", type = "SOSOptionString",
-            mandatory = false)
+    @JSOptionDefinition(name = "input_file_quote_character", description = "", key = "input_file_quote_character", type = "SOSOptionString", mandatory = false)
     public SOSOptionString input_file_quote_character = new SOSOptionString(this, conClassName + ".input_file_quote_character", "", "", "", false);
 
     public SOSOptionString getinput_file_quote_character() {
@@ -130,8 +128,7 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
         escape_character = val;
     }
 
-    @JSOptionDefinition(name = "input_file_escape_character", description = "", key = "input_file_escape_character", type = "SOSOptionString",
-            mandatory = false)
+    @JSOptionDefinition(name = "input_file_escape_character", description = "", key = "input_file_escape_character", type = "SOSOptionString", mandatory = false)
     public SOSOptionString input_file_escape_character = new SOSOptionString(this, conClassName + ".input_file_escape_character", "", "", "", false);
 
     public SOSOptionString getinput_file_escape_character() {
@@ -153,8 +150,7 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
         this.null_string = val;
     }
 
-    @JSOptionDefinition(name = "input_file_null_string", description = "", key = "input_file_null_string", type = "SOSOptionString",
-            mandatory = false)
+    @JSOptionDefinition(name = "input_file_null_string", description = "", key = "input_file_null_string", type = "SOSOptionString", mandatory = false)
     public SOSOptionString input_file_null_string = new SOSOptionString(this, conClassName + ".input_file_null_string", "", "", "", false);
 
     public SOSOptionString getinput_file_null_string() {
@@ -188,7 +184,7 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     public CSV2CSVJobOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public CSV2CSVJobOptionsSuperClass(JSListener listener) {
@@ -202,7 +198,6 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
     }
 
     public void setAllOptions(HashMap<String, String> settings) {
-        objSettings = settings;
         super.setAllOptions(settings);
     }
 
@@ -218,7 +213,7 @@ public class CSV2CSVJobOptionsSuperClass extends JSOptionsClass {
     @Override
     public void commandLineArgs(String[] pstrArgs) {
         super.commandLineArgs(pstrArgs);
-        this.setAllOptions(super.objSettings);
+        this.setAllOptions(super.getSettings());
     }
 
 }

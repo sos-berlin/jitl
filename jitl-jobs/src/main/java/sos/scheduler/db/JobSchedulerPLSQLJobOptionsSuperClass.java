@@ -2,8 +2,8 @@ package sos.scheduler.db;
 
 import java.util.HashMap;
 
-import com.sos.CredentialStore.SOSCredentialStoreImpl;
-import com.sos.CredentialStore.Options.ISOSCredentialStoreOptionsBridge;
+import com.sos.credentialstore.SOSCredentialStoreImpl;
+import com.sos.credentialstore.options.ISOSCredentialStoreOptionsBridge;
 import com.sos.JSHelper.Annotations.JSOptionClass;
 import com.sos.JSHelper.Annotations.JSOptionDefinition;
 import com.sos.JSHelper.Exceptions.JSExceptionMandatoryOptionMissing;
@@ -184,7 +184,7 @@ public class JobSchedulerPLSQLJobOptionsSuperClass extends JSOptionsClass implem
     }
 
     public JobSchedulerPLSQLJobOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JobSchedulerPLSQLJobOptionsSuperClass(final JSListener pobjListener) {
@@ -198,9 +198,8 @@ public class JobSchedulerPLSQLJobOptionsSuperClass extends JSOptionsClass implem
     }
 
     @Override
-    public void setAllOptions(final HashMap<String, String> pobjJSSettings) {
-        objSettings = pobjJSSettings;
-        super.setAllOptions(pobjJSSettings);
+    public void setAllOptions(HashMap<String, String> settings) {
+        super.setAllOptions(settings);
     }
 
     @Override
@@ -216,7 +215,7 @@ public class JobSchedulerPLSQLJobOptionsSuperClass extends JSOptionsClass implem
     @Override
     public void commandLineArgs(final String[] pstrArgs) {
         super.commandLineArgs(pstrArgs);
-        this.setAllOptions(super.objSettings);
+        this.setAllOptions(super.getSettings());
     }
 
     public SOSCredentialStoreImpl getCredentialStore() {

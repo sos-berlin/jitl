@@ -15,18 +15,18 @@ public class JobSchedulerDequeueMailJobJSAdapterClass extends JobSchedulerJobAda
         try {
             super.spooler_process();
             doProcessing();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
         }
-        return signalSuccess();
     }
 
     private void doProcessing() throws Exception {
         JobSchedulerDequeueMailJob jobSchedulerDequeueMailJob = new JobSchedulerDequeueMailJob();
         JobSchedulerDequeueMailJobOptions jobSchedulerDequeueMailJobOptions = jobSchedulerDequeueMailJob.getOptions();
 
-        jobSchedulerDequeueMailJobOptions.setCurrentNodeName(this.getCurrentNodeName());
-        jobSchedulerDequeueMailJobOptions.setAllOptions(getSchedulerParameterAsProperties());
+        jobSchedulerDequeueMailJobOptions.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(),true));
+        jobSchedulerDequeueMailJobOptions.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
 
         if (jobSchedulerDequeueMailJobOptions.smtpHost.isNotDirty()) {
             if (!"-queue".equalsIgnoreCase(spooler_log.mail().smtp())) {
@@ -37,13 +37,14 @@ public class JobSchedulerDequeueMailJobJSAdapterClass extends JobSchedulerJobAda
         }
 
         String schedulerFilePathName = "";
-        if (isJobchain()) {
+        boolean isJobChain = spooler_task.order() != null;
+        if (isJobChain) {
             schedulerFilePathName = spooler_task.order().params().value("scheduler_file_path");
         }
 
         if (!schedulerFilePathName.isEmpty()) {
             File schedulerFilePath = new File(schedulerFilePathName);
-            jobSchedulerDequeueMailJobOptions.fileWatching.value(this.isJobchain());
+            jobSchedulerDequeueMailJobOptions.fileWatching.value(isJobChain);
             jobSchedulerDequeueMailJobOptions.queueDirectory.setValue(schedulerFilePath.getParent());
             jobSchedulerDequeueMailJobOptions.emailFileName.setValue(schedulerFilePathName);
             LOGGER.debug("Running in a job chain with a file order source.");

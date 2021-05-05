@@ -5,6 +5,7 @@ public class FilterOutConditionEvents {
     private Long outConditionId;
     private String event;
     private String jobStream;
+    private String folder;
     private String session;
     private String command;
     private String job;
@@ -57,6 +58,16 @@ public class FilterOutConditionEvents {
     
     public void setJob(String job) {
         this.job = job;
+    }
+
+    
+    public String getFolder() {
+        return folder;
+    }
+
+    
+    public void setFolder(String folder) {
+        this.folder = folder;
     }
 
 }

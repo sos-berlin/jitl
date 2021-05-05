@@ -48,7 +48,12 @@ public class DBLayerConsumedInConditions {
             and = " and ";
         }
 
-        where = " where 1=1 " + and + where;
+        if (filter.getJoin() != null && !"".equals(filter.getJoin())) {
+            where += and + filter.getJoin();
+            and = " and ";
+        }
+
+        where = " where "  + where;
         return where;
     }
 
@@ -63,6 +68,11 @@ public class DBLayerConsumedInConditions {
 
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
             where += and + " jobStream = :jobStream";
+            and = " and ";
+        }
+
+        if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
+            where += and + " folder = :folder";
             and = " and ";
         }
 
@@ -85,6 +95,9 @@ public class DBLayerConsumedInConditions {
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
             query.setParameter("jobStream", filter.getJobStream());
         }
+        if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
+            query.setParameter("folder", filter.getFolder());
+        }
         if (filter.getJob() != null && !"".equals(filter.getJob())) {
             query.setParameter("job", filter.getJob());
         }
@@ -98,8 +111,9 @@ public class DBLayerConsumedInConditions {
     public List<DBItemConsumedInCondition> getConsumedInConditionsList(FilterConsumedInConditions filter, final int limit)
             throws SOSHibernateException {
 
-        String q = "select c from " + DBItemInCondition + " i, " + DBItemConsumedInCondition + " c " + getWhere(filter) + " and i.id=c.inConditionId";
-      
+        filter.setJoin("i.id=c.inConditionId");
+        String q = "select c from " + DBItemInCondition + " i, " + DBItemConsumedInCondition + " c " + getWhere(filter);
+
         Query<DBItemConsumedInCondition> query = sosHibernateSession.createQuery(q);
         query = bindParameters(filter, query);
 
@@ -136,8 +150,7 @@ public class DBLayerConsumedInConditions {
 
     public int deleteConsumedInConditions(FilterConsumedInConditions filterConsumedInConditions) throws SOSHibernateException {
         filterConsumedInConditions.setSession("");
-        String select = "select id from " +  DBItemInCondition + getDeleteWhere(
-                filterConsumedInConditions);
+        String select = "select id from " + DBItemInCondition + getDeleteWhere(filterConsumedInConditions);
 
         String hql = "delete from " + DBItemConsumedInCondition + " where inConditionId in ( " + select + ")";
         Query<DBItemConsumedInCondition> query = sosHibernateSession.createQuery(hql);
@@ -145,8 +158,8 @@ public class DBLayerConsumedInConditions {
         int row = sosHibernateSession.executeUpdate(query);
         return row;
     }
-    
-       public int updateConsumedInCondition(Long oldId, Long newId) throws SOSHibernateException {
+
+    public int updateConsumedInCondition(Long oldId, Long newId) throws SOSHibernateException {
         String hql = "update " + DBItemConsumedInCondition + " set inConditionId=" + newId + " where inConditionId=:oldId";
         int row = 0;
         Query<DBItemConsumedInCondition> query = sosHibernateSession.createQuery(hql);
@@ -163,8 +176,6 @@ public class DBLayerConsumedInConditions {
         deleteByInConditionId(filterConsumedInConditions);
         sosHibernateSession.save(dbItemConsumedInCondition);
     }
-
-   
 
     public void store(DBItemConsumedInCondition dbItemConsumedInCondition) throws SOSHibernateException {
         sosHibernateSession.save(dbItemConsumedInCondition);

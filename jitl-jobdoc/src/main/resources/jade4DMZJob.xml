@@ -67,6 +67,7 @@
             <xi:include href="./params/param_alternative_transfer_mode.xml" parse="xml" />
             <xi:include href="./params/param_alternative_user.xml" parse="xml" />
             <xi:include href="./params/param_append_files.xml" parse="xml" />
+            <xi:include href="./params/param_async_history.xml" parse="xml" />
             <xi:include href="./params/param_atomic_prefix.xml" parse="xml" />
             <xi:include href="./params/param_atomic_suffix.xml" parse="xml" />
             <xi:include href="./params/param_banner_footer.xml" parse="xml" />

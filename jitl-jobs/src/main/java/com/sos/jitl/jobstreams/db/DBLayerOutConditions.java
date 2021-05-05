@@ -1,10 +1,12 @@
 package com.sos.jitl.jobstreams.db;
 
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 import org.hibernate.query.Query;
+import org.hibernate.transform.Transformers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,13 +47,14 @@ public class DBLayerOutConditions {
             if (s.getJobStream().isEmpty()) {
                 sql.append("e.globalEvent = " + s.getGlobalEvent() + " and e.event = " + "'" + s.getEvent() + "'").append(" or ");
             } else {
-                sql.append("(e.globalEvent = " + s.getGlobalEvent() + " and e.event = " + "'" + s.getEvent() + "'").append(" and ").append("o.jobStream = " + "'" + s.getJobStream() + "')").append(
-                        " or ");
+                sql.append("(e.globalEvent = " + s.getGlobalEvent() + " and e.event = " + "'" + s.getEvent() + "'").append(" and ").append(
+                        "o.jobStream = " + "'" + s.getJobStream() + "')").append(" or ");
             }
         }
-        sql.append("1=0");
 
-        return " (" + sql.toString() + ") ";
+        String s = sql.toString();
+        s = s.substring(0, s.length() - 4);
+        return " (" + s + ") ";
     }
 
     private String getWhere(FilterOutConditions filter) {
@@ -72,12 +75,23 @@ public class DBLayerOutConditions {
             where += and + " o.jobStream = :jobStream";
             and = " and ";
         }
+        if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
+            where += and + " o.folder = :folder";
+            and = " and ";
+        }
 
         if (filter.getListOfEvents() != null && filter.getListOfEvents().size() > 0) {
             where += and + getEventListSql(filter.getListOfEvents());
         }
 
-        where = "where 1=1 " + and + where;
+        if (filter.getJoin() != null && !"".equals(filter.getJoin())) {
+            where += and + filter.getJoin();
+            and = " and ";
+        }
+
+        if (!"".equals(where)) {
+            where = "where  " + where;
+        }
         return where;
     }
 
@@ -93,14 +107,24 @@ public class DBLayerOutConditions {
             query.setParameter("jobStream", filter.getJobStream());
         }
 
+        if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
+            query.setParameter("folder", filter.getFolder());
+        }
+
         return query;
     }
 
-    public List<DBItemOutConditionWithConfiguredEvent> getOutConditionsList(FilterOutConditions filter, final int limit) throws SOSHibernateException {
-        String q = "select new com.sos.jitl.jobstreams.db.DBItemOutConditionWithConfiguredEvent(o,e) from " + DBItemOutCondition + " o, " + DBItemOutConditionEvent
-                + " e " + getWhere(filter) + " and o.id=e.outConditionId";
+    public List<DBItemOutConditionWithConfiguredEvent> getOutConditionsList(FilterOutConditions filter, final int limit)
+            throws SOSHibernateException {
+
+        filter.setJoin("o.id=e.outConditionId");
+        String q =
+                "select o.id as outId, o.schedulerId as jobSchedulerId, o.job as job, o.expression as expression, o.jobStream as jobStream, o.folder as folder, o.created as created, "
+                        + "e.id as oEventId, e.outConditionId as outConditionId, e.event as event, e.command as command, e.globalEvent as globalEvent from "
+                        + DBItemOutCondition + " o, " + DBItemOutConditionEvent + " e " + getWhere(filter);
         Query<DBItemOutConditionWithConfiguredEvent> query = sosHibernateSession.createQuery(q);
         query = bindParameters(filter, query);
+        query.setResultTransformer(Transformers.aliasToBean(DBItemOutConditionWithConfiguredEvent.class));
 
         if (limit > 0) {
             query.setMaxResults(limit);
@@ -136,6 +160,12 @@ public class DBLayerOutConditions {
         DBLayerEvents dbLayerEvents = new DBLayerEvents(sosHibernateSession);
         for (JobOutCondition jobOutCondition : outConditions.getJobsOutconditions()) {
 
+            if ("".equals(jobOutCondition.getJob())) {
+                continue;
+            }
+
+            String folder = Paths.get(jobOutCondition.getJob()).getParent().toString().replace('\\', '/');
+
             FilterOutConditions filterOutConditions = new FilterOutConditions();
             filterOutConditions.setJob(jobOutCondition.getJob());
             filterOutConditions.setJobSchedulerId(outConditions.getJobschedulerId());
@@ -156,6 +186,7 @@ public class DBLayerOutConditions {
                 dbItemOutCondition.setSchedulerId(outConditions.getJobschedulerId());
                 jobStream = outCondition.getJobStream();
                 dbItemOutCondition.setJobStream(outCondition.getJobStream());
+                dbItemOutCondition.setFolder(folder);
                 dbItemOutCondition.setCreated(new Date());
                 sosHibernateSession.save(dbItemOutCondition);
                 dbLayerOutConditionEvents.deleteInsert(dbItemOutCondition, outCondition);
@@ -176,6 +207,15 @@ public class DBLayerOutConditions {
         }
         return jobStream;
 
+    }
+
+    public void deleteCascading(FilterOutConditions filterOutConditions) throws SOSHibernateException {
+        DBLayerOutConditionEvents dbLayerOutConditionEvents = new DBLayerOutConditionEvents(sosHibernateSession);
+        FilterOutConditionEvents filterOutConditionEvents = new FilterOutConditionEvents();
+        filterOutConditionEvents.setJobStream(filterOutConditions.getJobStream());
+        filterOutConditionEvents.setFolder(filterOutConditions.getFolder());
+        dbLayerOutConditionEvents.deleteByJobstream(filterOutConditionEvents);
+        delete(filterOutConditions);
     }
 
 }

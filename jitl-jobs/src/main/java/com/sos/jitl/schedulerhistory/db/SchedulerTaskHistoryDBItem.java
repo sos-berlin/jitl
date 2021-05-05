@@ -23,6 +23,7 @@ public class SchedulerTaskHistoryDBItem extends SchedulerHistoryLogDBItem {
     private String errorCode;
     private Integer pid;
     private String agentUrl;
+    private String transferHistory;
     private boolean assignToDaysScheduler = false;
 
     public SchedulerTaskHistoryDBItem() {
@@ -168,7 +169,7 @@ public class SchedulerTaskHistoryDBItem extends SchedulerHistoryLogDBItem {
     public void setPid(Integer pid) {
         this.pid = pid;
     }
-    
+
     @Column(name = "[AGENT_URL]", nullable = true)
     public String getAgentUrl() {
         return agentUrl;
@@ -177,6 +178,16 @@ public class SchedulerTaskHistoryDBItem extends SchedulerHistoryLogDBItem {
     @Column(name = "[AGENT_URL]", nullable = true)
     public void setAgentUrl(String val) {
         this.agentUrl = val;
+    }
+
+    @Column(name = "[TRANSFER_HISTORY]", nullable = true)
+    public String getTransferHistory() {
+        return transferHistory;
+    }
+
+    @Column(name = "[TRANSFER_HISTORY]", nullable = true)
+    public void setTransferHistory(String val) {
+        this.transferHistory = val;
     }
 
     @Transient

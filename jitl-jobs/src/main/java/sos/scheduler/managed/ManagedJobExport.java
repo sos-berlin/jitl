@@ -9,14 +9,12 @@ import sos.connection.SOSConnection;
 import sos.marshalling.SOSExport;
 import sos.settings.SOSProfileSettings;
 import sos.util.SOSArguments;
-import sos.util.SOSStandardLogger;
 
 /** @author Andreas Liebert */
 public class ManagedJobExport {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagedJobExport.class);
     private static SOSConnection conn;
-    private static SOSStandardLogger sosLogger = null;
 
     public static void main(String[] args) {
         if (args.length == 0 || "-?".equals(args[0]) || "-h".equals(args[0])) {
@@ -26,25 +24,16 @@ public class ManagedJobExport {
         try {
             SOSArguments arguments = new SOSArguments(args);
             String xmlFile = "";
-            String logFile = "";
-            int logLevel = 0;
             String settingsFile = "";
             int jobID = 0;
             try {
                 xmlFile = arguments.asString("-file=", "job_export.xml");
-                logLevel = arguments.asInt("-v=", SOSStandardLogger.INFO);
-                logFile = arguments.asString("-log=", "");
                 jobID = arguments.asInt("-job=");
                 settingsFile = arguments.asString("-settings=", "../config/factory.ini");
             } catch (Exception e1) {
                 LOGGER.debug(e1.getMessage(), e1);
                 showUsage();
                 System.exit(0);
-            }
-            if (!logFile.isEmpty()) {
-                sosLogger = new SOSStandardLogger(logFile, logLevel);
-            } else {
-                sosLogger = new SOSStandardLogger(logLevel);
             }
             getDBConnection(settingsFile);
             conn.connect();
@@ -73,15 +62,12 @@ public class ManagedJobExport {
                 throw new Exception("no settings found for entry [db_class] in section [spooler] of configuration file: " + settingsFile);
             }
         }
-        if (sosLogger != null) {
-            sosLogger.debug6("connecting to database.. .");
-        }
+        LOGGER.debug("connecting to database.. .");
         String dbProperty = props.getProperty("db").replaceAll("jdbc:", "-url=jdbc:");
         dbProperty = dbProperty.substring(dbProperty.indexOf('-'));
         SOSArguments dbArguments = new SOSArguments(dbProperty);
-        conn =
-                SOSConnection.createInstance(props.getProperty("db_class"), dbArguments.asString("-class=", ""), dbArguments.asString("-url=", ""),
-                        dbArguments.asString("-user=", ""), dbArguments.asString("-password=", ""), sosLogger);
+        conn = SOSConnection.createInstance(props.getProperty("db_class"), dbArguments.asString("-class=", ""), dbArguments.asString("-url=", ""),
+                dbArguments.asString("-user=", ""), dbArguments.asString("-password=", ""));
         return conn;
     }
 
@@ -98,22 +84,13 @@ public class ManagedJobExport {
     private static void export(String xmlFile, int jobID) throws Exception {
         String selManagedJobs = "SELECT * FROM " + JobSchedulerManagedObject.getTableManagedJobs() + " WHERE \"ID\"=" + jobID;
         String selJobTypes = "SELECT * FROM " + JobSchedulerManagedObject.getTableManagedJobTypes() + " WHERE \"TYPE\"='?'";
-        String selSettings =
-                "SELECT * FROM " + JobSchedulerManagedObject.getTableSettings()
-                        + " WHERE \"APPLICATION\" IN ('job_type/local/?', 'job_type/global/?', 'job_type/mixed/?')";
-        SOSExport export = new SOSExport(conn, xmlFile, "DOCUMENT", sosLogger);
+        String selSettings = "SELECT * FROM " + JobSchedulerManagedObject.getTableSettings()
+                + " WHERE \"APPLICATION\" IN ('job_type/local/?', 'job_type/global/?', 'job_type/mixed/?')";
+        SOSExport export = new SOSExport(conn, xmlFile, "DOCUMENT");
         int job = export.query(JobSchedulerManagedObject.getTableManagedJobs(), "ID", selManagedJobs);
         int jobTypes = export.query(JobSchedulerManagedObject.getTableManagedJobTypes(), "TYPE", selJobTypes, "JOB_TYPE", job);
-        int settings =
-                export.query(JobSchedulerManagedObject.getTableSettings(), "APPLICATION,SECTION,NAME", selSettings, "TYPE,TYPE,TYPE", jobTypes);
+        int settings = export.query(JobSchedulerManagedObject.getTableSettings(), "APPLICATION,SECTION,NAME", selSettings, "TYPE,TYPE,TYPE",
+                jobTypes);
         export.doExport();
-    }
-
-    public static SOSStandardLogger getSosLogger() {
-        return sosLogger;
-    }
-
-    public static void setSosLogger(SOSStandardLogger sosLogger) {
-        ManagedJobExport.sosLogger = sosLogger;
     }
 }

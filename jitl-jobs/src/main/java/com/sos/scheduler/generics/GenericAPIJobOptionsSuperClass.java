@@ -40,7 +40,7 @@ public class GenericAPIJobOptionsSuperClass extends JSOptionsClass {
     }
 
     public GenericAPIJobOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public GenericAPIJobOptionsSuperClass(final JSListener pobjListener) {
@@ -54,9 +54,8 @@ public class GenericAPIJobOptionsSuperClass extends JSOptionsClass {
     }
 
     @Override
-    public void setAllOptions(final HashMap<String, String> pobjJSSettings) {
-        objSettings = pobjJSSettings;
-        super.setAllOptions(pobjJSSettings);
+    public void setAllOptions(HashMap<String, String> settings) {
+        super.setAllOptions(settings);
     }
 
     @Override
@@ -71,7 +70,7 @@ public class GenericAPIJobOptionsSuperClass extends JSOptionsClass {
     @Override
     public void commandLineArgs(final String[] pstrArgs) {
         super.commandLineArgs(pstrArgs);
-        this.setAllOptions(super.objSettings);
+        this.setAllOptions(super.getSettings());
     }
 
 }

@@ -21,6 +21,7 @@ import org.xml.sax.SAXException;
 import sos.connection.SOSConnection;
 import sos.scheduler.command.SOSSchedulerCommand;
 import sos.scheduler.job.JobSchedulerJobAdapter;
+import sos.spooler.Order;
 import sos.spooler.Supervisor_client;
 
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
@@ -47,7 +48,6 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
     }
 
     protected void initialize() {
-        initializeLog4jAppenderClass();
         jsEventsClient = new JSEventsClient();
         jsEventsClientOptions = jsEventsClient.getOptions();
 
@@ -73,8 +73,9 @@ public class JSEventsClientBaseClass extends JobSchedulerJobAdapter {
         jsEventsClient.setJSJobUtilites(this);
         jsEventsClient.setJSCommands(this);
         try {
-            jsEventsClientOptions.setCurrentNodeName(this.getCurrentNodeName());
-            jsEventsClientOptions.setAllOptions(getSchedulerParameterAsProperties(getJobOrOrderParameters()));
+            Order order = spooler_task.order();
+            jsEventsClientOptions.setCurrentNodeName(this.getCurrentNodeName(order,false));
+            jsEventsClientOptions.setAllOptions(getSchedulerParameterAsProperties(order));
         } catch (Exception e) {
             throw new JobSchedulerException("error " + e.getMessage(), e);
         }

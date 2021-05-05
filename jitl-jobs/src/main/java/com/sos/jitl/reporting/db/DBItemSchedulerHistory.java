@@ -34,6 +34,7 @@ public class DBItemSchedulerHistory extends DbItem implements Serializable {
     private String errorCode;
     private String errorText;
     private String taskAgentUrl;
+    private String transferHistory;
     
     public DBItemSchedulerHistory() {
     }
@@ -177,5 +178,15 @@ public class DBItemSchedulerHistory extends DbItem implements Serializable {
     @Column(name = "[AGENT_URL]", nullable = true)
     public void setAgentUrl(String val) {
         this.taskAgentUrl = val;
+    }
+    
+    @Column(name = "[TRANSFER_HISTORY]", nullable = true)
+    public String getTransferHistory() {
+        return transferHistory;
+    }
+
+    @Column(name = "[TRANSFER_HISTORY]", nullable = true)
+    public void setTransferHistory(String val) {
+        this.transferHistory = val;
     }
 }

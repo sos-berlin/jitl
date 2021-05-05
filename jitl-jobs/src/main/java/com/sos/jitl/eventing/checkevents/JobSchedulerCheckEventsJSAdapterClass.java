@@ -8,54 +8,50 @@ import sos.scheduler.job.JobSchedulerJobAdapter;
 public class JobSchedulerCheckEventsJSAdapterClass extends JobSchedulerJobAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCheckEventsJSAdapterClass.class);
-	private boolean success = false;
+    private boolean success = false;
 
-	@Override
-	public boolean spooler_process() throws Exception {
-		super.spooler_process();
-		doProcessing();
+    @Override
+    public boolean spooler_process() throws Exception {
+        super.spooler_process();
+        doProcessing();
 
-		if (success) {
-			return signalSuccess();
-		} else {
-			return false;
-		}
-	}
+        if (success) {
+            return getSpoolerProcess().isOrderJob();
+        } else {
+            return false;
+        }
+    }
 
-	private void doProcessing() throws Exception {
-		JobSchedulerCheckEvents jobSchedulerCheckEvents = new JobSchedulerCheckEvents();
-		JobSchedulerCheckEventsOptions jobSchedulerCheckEventsOptions = jobSchedulerCheckEvents.getOptions();
-		String configurationFile = this.getHibernateConfigurationReporting().toFile().getAbsolutePath();
+    private void doProcessing() throws Exception {
+        JobSchedulerCheckEvents jobSchedulerCheckEvents = new JobSchedulerCheckEvents();
+        JobSchedulerCheckEventsOptions jobSchedulerCheckEventsOptions = jobSchedulerCheckEvents.getOptions();
+        String configurationFile = this.getHibernateConfigurationReporting().toFile().getAbsolutePath();
 
-		jobSchedulerCheckEventsOptions.configuration_file.setValue(configurationFile);
-		jobSchedulerCheckEventsOptions.setCurrentNodeName(this.getCurrentNodeName());
-		jobSchedulerCheckEventsOptions.setAllOptions(getSchedulerParameterAsProperties());
-		jobSchedulerCheckEventsOptions.checkMandatory();
-		jobSchedulerCheckEvents.setJSJobUtilites(this);
-		jobSchedulerCheckEvents.Execute();
-		if (isJobchain()) {
-			if (jobSchedulerCheckEvents.exist) {
-				spooler_log.debug3("EventExistResult=true");
-				spooler_task.order().params().set_var("event_exist_result", "true");
-			} else {
-				spooler_log.debug3("EventExistResult=false");
-				spooler_task.order().params().set_var("event_exist_result", "false");
-			}
-		}
-		success = jobSchedulerCheckEvents.exist
-				&& "success".equals(jobSchedulerCheckEventsOptions.handle_existing_as.getValue())
-				|| !jobSchedulerCheckEvents.exist
-						&& "success".equals(jobSchedulerCheckEventsOptions.handle_not_existing_as.getValue())
-				|| jobSchedulerCheckEvents.exist
-						&& "error".equals(jobSchedulerCheckEventsOptions.handle_not_existing_as.getValue())
-				|| !jobSchedulerCheckEvents.exist
-						&& "error".equals(jobSchedulerCheckEventsOptions.handle_existing_as.getValue())
-				|| jobSchedulerCheckEvents.exist && !jobSchedulerCheckEventsOptions.handle_existing_as.isDirty();
-		if (success) {
-			LOGGER.info("....Success:True");
-		} else {
-			LOGGER.info("....Success:False");
-		}
-	}
+        jobSchedulerCheckEventsOptions.configuration_file.setValue(configurationFile);
+        jobSchedulerCheckEventsOptions.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(), true));
+        jobSchedulerCheckEventsOptions.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
+        jobSchedulerCheckEventsOptions.checkMandatory();
+        jobSchedulerCheckEvents.setJSJobUtilites(this);
+        jobSchedulerCheckEvents.Execute();
+        if (getSpoolerProcess().getOrder() != null) {
+            if (jobSchedulerCheckEvents.exist) {
+                spooler_log.debug3("EventExistResult=true");
+                getSpoolerProcess().getOrder().params().set_var("event_exist_result", "true");
+            } else {
+                spooler_log.debug3("EventExistResult=false");
+                getSpoolerProcess().getOrder().params().set_var("event_exist_result", "false");
+            }
+        }
+        success = jobSchedulerCheckEvents.exist && "success".equals(jobSchedulerCheckEventsOptions.handle_existing_as.getValue())
+                || !jobSchedulerCheckEvents.exist && "success".equals(jobSchedulerCheckEventsOptions.handle_not_existing_as.getValue())
+                || jobSchedulerCheckEvents.exist && "error".equals(jobSchedulerCheckEventsOptions.handle_not_existing_as.getValue())
+                || !jobSchedulerCheckEvents.exist && "error".equals(jobSchedulerCheckEventsOptions.handle_existing_as.getValue())
+                || jobSchedulerCheckEvents.exist && !jobSchedulerCheckEventsOptions.handle_existing_as.isDirty();
+        if (success) {
+            LOGGER.info("....Success:True");
+        } else {
+            LOGGER.info("....Success:False");
+        }
+    }
 
 }

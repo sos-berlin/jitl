@@ -20,6 +20,7 @@ import com.sos.i18n.annotation.I18NResourceBundle;
 import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistory;
 import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistoryInfo;
 import com.sos.jitl.restclient.AccessTokenProvider;
+import com.sos.jitl.restclient.JobSchedulerCredentialStoreJOCParameters;
 import com.sos.jitl.restclient.WebserviceCredentials;
 import com.sos.localization.Messages;
 
@@ -51,8 +52,17 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
     }
 
     private IJobSchedulerHistory getHistoryObject(Spooler schedulerInstance) throws UnsupportedEncodingException, InterruptedException, SOSException, URISyntaxException  {
+    	
+    	JobSchedulerCredentialStoreJOCParameters jobSchedulerCredentialStoreJOCParameters = new JobSchedulerCredentialStoreJOCParameters();
+    	jobSchedulerCredentialStoreJOCParameters.setCredentialStoreEntryPath(objOptions.credential_store_entry_path.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setCredentialStoreFile(objOptions.credential_store_file.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setCredentialStoreKeyFile(objOptions.credential_store_key_file.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setCredentialStorePassword(objOptions.credential_store_password.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setJocUrl(objOptions.jocUrl.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setPassword(objOptions.password.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setUser(objOptions.user.getValue());
   
-        AccessTokenProvider accessTokenProvider = new AccessTokenProvider();
+        AccessTokenProvider accessTokenProvider = new AccessTokenProvider(jobSchedulerCredentialStoreJOCParameters);
         WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
         if (schedulerInstance != null) {
             webserviceCredentials = accessTokenProvider.getAccessToken(schedulerInstance);
@@ -86,7 +96,6 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
             String endTime = "00:00:00";
             String query = options().query.getValue();
             String[] queries = query.split("(;|,)");
-            //HistoryHelper jobHistoryHelper = new HistoryHelper();
             String methodName = HistoryHelper.getMethodName(options().query.getValue());
             if (options().start_time.isDirty()) {
                 startTime = options().start_time.getValue();
@@ -201,7 +210,7 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
     }
 
     @Override
-    public void setJSParam(final String pstrKey, final StringBuffer pstrValue) {
+    public void setJSParam(final String pstrKey, final StringBuilder pstrValue) {
     }
 
     @Override
@@ -224,11 +233,6 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
     }
 
     @Override
-    public String getCurrentNodeName() {
-        return null;
-    }
-
-    @Override
     public Object getSpoolerObject() {
         return null;
     }
@@ -243,7 +247,7 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
     }
 
     @Override
-    public void setCC(final int pintCC) {
+    public void setExitCode(final int pintCC) {
     }
 
     @Override

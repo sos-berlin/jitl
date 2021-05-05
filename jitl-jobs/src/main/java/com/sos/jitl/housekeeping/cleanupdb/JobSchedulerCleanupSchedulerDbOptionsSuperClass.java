@@ -181,7 +181,7 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
     }
 
     public JobSchedulerCleanupSchedulerDbOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JobSchedulerCleanupSchedulerDbOptionsSuperClass(JSListener pobjListener) {
@@ -194,9 +194,8 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
         this.setAllOptions(JSSettings);
     }
 
-    public void setAllOptions(HashMap<String, String> pobjJSSettings) {
-        objSettings = pobjJSSettings;
-        super.setAllOptions(pobjJSSettings);
+    public void setAllOptions(HashMap<String, String> settings) {
+        super.setAllOptions(settings);
     }
 
     @Override
@@ -211,7 +210,7 @@ public class JobSchedulerCleanupSchedulerDbOptionsSuperClass extends JSOptionsCl
     @Override
     public void commandLineArgs(String[] pstrArgs) {
         super.commandLineArgs(pstrArgs);
-        this.setAllOptions(super.objSettings);
+        this.setAllOptions(super.getSettings());
     }
 
 }

@@ -67,7 +67,7 @@ public class ReportingJobOptionsSuperClass extends JSOptionsClass {
     }
 
     public ReportingJobOptionsSuperClass() {
-        this.objParentClass = this.getClass();
+        this.currentClass = this.getClass();
     }
 
     public ReportingJobOptionsSuperClass(JSListener listener) {
@@ -81,7 +81,6 @@ public class ReportingJobOptionsSuperClass extends JSOptionsClass {
     }
 
     public void setAllOptions(HashMap<String, String> settings) {
-        objSettings = settings;
         super.setAllOptions(settings);
     }
 
@@ -97,7 +96,7 @@ public class ReportingJobOptionsSuperClass extends JSOptionsClass {
     @Override
     public void commandLineArgs(String[] args) {
         super.commandLineArgs(args);
-        this.setAllOptions(super.objSettings);
+        this.setAllOptions(super.getSettings());
     }
 
 }

@@ -19,6 +19,7 @@ public class DBItemInCondition implements IJSJobConditionKey {
     private Boolean markExpression;
     private Boolean skipOutCondition;
     private String jobStream;
+    private String folder;
     private Date nextPeriod;
     private Date created;
 
@@ -95,13 +96,22 @@ public class DBItemInCondition implements IJSJobConditionKey {
         this.jobStream = jobStream;
     }
 
+    @Column(name = "[FOLDER]", nullable = true)
+    public String getFolder() {
+        return folder;
+    }
+
+    public void setFolder(String folder) {
+        this.folder = folder;
+    }
+    
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "[NEXT_PERIOD]", nullable = false)
+    @Column(name = "[NEXT_PERIOD]", nullable = true)
     public Date getNextPeriod() {
         return nextPeriod;
     }
 
-    @Column(name = "[NEXT_PERIOD]", nullable = false)
+    @Column(name = "[NEXT_PERIOD]", nullable = true)
     public void setNextPeriod(Date nextPeriod) {
         this.nextPeriod = nextPeriod;
     }

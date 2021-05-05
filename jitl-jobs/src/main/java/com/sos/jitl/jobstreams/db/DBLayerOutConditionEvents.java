@@ -15,6 +15,7 @@ public class DBLayerOutConditionEvents {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DBLayerOutConditionEvents.class);
     private static final String DBItemOutConditionEvent = DBItemOutConditionEvent.class.getSimpleName();
+    private static final String DBItemOutCondition = DBItemOutCondition.class.getSimpleName();
     private final SOSHibernateSession sosHibernateSession;
 
     public DBLayerOutConditionEvents(SOSHibernateSession session) {
@@ -40,6 +41,16 @@ public class DBLayerOutConditionEvents {
             and = " and ";
         }
 
+        if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
+            where += and + " jobStream = :jobstream";
+            and = " and ";
+        }
+
+        if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
+            where += and + " folder = :folder";
+            and = " and ";
+        }
+
         if (filter.getCommand() != null && !"".equals(filter.getCommand())) {
             where += and + " command = :command";
             and = " and ";
@@ -51,10 +62,13 @@ public class DBLayerOutConditionEvents {
         }
 
         if (!"".equals(where.trim())) {
-            where = "where " + where;
+            where = " where " + where;
         }
         return where;
     }
+    
+
+   
 
     private <T> Query<T> bindParameters(FilterOutConditionEvents filter, Query<T> query) {
         if (filter.getCommand() != null && !"".equals(filter.getCommand())) {
@@ -62,6 +76,12 @@ public class DBLayerOutConditionEvents {
         }
         if (filter.getEvent() != null && !"".equals(filter.getEvent())) {
             query.setParameter("event", filter.getEvent());
+        }
+        if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
+            query.setParameter("jobstream", filter.getJobStream());
+        }
+        if (filter.getFolder() != null && !"".equals(filter.getFolder())) {
+            query.setParameter("folder", filter.getFolder());
         }
         if (filter.getOutConditionId() != null) {
             query.setParameter("outConditionId", filter.getOutConditionId());
@@ -103,6 +123,19 @@ public class DBLayerOutConditionEvents {
 
             sosHibernateSession.save(dbItemOutConditionEvent);
         }
+
+    }
+
+    public int deleteByJobstream(FilterOutConditionEvents filterOutConditionEvents) throws SOSHibernateException {
+        FilterOutConditionEvents filter = new FilterOutConditionEvents();
+        filter.setJobStream(filterOutConditionEvents.getJobStream());
+        filter.setFolder(filterOutConditionEvents.getFolder());
+        String select = "select id from " + DBItemOutCondition + getWhere(filter);
+        String hql = "delete from " + DBItemOutConditionEvent + " where outConditionId in ( " + select + ")";
+        Query<DBItemOutConditionEvent> query = sosHibernateSession.createQuery(hql);
+        bindParameters(filter, query);
+        int row = sosHibernateSession.executeUpdate(query);
+        return row;
 
     }
 

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<param xmlns="http://www.sos-berlin.com/schema/scheduler_job_documentation_v1.1"
+       xmlns:xhtml="http://www.w3.org/1999/xhtml"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       name="async_history"
+       DefaultValue="false"
+       required="false"
+       DataType="SOSOptionBoolean">
+        <note language="de">
+		    <title>Die Speicherung in die Transfer History Tabellen erfolgt nach Abschluss einer Übertragung (unabhängig davon ob die Übertragung erfolgreich war oder nicht) und nicht während der Dateiübertragung.</title>		
+          <div xmlns="http://www.w3.org/1999/xhtml">
+          <p>
+            </p>
+          </div>
+        </note>
+        <note language="en">
+		    <title>Transfer information is stored to the transfer history tables after a transfer has been completed (regardless of whether the transfer was successful or not) and not during the transfer.</title>		
+          <div xmlns="http://www.w3.org/1999/xhtml">
+          </div>
+        </note>
+      </param>

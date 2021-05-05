@@ -14,11 +14,11 @@ public class JobSchedulerStartLatecomersJSAdapterClass extends JobSchedulerJobAd
 		try {
 			super.spooler_process();
 			doProcessing();
+			return getSpoolerProcess().isOrderJob();
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage(), e);
 			throw(e);
 		}
-		return signalSuccess();
 	}
 
 	
@@ -26,8 +26,8 @@ public class JobSchedulerStartLatecomersJSAdapterClass extends JobSchedulerJobAd
 		JobSchedulerStartLatecomers jobSchedulerStartLatecomers = new JobSchedulerStartLatecomers();
 		JobSchedulerStartLatecomersOptions jobSchedulerStartLatecomersOptions = jobSchedulerStartLatecomers
 				.getOptions();
-		jobSchedulerStartLatecomersOptions.setCurrentNodeName(this.getCurrentNodeName());
-		jobSchedulerStartLatecomersOptions.setAllOptions(getSchedulerParameterAsProperties());
+		jobSchedulerStartLatecomersOptions.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(),true));
+		jobSchedulerStartLatecomersOptions.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
 		jobSchedulerStartLatecomersOptions.checkMandatory();
 		jobSchedulerStartLatecomers.setJSJobUtilites(this);
         jobSchedulerStartLatecomers.setJSCommands(this);

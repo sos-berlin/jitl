@@ -22,23 +22,23 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
         try {
             super.spooler_process();
             doProcessing();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
         }
-        return signalSuccess();
     }
 
     private void doProcessing() throws Exception {
-        if (isOrderJob()) {
+        if (spooler_task.job().order_queue() != null) {
             JobChainSplitterOptions jobChainSplitterOptions = new JobChainSplitterOptions();
-            jobChainSplitterOptions.setCurrentNodeName(this.getCurrentNodeName());
-            jobChainSplitterOptions.setAllOptions(getSchedulerParameterAsProperties());
+            jobChainSplitterOptions.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(), true));
+            jobChainSplitterOptions.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
             jobChainSplitterOptions.checkMandatory();
-            Order currentOrder = spooler_task.order();
+            Order currentOrder = getSpoolerProcess().getOrder();
             Variable_set orderParams = currentOrder.params();
             String syncStateName = jobChainSplitterOptions.syncStateName.getValue();
             if (syncStateName.isEmpty()) {
-                syncStateName =  jobChainSplitterOptions.joinStateName.getValue();
+                syncStateName = jobChainSplitterOptions.joinStateName.getValue();
             }
             if (syncStateName.isEmpty()) {
                 syncStateName = currentOrder.job_chain_node().next_state();
@@ -53,8 +53,7 @@ public class JobChainSplitterJSAdapterClass extends JobSchedulerJobAdapter {
             }
             int lngNoOfParallelSteps = jobChainSplitterOptions.stateNames.getValueList().length;
             String jobChainPath = currentOrder.job_chain().path();
-            String syncParam =
-                    jobChainName + SyncNodeList.CHAIN_ORDER_DELIMITER + syncStateName + SyncNodeList.CONST_PARAM_PART_REQUIRED_ORDERS;
+            String syncParam = jobChainName + SyncNodeList.CHAIN_ORDER_DELIMITER + syncStateName + SyncNodeList.CONST_PARAM_PART_REQUIRED_ORDERS;
             orderParams.set_var(syncParam, Integer.toString(lngNoOfParallelSteps + 1));
             if (jobChainSplitterOptions.createSyncContext.value()) {
                 orderParams.set_var(PARAMETER_JOB_CHAIN_NAME2SYNCHRONIZE, jobChainPath);

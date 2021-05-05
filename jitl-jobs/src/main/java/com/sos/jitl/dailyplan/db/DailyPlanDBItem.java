@@ -35,6 +35,7 @@ public class DailyPlanDBItem extends DbItem {
     private String jobStream;
     private String jobChain;
     private String orderId;
+    private Long jobStreamStarterId;
     private Date plannedStart;
     private Date expectedEnd;
     private Date periodBegin;
@@ -267,6 +268,16 @@ public class DailyPlanDBItem extends DbItem {
     @Column(name = "[REPORT_TRIGGER_ID]",  nullable = true)
     public Long getReportTriggerId() {
         return reportTriggerId;
+    }
+    
+    @Column(name = "[JOBSTREAM_STARTER_ID]")
+    public Long getJobStreamStarterId() {
+        return jobStreamStarterId;
+    }
+
+    @Column(name = "[JOBSTREAM_STARTER_ID]")
+    public void setJobStreamStarterId(Long jobStreamStarterId) {
+        this.jobStreamStarterId = jobStreamStarterId;
     }
 
     @Column(name = "[AUDIT_LOG_ID]",  nullable = true)

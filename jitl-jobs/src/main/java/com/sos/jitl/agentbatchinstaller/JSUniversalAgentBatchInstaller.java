@@ -67,7 +67,7 @@ public class JSUniversalAgentBatchInstaller extends JSToolBox implements JSJobUt
     }
 
     @Override
-    public void setJSParam(final String pstrKey, final StringBuffer pstrValue) {
+    public void setJSParam(final String pstrKey, final StringBuilder pstrValue) {
     }
 
     @Override
@@ -80,12 +80,7 @@ public class JSUniversalAgentBatchInstaller extends JSToolBox implements JSJobUt
         LOGGER.debug("objJSJobUtilities = " + objJSJobUtilities.getClass().getName());
     }
 
-    @Override
-    public String getCurrentNodeName() {
-        return null;
-    }
-
-    public void setJSCommands(final IJSCommands pobjJSCommands) {
+   public void setJSCommands(final IJSCommands pobjJSCommands) {
         if (pobjJSCommands == null) {
             objJSCommands = this;
         } else {
@@ -109,7 +104,7 @@ public class JSUniversalAgentBatchInstaller extends JSToolBox implements JSJobUt
     }
 
     @Override
-    public void setCC(final int pintCC) {
+    public void setExitCode(final int pintCC) {
     }
 
     @Override

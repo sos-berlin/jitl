@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.JSHelper.io.Files.JSTextFile;
-import com.sos.VirtualFileSystem.shell.CmdShell;
+import com.sos.vfs.common.SOSShell;
 
 public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
 
@@ -33,7 +33,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
         try {
             getOptions().checkMandatory();
             LOGGER.debug(objOptions.dirtyString());
-            CmdShell objShell = new CmdShell();
+            SOSShell objShell = new SOSShell();
             String strCommand = objOptions.shell_command.getOptionalQuotedValue();
             if (objShell.isWindows()) {
                 strCommand = "echo 1 | " + strCommand;
@@ -52,7 +52,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
             if (objOptions.command_script_file.isDirty()) {
                 strCommandParams += " @" + strTempFileName;
             }
-            HashMap<String, String> objSettings = objOptions.getSettings4StepName();
+            HashMap<String, String> objSettings = getSettings4StepName();
             JSTextFile objTF = new JSTextFile(strTempFileName);
             for (final Object element : objSettings.entrySet()) {
                 final Map.Entry<String, String> mapItem = (Map.Entry<String, String>) element;
@@ -61,7 +61,11 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
                 if (mapItem.getValue() != null) {
                     strMapKey = strMapKey.replace(".", "_");
                     String strT = String.format("DEFINE %1$s = %2$s (char)", strMapKey, addQuotes(mapItem.getValue().toString()));
-                    LOGGER.debug(strT);
+                    if ("db_password".equals(strMapKey)) {
+                        LOGGER.debug("DEFINE db_password = ******** (char)");
+                    }else {
+                        LOGGER.debug(strT);
+                    }
                     objTF.writeLine(strT);
                 }
             }
@@ -79,7 +83,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
             LOGGER.debug(objOptions.command_script_file.getValue());
             strFC += "\n" + "exit;\n";
             objTF.writeLine(strFC);
-            int intCC = objShell.executeCommand(objOptions);
+            int intCC = executeCommand(objOptions, objShell);
             String strCC = String.valueOf(intCC);
             String f = "00000";
             strCC = f.substring(0, strCC.length() - 1) + strCC;
@@ -158,6 +162,75 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
         }
         JSJ_I_111.toLog(conMethodName);
         return this;
+    }
+
+    public int executeCommand(final SOSSQLPlusJobOptions options, final SOSShell shell) throws Exception {
+        return shell.executeCommand(createCommandUsingOptions(options, shell),false);
+    }
+
+    private String[] createCommands(final SOSSQLPlusJobOptions options, final SOSShell shell, final String envComSpecName,
+            final String defaultComSpec, final String startParam) {
+        final String[] command = { " ", " ", " " };
+        String comSpec = "";
+        int indx = 0;
+        String startShellCommandParam = startParam;
+        if (options.getStartShellCommand().isDirty()) {
+            comSpec = options.getStartShellCommand().getValue();
+            if (!"none".equalsIgnoreCase(comSpec)) {
+                command[indx++] = comSpec;
+                if (options.getStartShellCommandParameter().isDirty()) {
+                    startShellCommandParam = options.getStartShellCommandParameter().getValue();
+                    command[indx++] = startShellCommandParam;
+                }
+                command[indx++] = options.getShellCommand().getValue() + " " + options.getCommandLineOptions().getValue() + " " + options
+                        .getShellCommandParameter().getValue();
+            } else {
+                command[indx++] = options.getShellCommand().getValue();
+                command[indx++] = options.getCommandLineOptions().getValue() + " " + options.getShellCommandParameter().getValue();
+            }
+        } else {
+            comSpec = System.getenv(envComSpecName);
+            if (comSpec == null) {
+                comSpec = defaultComSpec;
+            }
+            command[indx++] = comSpec;
+            command[indx++] = startShellCommandParam;
+            command[indx++] = options.getShellCommand().getValue() + " " + options.getCommandLineOptions().getValue() + " " + options
+                    .getShellCommandParameter().getValue();
+        }
+        return command;
+    }
+
+    private String[] createCommandUsingOptions(final SOSSQLPlusJobOptions options, SOSShell shell) {
+        if (shell.isWindows()) {
+            return createCommands(options, shell, "comspec", "cmd.exe", "/C");
+        } else {
+            return createCommands(options, shell, "SHELL", "/bin/sh", "-c");
+        }
+    }
+
+    private HashMap<String, String> getSettings4StepName() {
+        HashMap<String, String> objS = new HashMap<String, String>();
+        int intStartPos = objOptions.getCurrentNodeName().length() + 1;
+        for (Map.Entry<String, String> mapItem : objOptions.getSettings().entrySet()) {
+            String strMapKey = mapItem.getKey();
+            String strValue = mapItem.getValue();
+            if (strMapKey.indexOf("/") != -1) {
+                if (strMapKey.startsWith(objOptions.getCurrentNodeName() + "/")) {
+                    strMapKey = strMapKey.substring(intStartPos);
+                } else {
+                    strValue = null;
+                }
+            }
+            if (strValue != null) {
+            	if ("db_password".equals(strMapKey)) {
+                    strValue = "********";
+                }
+                LOGGER.debug(strMapKey + " = " + strValue);
+                objS.put(strMapKey, strValue);
+            }
+        }
+        return objS;
     }
 
     public String sqlPlusVariableName(String s) {

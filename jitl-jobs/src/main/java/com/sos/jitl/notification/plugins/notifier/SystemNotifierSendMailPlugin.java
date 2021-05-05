@@ -55,7 +55,7 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
 
         String url = "";
         try {
-            url = getOptions().scheduler_mail_settings.value().settings().get(Joc.CONFIG_ENTRY);
+            url = getOptions().scheduler_mail_settings.value().getSettings().get(Joc.CONFIG_ENTRY);
         } catch (Exception e) {
             LOGGER.warn(String.format("[%s]exception on get link url: %s", systemNotification.getServiceName(), e.toString()), e);
         }
@@ -139,8 +139,8 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
 
     private void setMailCCBCC(ElementNotificationMail config, JSMailOptions mailOptions) throws Exception {
         mail.clearRecipients();
-        if (mailOptions.settings().containsKey(MailHeaderKeyName.TO)) {
-            mail.addRecipient(mailOptions.settings().get(MailHeaderKeyName.TO));
+        if (mailOptions.getSettings().containsKey(MailHeaderKeyName.TO)) {
+            mail.addRecipient(mailOptions.getSettings().get(MailHeaderKeyName.TO));
         }
         mail.addCC(config.getCC());
         if (!SOSString.isEmpty(config.getBCC())) {
@@ -150,25 +150,25 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
 
     private void setMailBCC(ElementNotificationMail config, JSMailOptions mailOptions) throws Exception {
         mail.clearRecipients();
-        if (mailOptions.settings().containsKey(MailHeaderKeyName.TO)) {
-            mail.addRecipient(mailOptions.settings().get(MailHeaderKeyName.TO));
+        if (mailOptions.getSettings().containsKey(MailHeaderKeyName.TO)) {
+            mail.addRecipient(mailOptions.getSettings().get(MailHeaderKeyName.TO));
         }
-        if (mailOptions.settings().containsKey(MailHeaderKeyName.CC)) {
-            mail.addCC(mailOptions.settings().get(MailHeaderKeyName.CC));
+        if (mailOptions.getSettings().containsKey(MailHeaderKeyName.CC)) {
+            mail.addCC(mailOptions.getSettings().get(MailHeaderKeyName.CC));
         }
         mail.addBCC(config.getBCC());
     }
 
     private JSMailOptions getSchedulerMailOptions() throws Exception {
         JSMailOptions mailOptions = getOptions().scheduler_mail_settings.value();
-        if (!mailOptions.settings().containsKey(MailServerKeyName.SMTP_PORT)) {
-            String host = mailOptions.settings().get(MailServerKeyName.SMTP_HOST);
+        if (!mailOptions.getSettings().containsKey(MailServerKeyName.SMTP_PORT)) {
+            String host = mailOptions.getSettings().get(MailServerKeyName.SMTP_HOST);
             if (SOSString.isEmpty(host) || host.toLowerCase().equals("-queue")) {
-                throw new Exception(String.format("smtp host not configured to send mails. settings=%s", mailOptions.settings()));
+                throw new Exception(String.format("smtp host not configured to send mails. settings=%s", mailOptions.getSettings()));
             }
-            String ini = mailOptions.settings().get(MailServerKeyName.SCHEDULER_INI_PATH);
+            String ini = mailOptions.getSettings().get(MailServerKeyName.SCHEDULER_INI_PATH);
             if (SOSString.isEmpty(ini)) {
-                throw new Exception(String.format("scheduler factory.ini file not founded. settings=%s", mailOptions.settings()));
+                throw new Exception(String.format("scheduler factory.ini file not founded. settings=%s", mailOptions.getSettings()));
             }
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("read %s", ini));
@@ -179,10 +179,10 @@ public class SystemNotifierSendMailPlugin extends SystemNotifierCustomPlugin {
                 mailOptions.loadProperties(smtp);
             }
 
-            mailOptions.settings().put(Joc.CONFIG_ENTRY, getJocUrl(ini));
+            mailOptions.getSettings().put(Joc.CONFIG_ENTRY, getJocUrl(ini));
         }
         if (isDebugEnabled) {
-            LOGGER.debug(String.format("mailOptions.settings=%s", mailOptions.settings()));
+            LOGGER.debug(String.format("mailOptions.settings=%s", mailOptions.getSettings()));
         }
         return mailOptions;
     }

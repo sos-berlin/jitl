@@ -112,7 +112,7 @@ public class JSBatchInstallerOptionsSuperClass extends JSOptionsClass {
     }
 
     public JSBatchInstallerOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JSBatchInstallerOptionsSuperClass(JSListener pobjListener) {
@@ -125,9 +125,8 @@ public class JSBatchInstallerOptionsSuperClass extends JSOptionsClass {
         this.setAllOptions(JSSettings);
     }
 
-    public void setAllOptions(HashMap<String, String> pobjJSSettings) {
-        objSettings = pobjJSSettings;
-        super.setAllOptions(pobjJSSettings);
+    public void setAllOptions(HashMap<String, String> settings) {
+        super.setAllOptions(settings);
     }
 
     @Override
@@ -142,7 +141,7 @@ public class JSBatchInstallerOptionsSuperClass extends JSOptionsClass {
     @Override
     public void commandLineArgs(String[] pstrArgs) {
         super.commandLineArgs(pstrArgs);
-        this.setAllOptions(super.objSettings);
+        this.setAllOptions(super.getSettings());
     }
 
 }

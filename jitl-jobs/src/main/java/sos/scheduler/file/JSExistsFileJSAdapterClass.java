@@ -60,7 +60,7 @@ public class JSExistsFileJSAdapterClass extends JobSchedulerJobAdapter {
     private boolean doProcessing() throws Exception {
         JSExistsFile objR = new JSExistsFile();
         objO = objR.getOptions();
-        objO.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
+        objO.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
         if (!objO.file_spec.isDirty() && !objO.file.isDirty()) {
             String filename = spooler_task.order().params().value(SCHEDULER_FILE_PATH);
             if (filename != null && !filename.isEmpty()) {
@@ -76,18 +76,19 @@ public class JSExistsFileJSAdapterClass extends JobSchedulerJobAdapter {
         String strOrderJobChainName = null;
         boolean flgCreateOrders4AllFiles = false;
         boolean count_files = objO.count_files.value();
-        if (isJobchain()) {
-            if (count_files) {
-                setOrderParameter(objO.count_files.getKey(), String.valueOf(intNoOfHitsInResultSet));
-            }
-            Variable_set objP = spooler_task.order().params();
-            if (isNotNull(objP)) {
+        if (spooler_task.order() != null) {
+            Variable_set orderParams = spooler_task.order().params();
+            if (orderParams != null) {
+                if (count_files) {
+                    orderParams.set_var(objO.count_files.getKey(), String.valueOf(intNoOfHitsInResultSet));
+                }
+
                 String strT = "";
                 for (File objFile : lstResultList) {
                     strT += objFile.getAbsolutePath() + ";";
                 }
-                setOrderParameter(objO.scheduler_sosfileoperations_resultset.getKey(), strT);
-                setOrderParameter(objO.scheduler_sosfileoperations_resultsetsize.getKey(), String.valueOf(intNoOfHitsInResultSet));
+                orderParams.set_var(objO.scheduler_sosfileoperations_resultset.getKey(), strT);
+                orderParams.set_var(objO.scheduler_sosfileoperations_resultsetsize.getKey(), String.valueOf(intNoOfHitsInResultSet));
             }
             String strOnEmptyResultSet = objO.on_empty_result_set.getValue();
             if (isNotEmpty(strOnEmptyResultSet) && intNoOfHitsInResultSet <= 0) {
@@ -147,18 +148,15 @@ public class JSExistsFileJSAdapterClass extends JobSchedulerJobAdapter {
     public boolean setReturnResult(final boolean pflgResult) {
         boolean rc1 = pflgResult;
         if (!rc1 && objO.gracious.isGraciousAll()) {
-            return signalSuccess();
+            return getSpoolerProcess().isOrderJob();
         } else {
             if (!rc1 && objO.gracious.isGraciousTrue()) {
-                if (isJobchain()) {
-                    return conJobChainFailure;
-                }
-                return conJobSuccess;
+                return false;
             } else {
                 if (rc1) {
-                    return signalSuccess();
+                    return getSpoolerProcess().isOrderJob();
                 } else {
-                    return signalFailure();
+                    return false;
                 }
             }
         }

@@ -12,6 +12,7 @@ import org.hibernate.transform.Transformers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.reporting.helper.EReferenceType;
@@ -61,8 +62,8 @@ public class DBLayerReporting extends DBLayer {
         return item;
     }
 
-    public DBItemReportTask insertTask(DBItemSchedulerHistory task, InventoryInfo inventoryInfo, boolean isOrder, boolean syncCompleted)
-            throws SOSHibernateException {
+    public DBItemReportTask insertTask(DBItemSchedulerHistory task, InventoryInfo inventoryInfo, boolean isOrder, boolean syncCompleted,
+            boolean transferHistory) throws SOSHibernateException {
         DBItemReportTask item = new DBItemReportTask();
         item.setSchedulerId(task.getSpoolerId());
         item.setHistoryId(task.getId());
@@ -85,6 +86,8 @@ public class DBLayerReporting extends DBLayer {
         item.setIsRuntimeDefined(inventoryInfo.getIsRuntimeDefined());
         item.setSyncCompleted(syncCompleted);
         item.setResultsCompleted(false);
+        item.setTransferHistory(transferHistory);
+
         item.setCreated(ReportUtil.getCurrentDateTime());
         item.setModified(ReportUtil.getCurrentDateTime());
 
@@ -92,8 +95,8 @@ public class DBLayerReporting extends DBLayer {
         return item;
     }
 
-    public DBItemReportTask insertTaskByOrderStep(DBItemSchedulerHistoryOrderStepReporting step, InventoryInfo inventoryInfo, boolean syncCompleted)
-            throws SOSHibernateException {
+    public DBItemReportTask insertTaskByOrderStep(DBItemSchedulerHistoryOrderStepReporting step, InventoryInfo inventoryInfo, boolean syncCompleted,
+            boolean transferHistory) throws SOSHibernateException {
         String jobName = null;
         String clusterMemberId = null;
         Integer steps = null;
@@ -155,6 +158,7 @@ public class DBLayerReporting extends DBLayer {
         item.setIsRuntimeDefined(inventoryInfo.getIsRuntimeDefined());
         item.setSyncCompleted(syncCompleted);
         item.setResultsCompleted(false);
+        item.setTransferHistory(transferHistory);
 
         item.setCreated(ReportUtil.getCurrentDateTime());
         item.setModified(ReportUtil.getCurrentDateTime());
@@ -467,10 +471,9 @@ public class DBLayerReporting extends DBLayer {
         return query;
     }
 
-    @SuppressWarnings("deprecation")
     public List<Map<String, String>> getInventoryJobInfoByJobName(String schedulerId, String schedulerHostname, int schedulerHttpPort, String jobName)
             throws SOSHibernateException {
-        StringBuffer sql = new StringBuffer("select ");
+        StringBuilder sql = new StringBuilder("select ");
         sql.append(quote("ij.NAME"));
         sql.append(" ," + quote("ij.TITLE"));
         sql.append(" ," + quote("ij.IS_RUNTIME_DEFINED"));
@@ -494,10 +497,9 @@ public class DBLayerReporting extends DBLayer {
         return getSession().getResultListAsStringMaps(query);
     }
 
-    @SuppressWarnings("deprecation")
     public List<Map<String, String>> getInventoryJobInfoByJobChain(String schedulerId, String schedulerHostname, int schedulerHttpPort,
             String jobChainName, String stepState) throws SOSHibernateException {
-        StringBuffer sql = new StringBuffer("select ");
+        StringBuilder sql = new StringBuilder("select ");
         sql.append(quote("ij.NAME"));
         sql.append(" ," + quote("ij.TITLE"));
         sql.append(" ," + quote("ij.IS_RUNTIME_DEFINED"));
@@ -539,14 +541,23 @@ public class DBLayerReporting extends DBLayer {
         return getSession().getResultListAsStringMaps(query);
     }
 
-    @SuppressWarnings("deprecation")
     public List<Map<String, String>> getInventoryOrderInfoByJobChain(String schedulerId, String schedulerHostname, int schedulerHttpPort,
             String orderId, String jobChainName) throws SOSHibernateException {
-        StringBuffer sql = new StringBuffer("select ");
+
+        StringBuilder sql = new StringBuilder("select ");
         sql.append(quote("ijc.NAME"));
         sql.append(" ," + quote("ijc.TITLE"));
         sql.append(" ," + quote("io.IS_RUNTIME_DEFINED"));
-        sql.append(" ,'").append(SOSJobSchedulerGlobal.JOB_CRITICALITY.NORMAL.toString()).append("' as CRITICALITY ");
+        sql.append(" ,");
+
+        StringBuilder normal = new StringBuilder("'").append(SOSJobSchedulerGlobal.JOB_CRITICALITY.NORMAL.toString()).append("'");
+        if (getSession().getFactory().getDbms().equals(SOSHibernateFactory.Dbms.PGSQL)) {
+            sql.append(" CAST(").append(normal).append(" as VARCHAR) ");
+        } else {
+            sql.append(normal);
+        }
+
+        sql.append(" as ").append(quote("CRITICALITY")).append(" ");
         sql.append(" from " + TABLE_INVENTORY_ORDERS + " io");
         sql.append(" ," + TABLE_INVENTORY_JOB_CHAINS + " ijc");
         sql.append(" ," + TABLE_INVENTORY_INSTANCES + " ii ");
@@ -631,6 +642,7 @@ public class DBLayerReporting extends DBLayer {
         hql.append(",h.error           as taskError");
         hql.append(",h.errorCode       as taskErrorCode");
         hql.append(",h.errorText       as taskErrorText");
+        hql.append(",h.transferHistory as taskTransferHistory");
         hql.append(" from " + SchedulerOrderStepHistoryDBItem.class.getSimpleName() + " osh");
         hql.append(" inner join osh.schedulerOrderHistoryDBItem oh");
         hql.append(" left outer join osh.schedulerTaskHistoryDBItem h");

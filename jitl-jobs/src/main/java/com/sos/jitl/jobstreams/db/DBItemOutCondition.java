@@ -19,6 +19,7 @@ public class DBItemOutCondition implements IJSJobConditionKey {
     private String job;
     private String expression;
     private String jobStream;
+    private String folder;
     private Date created;
 
     public DBItemOutCondition() {
@@ -73,6 +74,15 @@ public class DBItemOutCondition implements IJSJobConditionKey {
     public void setJobStream(String jobStream) {
         this.jobStream = jobStream;
     }
+    
+    @Column(name = "[FOLDER]", nullable = true)
+    public String getFolder() {
+        return folder;
+    }
+
+    public void setFolder(String folder) {
+        this.folder = folder;
+    }    
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "[CREATED]", nullable = false)

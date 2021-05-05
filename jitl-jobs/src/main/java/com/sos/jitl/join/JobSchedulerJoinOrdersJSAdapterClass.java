@@ -6,6 +6,7 @@ import com.sos.jitl.join.JobSchedulerJoinOrdersOptions;
 import com.sos.jitl.sync.SyncNodeList;
 
 import sos.scheduler.job.JobSchedulerJobAdapter;
+import sos.spooler.Variable_set;
 import sos.xml.SOSXMLXPath;
 import java.util.UUID;
 
@@ -36,10 +37,10 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
         try {
             super.spooler_process();
             doProcessing();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
         }
-        return signalSuccess();
     }
 
     private void suspendOrder() {
@@ -51,17 +52,27 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
     }
 
     private void setRequired() {
+        Variable_set  v = spooler.create_variable_set();
+        v.merge(spooler_task.params());
+        v.merge(spooler_task.order().params());
         String stateParamName = spooler_task.order().job_chain().name() + SyncNodeList.CHAIN_ORDER_DELIMITER + jobSchedulerJoinOrdersOptions.getCurrentNodeName() + SyncNodeList.CONST_PARAM_PART_REQUIRED_ORDERS;
-        String stateParamValue = spooler_task.order().params().value(stateParamName);
+        String stateParamValue = v.value(stateParamName);
+        LOGGER.debug("1stateParamName=stateParamValue" + stateParamName + "=" + stateParamValue);
         if (!"".equals(stateParamValue)) {
+            LOGGER.debug("required_order from " + stateParamName + "=" + stateParamValue);
             jobSchedulerJoinOrdersOptions.required_orders.setValue(stateParamValue);
+            LOGGER.debug(String.format("New value for waiting for %s orders", jobSchedulerJoinOrdersOptions.required_orders.value()));
         } else {
             stateParamName = spooler_task.order().job_chain().name() + "_required_orders";
-            stateParamValue = spooler_task.order().params().value(stateParamName);
+            stateParamValue = v.value(stateParamName);
+            LOGGER.debug("2stateParamName=stateParamValue" + stateParamName + "=" + stateParamValue);
             if (!"".equals(stateParamValue)) {
+                LOGGER.debug("required_order from " + stateParamName + "=" + stateParamValue);
                 jobSchedulerJoinOrdersOptions.required_orders.setValue(stateParamValue);
+                LOGGER.debug(String.format("New value for waiting for %s orders", jobSchedulerJoinOrdersOptions.required_orders.value()));
             }
         }
+
     }
 
     private JoinOrder createJoinOrder() {
@@ -187,8 +198,8 @@ public class JobSchedulerJoinOrdersJSAdapterClass extends JobSchedulerJobAdapter
     private void doProcessing() throws Exception {
         jobSchedulerJoinOrders = new JobSchedulerJoinOrders();
         jobSchedulerJoinOrdersOptions = jobSchedulerJoinOrders.getOptions();
-        jobSchedulerJoinOrdersOptions.setCurrentNodeName(this.getCurrentNodeName());
-        jobSchedulerJoinOrdersOptions.setAllOptions(getSchedulerParameterAsProperties());
+        jobSchedulerJoinOrdersOptions.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(),false));
+        jobSchedulerJoinOrdersOptions.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
         jobSchedulerJoinOrdersOptions.checkMandatory();
         jobSchedulerJoinOrders.setJSJobUtilites(this);
 

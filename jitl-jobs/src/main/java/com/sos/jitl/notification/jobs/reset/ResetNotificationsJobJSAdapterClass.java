@@ -14,8 +14,6 @@ public class ResetNotificationsJobJSAdapterClass extends JobSchedulerJobAdapter 
         try {
             job = new ResetNotificationsJob();
             ResetNotificationsJobOptions options = job.getOptions();
-            options.setCurrentNodeName(this.getCurrentNodeName());
-            options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
             job.setJSJobUtilites(this);
             job.setJSCommands(this);
 
@@ -36,17 +34,17 @@ public class ResetNotificationsJobJSAdapterClass extends JobSchedulerJobAdapter 
             super.spooler_process();
 
             ResetNotificationsJobOptions options = job.getOptions();
-            options.setCurrentNodeName(this.getCurrentNodeName());
-            options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
+            options.setCurrentNodeName(getCurrentNodeName(getSpoolerProcess().getOrder(), true));
+            options.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
 
             job.openSession();
             job.execute();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.toString(), e);
         } finally {
             job.closeSession();
         }
-        return signalSuccess();
     }
 
     @Override

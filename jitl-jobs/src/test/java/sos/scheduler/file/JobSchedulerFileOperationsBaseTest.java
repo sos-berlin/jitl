@@ -12,8 +12,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sos.scheduler.job.JobSchedulerJobAdapter;
-
 import com.sos.JSHelper.io.Files.JSFile;
 
 /** @author KB */
@@ -91,27 +89,18 @@ public class JobSchedulerFileOperationsBaseTest {
         params.put(JobSchedulerFileOperationBase.PARAMETER_FILE, "4711");
         params.put(JobSchedulerFileOperationBase.PARAMETER_FILE_PATH, "");
         params.put(JobSchedulerFileOperationBase.PARAMETER_SOURCE_FILE, "");
-        assertEquals(
-                "must be 4711",
-                "4711",
-                objFOP.getParamValue(new String[] { JobSchedulerFileOperationBase.PARAMETER_FILE,
-                        JobSchedulerFileOperationBase.PARAMETER_FILE_PATH, JobSchedulerFileOperationBase.PARAMETER_SOURCE_FILE }, ""));
+        assertEquals("must be 4711", "4711", objFOP.getParamValue(new String[] { JobSchedulerFileOperationBase.PARAMETER_FILE,
+                JobSchedulerFileOperationBase.PARAMETER_FILE_PATH, JobSchedulerFileOperationBase.PARAMETER_SOURCE_FILE }, ""));
         params.put(JobSchedulerFileOperationBase.PARAMETER_FILE, "");
         params.put(JobSchedulerFileOperationBase.PARAMETER_FILE_PATH, "4711");
         params.put(JobSchedulerFileOperationBase.PARAMETER_SOURCE_FILE, "");
-        assertEquals(
-                "must be 4711",
-                "4711",
-                objFOP.getParamValue(new String[] { JobSchedulerFileOperationBase.PARAMETER_FILE,
-                        JobSchedulerFileOperationBase.PARAMETER_FILE_PATH, JobSchedulerFileOperationBase.PARAMETER_SOURCE_FILE }, ""));
+        assertEquals("must be 4711", "4711", objFOP.getParamValue(new String[] { JobSchedulerFileOperationBase.PARAMETER_FILE,
+                JobSchedulerFileOperationBase.PARAMETER_FILE_PATH, JobSchedulerFileOperationBase.PARAMETER_SOURCE_FILE }, ""));
         params.put(JobSchedulerFileOperationBase.PARAMETER_FILE, "");
         params.put(JobSchedulerFileOperationBase.PARAMETER_FILE_PATH, "");
         params.put(JobSchedulerFileOperationBase.PARAMETER_SOURCE_FILE, "4711");
-        assertEquals(
-                "must be 4711",
-                "4711",
-                objFOP.getParamValue(new String[] { JobSchedulerFileOperationBase.PARAMETER_FILE,
-                        JobSchedulerFileOperationBase.PARAMETER_FILE_PATH, JobSchedulerFileOperationBase.PARAMETER_SOURCE_FILE }, ""));
+        assertEquals("must be 4711", "4711", objFOP.getParamValue(new String[] { JobSchedulerFileOperationBase.PARAMETER_FILE,
+                JobSchedulerFileOperationBase.PARAMETER_FILE_PATH, JobSchedulerFileOperationBase.PARAMETER_SOURCE_FILE }, ""));
     }
 
     @Test
@@ -119,11 +108,8 @@ public class JobSchedulerFileOperationsBaseTest {
         params.put(JobSchedulerFileOperationBase.PARAMETER_FILE.replaceAll("_", ""), "");
         params.put(JobSchedulerFileOperationBase.PARAMETER_FILE_PATH.replaceAll("_", ""), "4711");
         params.put(JobSchedulerFileOperationBase.PARAMETER_SOURCE_FILE.replaceAll("_", ""), "");
-        assertEquals(
-                "must be 4711",
-                "4711",
-                objFOP.getParamValue(new String[] { JobSchedulerFileOperationBase.PARAMETER_FILE,
-                        JobSchedulerFileOperationBase.PARAMETER_FILE_PATH, JobSchedulerFileOperationBase.PARAMETER_SOURCE_FILE }, ""));
+        assertEquals("must be 4711", "4711", objFOP.getParamValue(new String[] { JobSchedulerFileOperationBase.PARAMETER_FILE,
+                JobSchedulerFileOperationBase.PARAMETER_FILE_PATH, JobSchedulerFileOperationBase.PARAMETER_SOURCE_FILE }, ""));
     }
 
     @Test
@@ -214,22 +200,6 @@ public class JobSchedulerFileOperationsBaseTest {
         assertEquals("must be true", "true", objFOP.replaceVars4(objFOP.getParamValue("replaceVars")));
         params.put("replaceVars", "%notFound%");
         assertEquals("must be true", "?notFound?", objFOP.replaceVars4(objFOP.getParamValue("replaceVars")));
-    }
-
-    @Test
-    public final void testSetReturnResult() throws Exception {
-        params.put(JobSchedulerFileOperationBase.PARAMTER_GRACIOUS, "false");
-        objFOP.getParametersFromHashMap();
-        boolean flgRet = objFOP.setReturnResult(true);
-        assertEquals("Job has successful ended", JobSchedulerJobAdapter.conJobSuccess, flgRet);
-        flgRet = objFOP.setReturnResult(false);
-        assertEquals("Job has ended with failure", JobSchedulerJobAdapter.conJobFailure, flgRet);
-        params.put(JobSchedulerFileOperationBase.PARAMTER_GRACIOUS, "true");
-        objFOP.getParametersFromHashMap();
-        assertEquals("Job has ended with failure", JobSchedulerJobAdapter.conJobSuccess, objFOP.setReturnResult(false));
-        params.put(JobSchedulerFileOperationBase.PARAMTER_GRACIOUS, "all");
-        objFOP.getParametersFromHashMap();
-        assertEquals("Job has ended with failure", JobSchedulerJobAdapter.conJobSuccess, objFOP.setReturnResult(false));
     }
 
     @Test(expected = com.sos.JSHelper.Exceptions.JobSchedulerException.class)

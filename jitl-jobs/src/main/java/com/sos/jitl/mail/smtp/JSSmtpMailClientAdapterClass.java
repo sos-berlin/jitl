@@ -11,12 +11,12 @@ public class JSSmtpMailClientAdapterClass extends JSSmtpMailClientBaseClass {
     public boolean spooler_process() throws Exception {
         try {
             super.spooler_process();
-            doProcessing();
+            doProcessing(getSpoolerProcess().getOrder());
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
             throw e;
         }
-        return signalSuccess();
     }
 
 }

@@ -53,6 +53,7 @@ public class DBItemReportTask extends DbItem implements Serializable {
     private String errorText;
     private String agentUrl;
     private String criticality;
+    private boolean transferHistory;
     private boolean isRuntimeDefined;
     private boolean syncCompleted;
     private boolean resultsCompleted;
@@ -279,7 +280,7 @@ public class DBItemReportTask extends DbItem implements Serializable {
 
     @Column(name = "[CRITICALITY]", nullable = false)
     public void setCriticality(String val) {
-        if(SOSString.isEmpty(val)) {
+        if (SOSString.isEmpty(val)) {
             val = SOSJobSchedulerGlobal.JOB_CRITICALITY.NORMAL.toString();
         }
         this.criticality = val;
@@ -288,6 +289,18 @@ public class DBItemReportTask extends DbItem implements Serializable {
     @Column(name = "[CRITICALITY]", nullable = false)
     public String getCriticality() {
         return this.criticality;
+    }
+
+    @Column(name = "[TRANSFER_HISTORY]", nullable = false)
+    @Type(type = "numeric_boolean")
+    public void setTransferHistory(boolean val) {
+        this.transferHistory = val;
+    }
+
+    @Column(name = "[TRANSFER_HISTORY]", nullable = false)
+    @Type(type = "numeric_boolean")
+    public boolean getTransferHistory() {
+        return this.transferHistory;
     }
 
     @Column(name = "[IS_RUNTIME_DEFINED]", nullable = false)

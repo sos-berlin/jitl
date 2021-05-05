@@ -216,7 +216,7 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
     }
 
     @Override
-    public void setJSParam(final String pstrKey, final StringBuffer pstrValue) {
+    public void setJSParam(final String pstrKey, final StringBuilder pstrValue) {
         //
     }
 
@@ -228,11 +228,6 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
             objJSJobUtilities = pobjJSJobUtilities;
         }
         logger.debug("objJSJobUtilities = " + objJSJobUtilities.getClass().getName());
-    }
-
-    @Override
-    public String getCurrentNodeName() {
-        return null;
     }
 
     public boolean existsFile(final SOSOptionFileName objFile, final SOSOptionRegExp fileSpec1, final SOSOptionTime minFileAge1,
@@ -513,7 +508,7 @@ public class JSFileOperationBase extends JSToolBox implements JSJobUtilities {
     }
 
     @Override
-    public void setCC(final int pintCC) {
+    public void setExitCode(final int pintCC) {
         //
     }
 

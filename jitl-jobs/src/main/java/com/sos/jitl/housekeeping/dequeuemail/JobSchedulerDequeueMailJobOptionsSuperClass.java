@@ -183,7 +183,7 @@ public class JobSchedulerDequeueMailJobOptionsSuperClass extends JSOptionsClass 
     }
 
     public JobSchedulerDequeueMailJobOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JobSchedulerDequeueMailJobOptionsSuperClass(JSListener pobjListener) {
@@ -196,9 +196,8 @@ public class JobSchedulerDequeueMailJobOptionsSuperClass extends JSOptionsClass 
         this.setAllOptions(JSSettings);
     }
 
-    public void setAllOptions(HashMap<String, String> pobjJSSettings) {
-        objSettings = pobjJSSettings;
-        super.setAllOptions(pobjJSSettings);
+    public void setAllOptions(HashMap<String, String> settings) {
+        super.setAllOptions(settings);
     }
 
     @Override
@@ -213,7 +212,7 @@ public class JobSchedulerDequeueMailJobOptionsSuperClass extends JSOptionsClass 
     @Override
     public void commandLineArgs(String[] pstrArgs) {
         super.commandLineArgs(pstrArgs);
-        this.setAllOptions(super.objSettings);
+        this.setAllOptions(super.getSettings());
     }
 
 }

@@ -43,7 +43,7 @@ public class JSReportAllParameters extends JSToolBox implements JSJobUtilities {
             LOGGER.info(conSVNVersion);
             LOGGER.info(VersionInfo.VERSION_STRING);
             LOGGER.debug(Options().toString());
-            HashMap<String, String> objSettings = Options().settings();
+            HashMap<String, String> objSettings = Options().getSettings();
             for (final Object element : objSettings.entrySet()) {
                 final Map.Entry mapItem = (Map.Entry) element;
                 final String strMapKey = mapItem.getKey().toString();
@@ -76,7 +76,7 @@ public class JSReportAllParameters extends JSToolBox implements JSJobUtilities {
     }
 
     @Override
-    public void setJSParam(final String pstrKey, final StringBuffer pstrValue) {
+    public void setJSParam(final String pstrKey, final StringBuilder pstrValue) {
 
     }
 
@@ -91,18 +91,12 @@ public class JSReportAllParameters extends JSToolBox implements JSJobUtilities {
     }
 
     @Override
-    public String getCurrentNodeName() {
-        // TO DO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public void setStateText(final String pstrStateText) {
         // TO DO Auto-generated method stub
     }
 
     @Override
-    public void setCC(final int pintCC) {
+    public void setExitCode(final int pintCC) {
         // TO DO Auto-generated method stub
     }
 

@@ -17,7 +17,7 @@ public class MessageConsumerJobJSAdapter extends JobSchedulerJobAdapter {
         try {
             super.spooler_process();
             MessageConsumerOptions options = job.getOptions();
-            options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
+            options.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
             targetJobChains = options.getTargetJobChainName().getValue();
             delimiter = options.getParamKeyValueDelimiter().getValue();
             job.setJSJobUtilites(this);
@@ -26,10 +26,10 @@ public class MessageConsumerJobJSAdapter extends JobSchedulerJobAdapter {
             if (options.getExecuteXml().value()) {
                 executeXmlForAllTargets(job.getMessageXml());
             }
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             throw new JobSchedulerException("Error occured in spooler_process of MessageConsumerJob: ", e);
         }
-        return signalSuccess();
     }
 
     private void executeXml(String message) {

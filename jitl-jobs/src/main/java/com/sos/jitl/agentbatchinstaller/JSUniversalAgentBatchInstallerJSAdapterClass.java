@@ -1,9 +1,6 @@
 package com.sos.jitl.agentbatchinstaller;
 
-import java.util.HashMap;
-
 import sos.scheduler.job.JobSchedulerJobAdapter;
-import sos.spooler.Variable_set;
 
 public class JSUniversalAgentBatchInstallerJSAdapterClass extends JobSchedulerJobAdapter {
 
@@ -16,7 +13,7 @@ public class JSUniversalAgentBatchInstallerJSAdapterClass extends JobSchedulerJo
     public boolean spooler_process() throws Exception {
         super.spooler_process();
         doProcessing();
-        return this.isOrderJob();
+        return getSpoolerProcess().isOrderJob();
     } // spooler_process
 
     @Override
@@ -27,9 +24,8 @@ public class JSUniversalAgentBatchInstallerJSAdapterClass extends JobSchedulerJo
     private void doProcessing() throws Exception {
         JSUniversalAgentBatchInstaller jsUniversalAgentBatchInstaller = new JSUniversalAgentBatchInstaller();
         JSUniversalAgentBatchInstallerOptions jsUniversalAgentBatchInstallerOptions = jsUniversalAgentBatchInstaller.options();
-        HashMap<String, String> parameters = getParameters();
-
-        jsUniversalAgentBatchInstallerOptions.setAllOptions(getSchedulerParameterAsProperties(parameters));
+        
+        jsUniversalAgentBatchInstallerOptions.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
         jsUniversalAgentBatchInstallerOptions.checkMandatory();
         jsUniversalAgentBatchInstaller.setJSJobUtilites(this);
         jsUniversalAgentBatchInstaller.setJSCommands(this);

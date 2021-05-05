@@ -10,6 +10,7 @@ public class ReportExecutionFilter extends ReportHistoryFilter {
     private Set<Long> taskIds;
     private String orderHistoryId;
     String status = "";
+    private String folder;
     private ArrayList<String> listOfJobs;
     private ArrayList<String> listOfExcludedJobs;
     private ArrayList<String> states;
@@ -91,6 +92,16 @@ public class ReportExecutionFilter extends ReportHistoryFilter {
     
     public void setTaskIds(List<Long> taskIds) {
         this.taskIds = new HashSet<Long>(taskIds);
+    }
+
+    
+    public String getFolder() {
+        return folder;
+    }
+
+    
+    public void setFolder(String folder) {
+        this.folder = folder;
     }
 
 }

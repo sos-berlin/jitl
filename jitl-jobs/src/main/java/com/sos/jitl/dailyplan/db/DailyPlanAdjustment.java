@@ -115,6 +115,8 @@ public class DailyPlanAdjustment {
                 dailyPlanDBLayer.getSession().update(dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem());
                 dailyPlanUpdated = true;
             } catch (SOSHibernateObjectOperationException e) {
+            	dailyPlanDBLayer.getSession().rollback();
+            	dailyPlanDBLayer.getSession().beginTransaction();
             }
         }
 
@@ -128,6 +130,8 @@ public class DailyPlanAdjustment {
                 dailyPlanDBLayer.getSession().update(dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem());
                 dailyPlanUpdated = true;
             } catch (SOSHibernateObjectOperationException e) {
+            	dailyPlanDBLayer.getSession().rollback();
+            	dailyPlanDBLayer.getSession().beginTransaction();
             }
         }
 
@@ -162,6 +166,8 @@ public class DailyPlanAdjustment {
                     dailyPlanDBLayer.getSession().update(dailyPlanWithReportExecutionDBItem.getDailyPlanDbItem());
                     dailyPlanUpdated = true;
                 } catch (SOSHibernateObjectOperationException e) {
+                	dailyPlanDBLayer.getSession().rollback();
+                	dailyPlanDBLayer.getSession().beginTransaction();
                 }
                 break;
             }
@@ -180,6 +186,8 @@ public class DailyPlanAdjustment {
                 dailyPlanDBLayer.getSession().update(dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem());
                 dailyPlanUpdated = true;
             } catch (SOSHibernateObjectOperationException e) {
+            	dailyPlanDBLayer.getSession().rollback();
+            	dailyPlanDBLayer.getSession().beginTransaction();
             }
         }
 
@@ -193,6 +201,8 @@ public class DailyPlanAdjustment {
                 dailyPlanDBLayer.getSession().update(dailyPlanWithReportTriggerDBItem.getDailyPlanDbItem());
                 dailyPlanUpdated = true;
             } catch (SOSHibernateObjectOperationException e) {
+            	dailyPlanDBLayer.getSession().rollback();
+            	dailyPlanDBLayer.getSession().beginTransaction();
             }
         }
 
@@ -229,6 +239,8 @@ public class DailyPlanAdjustment {
                     }
 
                 } catch (org.hibernate.StaleStateException e) {
+                	dailyPlanDBLayer.getSession().rollback();
+                	dailyPlanDBLayer.getSession().beginTransaction();
                 }
                 break;
             }

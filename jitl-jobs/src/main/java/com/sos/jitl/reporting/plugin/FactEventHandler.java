@@ -4,12 +4,14 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.sos.hibernate.classes.SOSHibernate;
 import com.sos.hibernate.classes.SOSHibernateFactory;
@@ -32,7 +34,7 @@ import com.sos.scheduler.engine.kernel.scheduler.SchedulerXmlCommandExecutor;
 public class FactEventHandler extends LoopEventHandler {
 
     public static enum CustomEventType {
-        DailyPlanChanged, ReportingChanged
+        DailyPlanChanged, ReportingChanged, YADETransferFinished // see yade-engine YadeHistory
     }
 
     public static enum CustomEventTypeValue {
@@ -200,7 +202,8 @@ public class FactEventHandler extends LoopEventHandler {
             options.configuration_file.setValue(getSettings().getHibernateConfigurationReporting().toFile().getCanonicalPath());
         } catch (Exception e) {
         }
-
+        String pluginContext = MDC.get("plugin");
+        MDC.put("plugin", "dailyplan");
         DailyPlanAdjustment dp = new DailyPlanAdjustment(reportingSession);
         dp.setOptions(options);
         dp.setTo(new Date());
@@ -238,6 +241,11 @@ public class FactEventHandler extends LoopEventHandler {
                 LOGGER.debug(String.format("[%s]daily plan was not changed", method));
             }
         }
+        if (pluginContext != null) {
+            MDC.put("plugin", pluginContext);
+        } else {
+            MDC.remove("plugin");
+        }
     }
 
     private FactModel executeFacts(SOSHibernateSession reportingSession, SOSHibernateSession schedulerSession, JsonArray events,
@@ -270,8 +278,19 @@ public class FactEventHandler extends LoopEventHandler {
                 customEventValue = CustomEventTypeValue.standalone.name();
             }
             publishCustomEvent(CUSTOM_EVENT_KEY, CustomEventType.ReportingChanged.name(), customEventValue);
+            publishTransferHistory(factModel);
         }
         return factModel;
+    }
+
+    private void publishTransferHistory(FactModel factModel) {
+        if (factModel.getTransferHistory().getTransferIds().size() > 0) {
+            Iterator<Long> it = factModel.getTransferHistory().getTransferIds().iterator();
+            while (it.hasNext()) {
+                publishCustomEvent(CustomEventType.YADETransferFinished.name(), "transferId", String.valueOf(it.next()));
+            }
+            factModel.getTransferHistory().resetTransferIds();
+        }
     }
 
     private ArrayList<String> getCreateDailyPlanEvents(JsonArray events) throws Exception {
@@ -316,6 +335,7 @@ public class FactEventHandler extends LoopEventHandler {
         reportingFactory.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         reportingFactory.addClassMapping(DBLayer.getReportingClassMapping());
         reportingFactory.addClassMapping(DBLayer.getInventoryClassMapping());
+        reportingFactory.addClassMapping(DBLayer.getYadeClassMapping());
         reportingFactory.addClassMapping(com.sos.jitl.notification.db.DBLayer.getNotificationClassMapping());
         reportingFactory.build();
     }

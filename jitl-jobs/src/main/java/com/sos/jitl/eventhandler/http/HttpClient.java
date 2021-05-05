@@ -3,9 +3,6 @@ package com.sos.jitl.eventhandler.http;
 import java.io.StringReader;
 import java.net.URI;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -16,7 +13,6 @@ import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.sos.jitl.restclient.JobSchedulerRestApiClient;
 
 import javassist.NotFoundException;
@@ -100,20 +96,6 @@ public class HttpClient {
         return readJsonObject(uri, executeGet(uri, HEADER_APPLICATION_JSON, HEADER_APPLICATION_JSON));
     }
 
-    public JsonObject executeJsonGetTimeLimited(URI uri, int executionTimeout) throws Exception {
-
-        final SimpleTimeLimiter timeLimiter = new SimpleTimeLimiter(Executors.newSingleThreadExecutor());
-        @SuppressWarnings("unchecked")
-        final Callable<JsonObject> timeLimitedCall = timeLimiter.newProxy(new Callable<JsonObject>() {
-
-            @Override
-            public JsonObject call() throws Exception {
-                return executeJsonGet(uri);
-            }
-        }, Callable.class, executionTimeout, TimeUnit.SECONDS);
-        return timeLimitedCall.call();
-    }
-
     public JsonObject executeJsonPost(URI uri) throws Exception {
         return executeJsonPost(uri, null);
     }
@@ -128,24 +110,6 @@ public class HttpClient {
             body = builder.build().toString();
         }
         return readJsonObject(uri, executePost(uri, HEADER_APPLICATION_JSON, HEADER_APPLICATION_JSON, body));
-    }
-
-    public JsonObject executeJsonPostTimeLimited(URI uri, int executionTimeout) throws Exception {
-        return executeJsonPostTimeLimited(uri, null, executionTimeout);
-    }
-
-    public JsonObject executeJsonPostTimeLimited(URI uri, Map<String, String> bodyParams, int executionTimeout) throws Exception {
-
-        final SimpleTimeLimiter timeLimiter = new SimpleTimeLimiter(Executors.newSingleThreadExecutor());
-        @SuppressWarnings("unchecked")
-        final Callable<JsonObject> timeLimitedCall = timeLimiter.newProxy(new Callable<JsonObject>() {
-
-            @Override
-            public JsonObject call() throws Exception {
-                return executeJsonPost(uri, bodyParams);
-            }
-        }, Callable.class, executionTimeout, TimeUnit.SECONDS);
-        return timeLimitedCall.call();
     }
 
     public String executePost(URI uri, String contentType, String accept) throws Exception {

@@ -13,6 +13,7 @@ import javax.persistence.TemporalType;
 import org.hibernate.query.Query;
 import org.joda.time.DateTime;
 
+import com.sos.hibernate.classes.SOSHibernateFactory.Dbms;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.classes.SearchStringHelper;
 import com.sos.hibernate.classes.UtcTimeHelper;
@@ -68,7 +69,8 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
 
     public int delete(boolean onlyWhereAuditLogIdIsNull) throws SOSHibernateException {
         String hql = "delete from " + DailyPlanDBItem + " p " + getWhere(onlyWhereAuditLogIdIsNull);
-        ;
+         
+        LOGGER.info("Delete: " + hql + " --> " + filter.getJobStreamStarterId());
         int row = 0;
         Query<DailyPlanDBItem> query = sosHibernateSession.createQuery(hql);
         if (filter.getPlannedStart() != null) {
@@ -95,6 +97,9 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
         }
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
             query.setParameter("jobStream", filter.getJobStream());
+        }
+        if (filter.getJobStreamStarterId() != null) {
+            query.setParameter("jobStreamStarterId", filter.getJobStreamStarterId());
         }
         row = sosHibernateSession.executeUpdate(query);
         return row;
@@ -162,6 +167,10 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
             where += String.format(and + " p.jobStream %s :jobStream", SearchStringHelper.getSearchPathOperator(filter.getJobStream()));
             and = " and ";
         }
+        if (filter.getJobStreamStarterId() != null) {
+            where += String.format(and + " p.jobStreamStarterId = :jobStreamStarterId");
+            and = " and ";
+        }
         if (filter.getOrderId() != null && !"".equals(filter.getOrderId())) {
             where += String.format(and + " p.orderId %s :orderId", SearchStringHelper.getSearchOperator(filter.getOrderId()));
             and = " and ";
@@ -176,7 +185,11 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
         }
         if (filter.isJobStream() != null) {
             if (filter.isJobStream()) {
-                where += and + " p.jobStream is not null";
+                if (sosHibernateSession.getFactory().getDbms().equals(Dbms.ORACLE)) {
+                    where += and + " p.jobStream is not null";
+                } else {
+                    where += and + " (p.jobStream is not null or p.jobStream <> '')";
+                }
 
             }
             and = " and ";
@@ -193,13 +206,8 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
         if (!"".equals(pathField) && filter.getListOfFolders() != null && filter.getListOfFolders().size() > 0) {
             where += and + "(";
             for (Folder filterFolder : filter.getListOfFolders()) {
-                if (filterFolder.getRecursive()) {
-                    String likeFolder = (filterFolder.getFolder() + "/%").replaceAll("//+", "/");
-                    where += " (" + pathField + " = '" + filterFolder.getFolder() + "' or " + pathField + " like '" + likeFolder + "')";
-                } else {
-                    where += String.format(pathField + " %s '" + filterFolder.getFolder() + "'", SearchStringHelper.getSearchOperator(filterFolder
-                            .getFolder()));
-                }
+                String likeFolder = (filterFolder.getFolder() + "/%").replaceAll("//+", "/");
+                where += " (" + pathField + " = '" + filterFolder.getFolder() + "' or " + pathField + " like '" + likeFolder + "')";
                 where += " or ";
             }
             where += " 0=1)";
@@ -219,6 +227,9 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
         if (filter.getPlannedStartTo() != null) {
             query.setParameter("plannedStartTo", filter.getPlannedStartTo(), TemporalType.TIMESTAMP);
         }
+        if (filter.getPlannedStart() != null) {
+            query.setParameter("plannedStart", filter.getPlannedStart(), TemporalType.TIMESTAMP);
+        }
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setParameter("schedulerId", filter.getSchedulerId());
         }
@@ -229,7 +240,7 @@ public class DailyPlanDBLayer extends SOSHibernateIntervalDBLayer<DailyPlanDBIte
             query.setParameter("jobChain", SearchStringHelper.getSearchPathValue(filter.getJobChain()));
         }
         if (filter.getJobStream() != null && !"".equals(filter.getJobStream())) {
-            query.setParameter("jobStream",  SearchStringHelper.getSearchPathValue(filter.getJobStream()));
+            query.setParameter("jobStream", SearchStringHelper.getSearchPathValue(filter.getJobStream()));
         }
         if (filter.getOrderId() != null && !"".equals(filter.getOrderId())) {
             query.setParameter("orderId", filter.getOrderId());

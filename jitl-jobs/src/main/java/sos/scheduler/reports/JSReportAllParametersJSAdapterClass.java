@@ -1,6 +1,5 @@
 package sos.scheduler.reports;
 
-
 import sos.scheduler.job.JobSchedulerJobAdapter;
 
 import org.slf4j.Logger;
@@ -8,22 +7,18 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.i18n.annotation.I18NResourceBundle;
 
-/** \class JSReportAllParametersJSAdapterClass - JobScheduler Adapter for
- * "Report all Parameters"
+/** \class JSReportAllParametersJSAdapterClass - JobScheduler Adapter for "Report all Parameters"
  *
  * \brief AdapterClass of JSReportAllParameters for the SOSJobScheduler
  *
- * This Class JSReportAllParametersJSAdapterClass works as an adapter-class
- * between the SOS JobScheduler and the worker-class JSReportAllParameters.
+ * This Class JSReportAllParametersJSAdapterClass works as an adapter-class between the SOS JobScheduler and the worker-class JSReportAllParameters.
  *
  * 
  *
- * see \see J:\E\java\development\com.sos.scheduler\src\sos\scheduler\jobdoc\
- * JSReportAllParameters.xml for more details.
+ * see \see J:\E\java\development\com.sos.scheduler\src\sos\scheduler\jobdoc\ JSReportAllParameters.xml for more details.
  *
- * \verbatim ; mechanicaly created by
- * C:\Users\KB\eclipse\sos.scheduler.xsl\JSJobDoc2JSAdapterClass.xsl from
- * http://www.sos-berlin.com at 20110516150402 \endverbatim */
+ * \verbatim ; mechanicaly created by C:\Users\KB\eclipse\sos.scheduler.xsl\JSJobDoc2JSAdapterClass.xsl from http://www.sos-berlin.com at 20110516150402
+ * \endverbatim */
 @I18NResourceBundle(baseName = "com.sos.scheduler.messages", defaultLocale = "en")
 public class JSReportAllParametersJSAdapterClass extends JobSchedulerJobAdapter {
 
@@ -54,11 +49,10 @@ public class JSReportAllParametersJSAdapterClass extends JobSchedulerJobAdapter 
         try {
             super.spooler_process();
             doProcessing();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             return false;
-        } finally {
-        } // finally
-        return signalSuccess();
+        }
     } // spooler_process
 
     @Override
@@ -73,9 +67,9 @@ public class JSReportAllParametersJSAdapterClass extends JobSchedulerJobAdapter 
         final String conMethodName = conClassName + "::doProcessing"; //$NON-NLS-1$
         JSReportAllParameters objR = new JSReportAllParameters();
         JSReportAllParametersOptions objO = objR.Options();
-        objO.setCurrentNodeName(getCurrentNodeName());
+        objO.setCurrentNodeName(getCurrentNodeName(getSpoolerProcess().getOrder(), true));
 
-        objO.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
+        objO.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
         objO.checkMandatory();
         objR.setJSJobUtilites(this);
         objR.Execute();

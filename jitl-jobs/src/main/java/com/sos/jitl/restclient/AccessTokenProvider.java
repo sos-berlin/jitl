@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sos.exception.SOSException;
+import com.sos.keepass.SOSKeePassResolver;
 import com.typesafe.config.ConfigException;
 
 import sos.spooler.Spooler;
@@ -19,22 +20,28 @@ public class AccessTokenProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessTokenProvider.class);
     private static final String X_ACCESS_TOKEN = "X-Access-Token";
     private static final int MAX_WAIT_TIME_FOR_ACCESS_TOKEN = 30;
-    private String jocUrl;
+    private WebserviceCredentials webserviceCredentials;
     private String profileFileName;
+    private JobSchedulerCredentialStoreJOCParameters jobSchedulerCredentialStoreParameters;
 
-    public AccessTokenProvider() {
+    public AccessTokenProvider(JobSchedulerCredentialStoreJOCParameters options) {
         super();
         profileFileName = DEFAULT_PRIVATE_CONF_FILENAME;
+        this.jobSchedulerCredentialStoreParameters = options;
     }
 
-    public AccessTokenProvider(String profileFileName) {
+    public AccessTokenProvider(JobSchedulerCredentialStoreJOCParameters options, String profileName) {
         super();
-        this.profileFileName = profileFileName;
+        this.profileFileName = profileName;
+        this.jobSchedulerCredentialStoreParameters = options;
     }
 
     private void setSpoolerVariable(Spooler spooler, String name, String value) {
+        LOGGER.debug("Setting:" + name + "=" + value);
         if (spooler != null) {
             spooler.variables().set_value(name, value);
+        }else {
+            LOGGER.debug("spooler is null "  + name + "=" + value + " not set");
         }
 
     }
@@ -48,28 +55,39 @@ public class AccessTokenProvider {
 
     }
 
-    public WebserviceCredentials getAccessToken(Spooler spooler) throws InterruptedException, SOSException, URISyntaxException,
+    public WebserviceCredentials getAccessToken(Spooler spooler) throws SOSException, URISyntaxException, InterruptedException,
             UnsupportedEncodingException {
 
         String schedulerId = "";
-        String xAccessToken = getSpoolerVariable(spooler, X_ACCESS_TOKEN);
-        jocUrl = getSpoolerVariable(spooler, JOC_URL);
-
-        if (jocUrl == null) {
-            jocUrl = "";
+        webserviceCredentials = this.getWebServiceVCredentials();
+        
+        LOGGER.debug("User:" + webserviceCredentials.getUser());
+        String xAccessToken;
+        if (webserviceCredentials.getUser() != null && !webserviceCredentials.getUser().isEmpty()) {
+            xAccessToken = getSpoolerVariable(spooler, webserviceCredentials.getUser() + "_" + X_ACCESS_TOKEN);
+        } else {
+            xAccessToken = "";
         }
 
-        ApiAccessToken apiAccessToken = new ApiAccessToken(jocUrl);
+        if (webserviceCredentials.getJocUrl() == null) {
+            webserviceCredentials.setJocUrl("");
+        }
+        if (spooler != null && webserviceCredentials.getJocUrl().isEmpty()) {
+            webserviceCredentials.setJocUrl(getSpoolerVariable(spooler, JOC_URL));
+        }
 
-        LOGGER.debug("Check whether accessToken is valid");
+        ApiAccessToken apiAccessToken = new ApiAccessToken(webserviceCredentials.getJocUrl());
+
+        LOGGER.debug("Check whether accessToken " + xAccessToken + " is valid");
         if (xAccessToken.isEmpty() || !apiAccessToken.isValidAccessToken(xAccessToken)) {
+            LOGGER.debug("---> not valid. Execute login");
             xAccessToken = executeLogin();
-            apiAccessToken.setJocUrl(jocUrl);
+            apiAccessToken.setJocUrl(webserviceCredentials.getJocUrl());
 
             if (xAccessToken != null && !xAccessToken.isEmpty()) {
                 LOGGER.debug("... set accessToken:" + xAccessToken);
-                setSpoolerVariable(spooler, X_ACCESS_TOKEN, xAccessToken);
-                setSpoolerVariable(spooler, JOC_URL, jocUrl);
+                setSpoolerVariable(spooler, webserviceCredentials.getUser() + "_" + X_ACCESS_TOKEN, xAccessToken);
+                setSpoolerVariable(spooler, JOC_URL, webserviceCredentials.getJocUrl());
             } else {
                 LOGGER.debug("AccessToken " + xAccessToken + " is not valid. Trying to renew it...");
                 java.lang.Thread.sleep(1000);
@@ -87,7 +105,6 @@ public class AccessTokenProvider {
             schedulerId = "test";
         }
 
-        WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
         webserviceCredentials.setSchedulerId(schedulerId);
         webserviceCredentials.setAccessToken(xAccessToken);
         return webserviceCredentials;
@@ -95,27 +112,94 @@ public class AccessTokenProvider {
     }
 
     public String getJocUrl() {
-        return jocUrl;
+        return webserviceCredentials.getJocUrl();
     }
 
-    private String executeLogin() throws UnsupportedEncodingException, SOSException, URISyntaxException {
-        SOSPrivateConf sosPrivateConf;
-        sosPrivateConf = new SOSPrivateConf(profileFileName);
+    private WebserviceCredentials getWebServiceVCredentials() throws SOSException, UnsupportedEncodingException {
+        String userDecodedAccount = "";
+        String jocApiUser = "";
+        String jocApiPassword = "";
+        String jocUrl="";
 
-        try {
-            jocUrl = sosPrivateConf.getValue("joc.webservice.jitl", "joc.url");
-        } catch (ConfigException e) {
-            jocUrl = sosPrivateConf.getValue("joc.url");
+        WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
+
+        if (jobSchedulerCredentialStoreParameters != null && jobSchedulerCredentialStoreParameters.getCredentialStoreFile() != null
+                && !jobSchedulerCredentialStoreParameters.getCredentialStoreFile().isEmpty()) {
+            SOSKeePassResolver r = new SOSKeePassResolver(jobSchedulerCredentialStoreParameters.getCredentialStoreFile(),
+                    jobSchedulerCredentialStoreParameters.getCredentialStoreKeyFile(), jobSchedulerCredentialStoreParameters
+                            .getCredentialStorePassword());
+            r.setEntryPath(jobSchedulerCredentialStoreParameters.getCredentialStoreEntryPath());
+
+            try {
+                jocUrl = r.resolve(jobSchedulerCredentialStoreParameters.getJocUrl());
+
+                jocApiUser = r.resolve(jobSchedulerCredentialStoreParameters.getUser());
+                jocApiPassword = r.resolve(jobSchedulerCredentialStoreParameters.getPassword());
+            } catch (Exception e) {
+                throw new SOSException(e);
+            }
+
+            LOGGER.debug(jobSchedulerCredentialStoreParameters.getCredentialStoreFile());
+            LOGGER.debug(jobSchedulerCredentialStoreParameters.getCredentialStoreKeyFile());
+            LOGGER.debug(jobSchedulerCredentialStoreParameters.getCredentialStoreEntryPath());
+
+            LOGGER.debug("JOCUrl: " + jocUrl);
+            LOGGER.debug("User: " + jocApiUser);
+            LOGGER.debug("Password: " + "********");
+
+        } else {
+            if (jobSchedulerCredentialStoreParameters != null) {
+                jocUrl = jobSchedulerCredentialStoreParameters.getJocUrl();
+                jocApiUser = jobSchedulerCredentialStoreParameters.getUser();
+                jocApiPassword = jobSchedulerCredentialStoreParameters.getPassword();
+            }
         }
-        jocUrl = jocUrl + "/joc/api";
+
+        if (!jocApiUser.isEmpty() && !jocApiPassword.isEmpty()) {
+            userDecodedAccount = jocApiUser + ":" + jocApiPassword;
+        }
+
+        if (jocUrl.isEmpty() || (jocApiUser.isEmpty() && jocApiPassword.isEmpty())) {
+            SOSPrivateConf sosPrivateConf;
+            sosPrivateConf = new SOSPrivateConf(profileFileName);
+
+            if (jocUrl.isEmpty()) {
+                try {
+                    jocUrl = sosPrivateConf.getValue("joc.webservice.jitl", "joc.url");
+                } catch (ConfigException e) {
+                    jocUrl = sosPrivateConf.getValue("joc.url");
+                }
+            }
+
+            if (userDecodedAccount.isEmpty()) {
+                try {
+                    userDecodedAccount = sosPrivateConf.getDecodedValue("joc.webservice.jitl", "joc.account");
+                } catch (ConfigException e) {
+                    userDecodedAccount = sosPrivateConf.getDecodedValue("joc.account");
+                }
+            }
+            String[] account = userDecodedAccount.split(":");
+            jocApiUser = account[0];
+            if (account.length > 1) {
+                jocApiPassword = userDecodedAccount.split(":")[1];
+            }
+        }
+
+        webserviceCredentials.setJocUrl(jocUrl + "/joc/api");
+        webserviceCredentials.setPassword(jocApiPassword);
+        webserviceCredentials.setUser(jocApiUser);
+        webserviceCredentials.setUserDecodedAccount(userDecodedAccount);
+        return webserviceCredentials;
+
+    }
+
+    private String executeLogin() throws SOSException, URISyntaxException, UnsupportedEncodingException {
+
+        String userDecodedAccount = webserviceCredentials.getUserDecodedAccount();
+        String jocUrl = webserviceCredentials.getJocUrl();
+
+        // jocUrl = jocUrl + "/joc/api";
         LOGGER.debug("jocUrl: " + jocUrl);
-
-        String userEncodedAccount;
-        try {
-            userEncodedAccount = sosPrivateConf.getDecodedValue("joc.webservice.jitl", "joc.account");
-        } catch (ConfigException e) {
-            userEncodedAccount = sosPrivateConf.getDecodedValue("joc.account");
-        }
 
         ApiAccessToken apiAccessToken = new ApiAccessToken(jocUrl);
         boolean sessionIsValid;
@@ -124,23 +208,18 @@ public class AccessTokenProvider {
         int cnt = 0;
         while (cnt < MAX_WAIT_TIME_FOR_ACCESS_TOKEN && !apiAccessToken.isValidAccessToken(xAccessToken)) {
             LOGGER.debug("check session");
-            cnt++;
+
             try {
-                sessionIsValid = apiAccessToken.isValidUserAccount(userEncodedAccount);
+                sessionIsValid = apiAccessToken.isValidUserAccount(userDecodedAccount);
             } catch (Exception e) {
                 sessionIsValid = false;
             }
             if (!sessionIsValid || xAccessToken.isEmpty()) {
                 LOGGER.debug("... execute login");
                 try {
-                    xAccessToken = apiAccessToken.login(userEncodedAccount);
+                    xAccessToken = apiAccessToken.login(userDecodedAccount);
                 } catch (Exception e) {
-                    LOGGER.warn("... login failed with " + sosPrivateConf.getValue("joc.webservice.jitl", "joc.account") + " at " + jocUrl);
-                    try {
-                        java.lang.Thread.sleep(1_000);
-                    } catch (InterruptedException e1) {
-
-                    }
+                    LOGGER.warn("... login failed with " + webserviceCredentials.getUserEncodedAccount() + " at " + jocUrl);
                 }
 
             }

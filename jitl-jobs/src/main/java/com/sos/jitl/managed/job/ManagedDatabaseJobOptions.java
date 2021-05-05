@@ -97,7 +97,7 @@ public class ManagedDatabaseJobOptions extends JSOptionsClass {
     }
 
     public ManagedDatabaseJobOptions() {
-        objParentClass = getClass();
+        currentClass = getClass();
     }
 
     public ManagedDatabaseJobOptions(JSListener listener) {
@@ -111,7 +111,6 @@ public class ManagedDatabaseJobOptions extends JSOptionsClass {
     }
 
     public void setAllOptions(HashMap<String, String> settings) {
-        objSettings = settings;
         super.setAllOptions(settings);
     }
 
@@ -127,6 +126,6 @@ public class ManagedDatabaseJobOptions extends JSOptionsClass {
     @Override
     public void commandLineArgs(String[] args) {
         super.commandLineArgs(args);
-        setAllOptions(super.objSettings);
+        setAllOptions(super.getSettings());
     }
 }

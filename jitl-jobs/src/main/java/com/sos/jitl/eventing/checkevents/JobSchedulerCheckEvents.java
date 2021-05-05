@@ -89,7 +89,7 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
 	}
 
 	@Override
-	public void setJSParam(final String pstrKey, final StringBuffer pstrValue) {
+	public void setJSParam(final String pstrKey, final StringBuilder pstrValue) {
 	}
 
 	@Override
@@ -103,18 +103,12 @@ public class JobSchedulerCheckEvents extends JSJobUtilitiesClass<JobSchedulerChe
 	}
 
 	@Override
-	public String getCurrentNodeName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public void setStateText(final String pstrStateText) {
 		// TODO Auto-generated method stub
 	}
 
 	@Override
-	public void setCC(final int pintCC) {
+	public void setExitCode(final int pintCC) {
 		// TODO Auto-generated method stub
 	}
 

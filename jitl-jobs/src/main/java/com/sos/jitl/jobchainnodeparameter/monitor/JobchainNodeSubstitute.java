@@ -100,7 +100,7 @@ public class JobchainNodeSubstitute extends JSJobUtilitiesClass<JobchainNodeSubs
     }
 
     @Override
-    public void setJSParam(String pstrKey, StringBuffer pstrValue) {
+    public void setJSParam(String pstrKey, StringBuilder pstrValue) {
         // Implement Method here
     }
 

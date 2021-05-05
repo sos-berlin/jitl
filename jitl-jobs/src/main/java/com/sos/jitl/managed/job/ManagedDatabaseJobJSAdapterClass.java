@@ -21,9 +21,6 @@ public class ManagedDatabaseJobJSAdapterClass extends JobSchedulerJobAdapter {
     public boolean spooler_init() {
         try {
             job = new ManagedDatabaseJob();
-            ManagedDatabaseJobOptions options = job.getOptions();
-            options.setCurrentNodeName(getCurrentNodeName());
-            options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
             job.setJSJobUtilites(this);
             job.setJSCommands(this);
         } catch (Exception e) {
@@ -39,8 +36,8 @@ public class ManagedDatabaseJobJSAdapterClass extends JobSchedulerJobAdapter {
             super.spooler_process();
 
             ManagedDatabaseJobOptions options = job.getOptions();
-            options.setCurrentNodeName(getCurrentNodeName());
-            options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
+            options.setCurrentNodeName(getCurrentNodeName(getSpoolerProcess().getOrder(), true));
+            options.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
 
             if (SOSString.isEmpty(options.command.getValue())) {
                 LOGGER.debug("\"command\" parameter is empty. set command from job script...");
@@ -65,9 +62,9 @@ public class ManagedDatabaseJobJSAdapterClass extends JobSchedulerJobAdapter {
             if (job.getModel().getWarning() != null) {
                 spooler_log.warn(job.getModel().getWarning());
             }
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             throw new JobSchedulerException(String.format("Exception: %s", e.toString()), e);
         }
-        return signalSuccess();
     }
 }

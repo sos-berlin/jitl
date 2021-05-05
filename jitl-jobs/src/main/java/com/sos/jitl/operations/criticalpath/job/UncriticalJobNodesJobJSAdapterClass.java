@@ -13,18 +13,17 @@ public class UncriticalJobNodesJobJSAdapterClass extends JobSchedulerJobAdapter 
 
             UncriticalJobNodesJob job = new UncriticalJobNodesJob();
             UncriticalJobNodesJobOptions options = job.getOptions();
-            options.setCurrentNodeName(this.getCurrentNodeName());
-            options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
+            options.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(), true));
+            options.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
             job.setJSJobUtilites(this);
             job.setJSCommands(this);
             job.setSpooler(spooler);
 
             job.execute();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
         }
-        return signalSuccess();
-
     }
 
 }

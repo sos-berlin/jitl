@@ -48,6 +48,7 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     private boolean taskError;
     private String taskErrorCode;
     private String taskErrorText;
+    private String taskTransferHistory;
 
     public DBItemSchedulerHistoryOrderStepReporting() {
     }
@@ -376,6 +377,16 @@ public class DBItemSchedulerHistoryOrderStepReporting implements Serializable {
     @Column(name = "[TASK_ERROR_TEXT]", nullable = true)
     public void setTaskErrorText(String val) {
         this.taskErrorText = val;
+    }
+
+    @Column(name = "[TASK_TRANSFER_HISTORY]", nullable = true)
+    public String getTaskTransferHistory() {
+        return taskTransferHistory;
+    }
+
+    @Column(name = "[TASK_TRANSFER_HISTORY]", nullable = true)
+    public void setTaskTransferHistory(String val) {
+        this.taskTransferHistory = val;
     }
 
     public boolean equals(Object o) {

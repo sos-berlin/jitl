@@ -16,7 +16,7 @@ public class SOSMailProcessInboxOptionsSuperClass extends JSOptionsClass {
 	private static final String CLASSNAME = "SOSMailProcessInboxOptionsSuperClass";
 
 	public SOSMailProcessInboxOptionsSuperClass() {
-		objParentClass = this.getClass();
+	    currentClass = this.getClass();
 	}
 
 	public SOSMailProcessInboxOptionsSuperClass(JSListener pobjListener) {
@@ -462,10 +462,9 @@ public class SOSMailProcessInboxOptionsSuperClass extends JSOptionsClass {
 		maxMailsToProcess = pMaxMailsToProcess;
 	}
 
-	public void setAllOptions(HashMap<String, String> pobjJSSettings) {
-		objSettings = pobjJSSettings;
-		super.setAllOptions(pobjJSSettings);
-	}
+	public void setAllOptions(HashMap<String, String> settings) {
+        super.setAllOptions(settings);
+    }
 
 	@Override
 	public void checkMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
@@ -479,7 +478,7 @@ public class SOSMailProcessInboxOptionsSuperClass extends JSOptionsClass {
 	@Override
 	public void commandLineArgs(String[] pstrArgs) {
 		super.commandLineArgs(pstrArgs);
-		this.setAllOptions(super.objSettings);
+		this.setAllOptions(super.getSettings());
 	}
 
 }

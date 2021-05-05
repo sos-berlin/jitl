@@ -39,7 +39,10 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
     }
 
     public JSSmtpMailClient Execute(final JSSmtpMailOptions pobjOptions) throws Exception {
-        if (pobjOptions != null && pobjOptions.FileNotificationTo.isDirty()) {
+        if (pobjOptions != null && pobjOptions.enabled.isFalse()) {
+            LOGGER.info("JSSmtpMailClient is disabled due to the enabled=false parameter");
+        }
+        if (pobjOptions != null && pobjOptions.enabled.isTrue() && pobjOptions.FileNotificationTo.isDirty()) {
             try {
                 boolean useCurrentTaskLog = !pobjOptions.job_name.isDirty() && !pobjOptions.job_id.isDirty();
                 if (pobjOptions.tasklog_to_body.value()) {
@@ -65,18 +68,21 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
                 pobjOptions.checkMandatory();
                 String log = "";
                 if (pobjOptions.tasklog_to_body.value()) {
-                    log =
-                            getTaskLog(pobjOptions.job_name.getValue(), pobjOptions.job_id.value(), pobjOptions.scheduler_host.getValue(),
-                                    pobjOptions.scheduler_port.value(), useCurrentTaskLog);
+                    log = getTaskLog(pobjOptions.job_name.getValue(), pobjOptions.job_id.value(), pobjOptions.scheduler_host.getValue(),
+                            pobjOptions.scheduler_port.value(), useCurrentTaskLog);
                 }
                 if (!pobjOptions.subject.isDirty()) {
                     String strT = "SOSJobScheduler: ${JobName} - ${JobTitle} - CC ${CC} ";
                     pobjOptions.subject.setValue(strT);
                 }
+
                 String strM = pobjOptions.subject.getValue();
-                pobjOptions.subject.setValue(objJSJobUtilities.replaceSchedulerVars(strM));
+                strM = pobjOptions.replaceVars(strM);
+                pobjOptions.subject.setValue(strM);
+                
                 strM = pobjOptions.body.getValue();
                 strM = pobjOptions.replaceVars(strM);
+   
                 Pattern pattern = Pattern.compile("[?%]log[?%]|[$%]\\{log\\}", Pattern.CASE_INSENSITIVE);
                 Matcher matcher = pattern.matcher(strM);
                 if (matcher.find()) {
@@ -88,7 +94,14 @@ public class JSSmtpMailClient extends JSJobUtilitiesClass<JSSmtpMailOptions> {
                 if (!pobjOptions.from.isDirty()) {
                     pobjOptions.from.setValue("JobScheduler@sos-berlin.com");
                 }
-                SOSMail objMail = new SOSMail(pobjOptions.host.getValue());
+
+                SOSMail objMail;
+                if ((pobjOptions.smtp_user.getValue() != null) && (!pobjOptions.smtp_user.getValue().isEmpty())) {
+                    objMail = new SOSMail(pobjOptions.host.getValue(), pobjOptions.smtp_user.getValue(), pobjOptions.smtp_password.getValue());
+                } else {
+                    objMail = new SOSMail(pobjOptions.host.getValue());
+                }
+
                 LOGGER.debug(pobjOptions.dirtyString());
                 objMail.sendMail(pobjOptions);
             } catch (Exception e) {

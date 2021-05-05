@@ -37,7 +37,7 @@ public class CopyJob2OrderParameter extends JSToolBox implements JSJobUtilities 
         try {
             Options().checkMandatory();
             LOGGER.debug(Options().toString());
-            HashMap<String, String> objSettings = Options().settings();
+            HashMap<String, String> objSettings = Options().getSettings();
             for (final Object element : objSettings.entrySet()) {
                 final Map.Entry mapItem = (Map.Entry) element;
                 String strMapKey = mapItem.getKey().toString();
@@ -64,7 +64,7 @@ public class CopyJob2OrderParameter extends JSToolBox implements JSJobUtilities 
     }
 
     @Override
-    public void setJSParam(final String pstrKey, final StringBuffer pstrValue) {
+    public void setJSParam(final String pstrKey, final StringBuilder pstrValue) {
 
     }
 
@@ -77,20 +77,14 @@ public class CopyJob2OrderParameter extends JSToolBox implements JSJobUtilities 
         }
         LOGGER.debug("objJSJobUtilities = " + objJSJobUtilities.getClass().getName());
     }
-
-    @Override
-    public String getCurrentNodeName() {
-        // TO DO Auto-generated method stub
-        return null;
-    }
-
+   
     @Override
     public void setStateText(final String pstrStateText) {
         // TO DO Auto-generated method stub
     }
 
     @Override
-    public void setCC(final int pintCC) {
+    public void setExitCode(final int pintCC) {
         // TO DO Auto-generated method stub
     }
 

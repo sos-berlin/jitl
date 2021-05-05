@@ -2,6 +2,9 @@ package sos.scheduler.file;
 
 import static com.sos.scheduler.messages.JSMessages.JSJ_F_0010;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.JSHelper.io.SOSFileSystemOperationsImpl;
 import com.sos.i18n.annotation.I18NResourceBundle;
@@ -10,6 +13,7 @@ import com.sos.i18n.annotation.I18NResourceBundle;
 @I18NResourceBundle(baseName = "com.sos.scheduler.messages", defaultLocale = "en")
 public class JobSchedulerRemoveFile extends JobSchedulerFileOperationBase {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerRemoveFile.class);
     private static final String CLASSNAME = "JobSchedulerRemoveFile";
 
     @Override
@@ -21,15 +25,14 @@ public class JobSchedulerRemoveFile extends JobSchedulerFileOperationBase {
                 file = source;
             }
             checkMandatoryFile();
-            noOfHitsInResultSet =
-                    sosFileOperations.removeFileCnt(file, fileSpec, flags, isCaseInsensitive, minFileAge, maxFileAge, minFileSize, maxFileSize,
-                            skipFirstFiles, skipLastFiles,sortCriteria, sortOrder);
+            noOfHitsInResultSet = sosFileOperations.removeFileCnt(file, fileSpec, flags, isCaseInsensitive, minFileAge, maxFileAge, minFileSize,
+                    maxFileSize, skipFirstFiles, skipLastFiles, sortCriteria, sortOrder);
             flgOperationWasSuccessful = noOfHitsInResultSet > 0;
-            return setReturnResult(flgOperationWasSuccessful);
+            return setReturnResult(spooler_task.order(), flgOperationWasSuccessful);
         } catch (Exception e) {
-			String strM = JSJ_F_0010.params(CLASSNAME, e.getMessage());
-			logger.error(strM + e);
-			throw new JobSchedulerException(strM, e);
+            String msg = JSJ_F_0010.params(CLASSNAME, e.toString());
+            LOGGER.error(msg, e);
+            throw new JobSchedulerException(msg, e);
         }
     }
 

@@ -12,13 +12,10 @@ public class CleanupNotificationsJobJSAdapterClass extends JobSchedulerJobAdapte
     @Override
     public boolean spooler_init() {
         try {
+            super.spooler_init();
+
             job = new CleanupNotificationsJob();
             CleanupNotificationsJobOptions options = job.getOptions();
-            options.setCurrentNodeName(this.getCurrentNodeName());
-            options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
-            job.setJSJobUtilites(this);
-            job.setJSCommands(this);
-
             if (SOSString.isEmpty(options.hibernate_configuration_file_reporting.getValue())) {
                 options.hibernate_configuration_file_reporting.setValue(getHibernateConfigurationReporting().toString());
             }
@@ -37,17 +34,17 @@ public class CleanupNotificationsJobJSAdapterClass extends JobSchedulerJobAdapte
             super.spooler_process();
 
             CleanupNotificationsJobOptions options = job.getOptions();
-            options.setCurrentNodeName(this.getCurrentNodeName());
-            options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
+            options.setCurrentNodeName(getCurrentNodeName(getSpoolerProcess().getOrder(), false));
+            options.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
 
             job.openSession();
             job.execute();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.toString(), e);
         } finally {
             job.closeSession();
         }
-        return signalSuccess();
     }
 
     @Override

@@ -12,21 +12,18 @@ import sos.connection.SOSConnection;
 import sos.marshalling.SOSImport;
 import sos.settings.SOSConnectionSettings;
 import sos.util.SOSArguments;
-import sos.util.SOSStandardLogger;
 
 /** @author Andreas Liebert */
 public class ManagedJobImport extends SOSImport {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagedJobImport.class);
     private static SOSConnection conn;
-    private static SOSStandardLogger sosLogger = null;
     private int workflow = -1;
     private boolean jobExists = false;
     private boolean modelExists = true;
 
-    public ManagedJobImport(SOSConnection conn, String file_name, String package_id, String package_element, String package_value,
-            SOSStandardLogger log) {
-        super(conn, file_name, package_id, package_element, package_value, log);
+    public ManagedJobImport(SOSConnection conn, String file_name, String package_id, String package_element, String package_value) {
+        super(conn, file_name, package_id, package_element, package_value);
     }
 
     public static void main(String[] args) {
@@ -37,15 +34,11 @@ public class ManagedJobImport extends SOSImport {
         try {
             SOSArguments arguments = new SOSArguments(args);
             String xmlFile = "";
-            String logFile = "";
-            int logLevel = 0;
             String settingsFile = "";
             int template = 0;
             int model = 0;
             try {
                 xmlFile = arguments.asString("-file=");
-                logLevel = arguments.asInt("-v=", SOSStandardLogger.INFO);
-                logFile = arguments.asString("-log=", "");
                 settingsFile = arguments.asString("-settings=", "../config/factory.ini");
                 model = arguments.asInt("-jobchain=", -1);
             } catch (Exception e1) {
@@ -53,26 +46,21 @@ public class ManagedJobImport extends SOSImport {
                 showUsage();
                 System.exit(0);
             }
-            if (!logFile.isEmpty()) {
-                sosLogger = new SOSStandardLogger(logFile, logLevel);
-            } else {
-                sosLogger = new SOSStandardLogger(logLevel);
-            }
-            ManagedJobExport.setSosLogger(sosLogger);
+
             conn = ManagedJobExport.getDBConnection(settingsFile);
             conn.connect();
             conn.setAutoCommit(false);
-            ManagedJobImport imp = new ManagedJobImport(conn, xmlFile, null, null, null, sosLogger);
+            ManagedJobImport imp = new ManagedJobImport(conn, xmlFile, null, null, null);
             imp.setWorkflow(model);
             imp.setUpdate(false);
             imp.setHandler(JobSchedulerManagedObject.getTableManagedJobs(), "key_handler_MANAGED_JOBS", "rec_handler_MANAGED_JOBS", null);
             imp.doImport(conn, xmlFile);
             if (imp.jobExists()) {
                 conn.rollback();
-                sosLogger.warn("Job already exists.");
+                LOGGER.warn("Job already exists.");
             } else if (!imp.modelExists()) {
                 conn.rollback();
-                sosLogger.warn("Jobchain doesn't exist. Please specify a jobchain using the -jobchain option.");
+                LOGGER.warn("Jobchain doesn't exist. Please specify a jobchain using the -jobchain option.");
             }
             conn.commit();
         } catch (Exception e) {
@@ -115,9 +103,8 @@ public class ManagedJobImport extends SOSImport {
         if (workflow > -1) {
             model = "" + workflow;
         }
-        String test =
-                conn.getSingleValue("SELECT \"ID\" FROM " + JobSchedulerManagedObject.getTableManagedJobs() + " WHERE \"MODEL\"=" + model
-                        + " AND \"JOB_NAME\"='" + record.get("JOB_NAME").toString() + "'");
+        String test = conn.getSingleValue("SELECT \"ID\" FROM " + JobSchedulerManagedObject.getTableManagedJobs() + " WHERE \"MODEL\"=" + model
+                + " AND \"JOB_NAME\"='" + record.get("JOB_NAME").toString() + "'");
         if (test != null && !test.isEmpty()) {
             jobExists = true;
         }

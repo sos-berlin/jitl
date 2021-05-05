@@ -30,7 +30,6 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemRepo
         this.createStatelessConnection(this.getConfigurationFileName());
     }
 
-  
     public ReportTriggerDBLayer(SOSHibernateSession conn) {
         super();
         sosHibernateSession = conn;
@@ -53,7 +52,7 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemRepo
         return "";
     }
 
-    public DBItemReportTrigger get(Long id) throws SOSHibernateException   {
+    public DBItemReportTrigger get(Long id) throws SOSHibernateException {
         if (id == null) {
             return null;
         }
@@ -70,15 +69,15 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemRepo
         }
 
         if (filter.getOrderId() != null && !"".equals(filter.getOrderId())) {
-            where += and +  " name = :orderId";
+            where += and + " name = :orderId";
             and = " and ";
         }
-        
-    	if (filter.getListOfJobchains() != null && filter.getListOfJobchains().size() > 0) {
-			where += and + SearchStringHelper.getStringListPathSql(filter.getListOfJobchains(), "parentName");
-			and = " and ";
-		}
-    	
+
+        if (filter.getListOfJobchains() != null && filter.getListOfJobchains().size() > 0) {
+            where += and + SearchStringHelper.getStringListPathSql(filter.getListOfJobchains(), "parentName");
+            and = " and ";
+        }
+
         if (filter.getJobChain() != null && !"".equals(filter.getJobChain())) {
             where += String.format(and + " parentName %s :jobChain", SearchStringHelper.getSearchPathOperator(filter.getJobChain()));
             and = " and ";
@@ -97,9 +96,9 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemRepo
             }
             and = " and ";
         }
-        
+
         if (filter.getHistoryIds() != null && !filter.getHistoryIds().isEmpty()) {
-            where += and +  " historyId in (:historyIds)";
+            where += and + " historyId in (:historyIds)";
             and = " and ";
         }
 
@@ -126,8 +125,8 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemRepo
                 for (DBItemReportTrigger dbItemReportTrigger : filter.getListOfIgnoredItems()) {
 
                     if (dbItemReportTrigger.getName() != null && !dbItemReportTrigger.getName().isEmpty()) {
-                        where += " concat(concat(parentName,','),name) <> '" + String.format("%s,%s", dbItemReportTrigger.getParentName(), dbItemReportTrigger.getName())
-                                + "' ";
+                        where += " concat(concat(parentName,','),name) <> '" + String.format("%s,%s", dbItemReportTrigger.getParentName(),
+                                dbItemReportTrigger.getName()) + "' ";
                     } else {
                         where += " parentName <> '" + dbItemReportTrigger.getParentName() + "'";
                     }
@@ -185,10 +184,10 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemRepo
         }
         if (!"".equals(where.trim())) {
             where = " where " + where;
-        }else{
+        } else {
             where = " ";
         }
-        
+
         return where;
     }
 
@@ -215,19 +214,22 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemRepo
         return query;
     }
 
-    public List<DBItemReportTrigger> getSchedulerOrderHistoryListFromTo() throws SOSHibernateException  {
+    public List<DBItemReportTrigger> getSchedulerOrderHistoryListFromTo() throws SOSHibernateException {
         int limit = filter.getLimit();
 
-        Query<DBItemReportTrigger> query = sosHibernateSession.createQuery(" from " + DBItemReportTrigger + getWhere() +  filter.getOrderCriteria() + filter.getSortMode());
+        Query<DBItemReportTrigger> query = sosHibernateSession.createQuery(" from " + DBItemReportTrigger + getWhere() + filter.getOrderCriteria()
+                + filter.getSortMode());
 
         query = bindParameters(query);
 
-        query.setMaxResults(limit);
+        if (limit > 0) {
+            query.setMaxResults(limit);
+        }
         return sosHibernateSession.getResultList(query);
     }
 
     public Long getCountSchedulerOrderHistoryListFromTo() throws SOSHibernateException {
-        Query<Long> query = sosHibernateSession.createQuery("select count(*) from " + DBItemReportTrigger + getWhere() );
+        Query<Long> query = sosHibernateSession.createQuery("select count(*) from " + DBItemReportTrigger + getWhere());
         query = bindParameters(query);
         Long count;
         if (sosHibernateSession.getResultList(query).size() > 0)
@@ -253,17 +255,17 @@ public class ReportTriggerDBLayer extends SOSHibernateIntervalDBLayer<DBItemRepo
     }
 
     @Override
-    public void onAfterDeleting(DBItemReportTrigger h) throws SOSHibernateException{
+    public void onAfterDeleting(DBItemReportTrigger h) throws SOSHibernateException {
 
     }
 
     @Override
-    public List<DBItemReportTrigger> getListOfItemsToDelete() throws SOSHibernateException{
+    public List<DBItemReportTrigger> getListOfItemsToDelete() throws SOSHibernateException {
         return null;
     }
 
     @Override
-    public long deleteInterval() throws SOSHibernateException{
+    public long deleteInterval() throws SOSHibernateException {
         return 0;
     }
 

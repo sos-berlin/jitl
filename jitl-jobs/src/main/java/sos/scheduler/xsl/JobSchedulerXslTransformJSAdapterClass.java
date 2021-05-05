@@ -1,7 +1,8 @@
 package sos.scheduler.xsl;
 
-
 import sos.scheduler.job.JobSchedulerJobAdapter;
+
+import java.util.HashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,12 +38,12 @@ public class JobSchedulerXslTransformJSAdapterClass extends JobSchedulerJobAdapt
         try {
             super.spooler_process();
             doProcessing();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
-            LOGGER.error(stackTrace2String(e));
+            LOGGER.error(e.toString(), e);
             throw new JobSchedulerException(e);
         } finally {
         } // finally
-        return signalSuccess();
 
     } // spooler_process
 
@@ -59,11 +60,10 @@ public class JobSchedulerXslTransformJSAdapterClass extends JobSchedulerJobAdapt
 
         JobSchedulerXslTransform objR = new JobSchedulerXslTransform();
         JobSchedulerXslTransformOptions objO = objR.getOptions();
-        objO.setCurrentNodeName(getCurrentNodeName());
 
-        hsmParameters = getSchedulerParameterAsProperties();
-        objO.setCurrentNodeName(this.getCurrentNodeName());
-        objO.setAllOptions(hsmParameters);
+        HashMap<String, String> params = getSchedulerParameterAsProperties(getSpoolerProcess().getOrder());
+        objO.setCurrentNodeName(this.getCurrentNodeName(getSpoolerProcess().getOrder(), true));
+        objO.setAllOptions(params);
 
         objO.checkMandatory();
         objR.setJSJobUtilites(this);

@@ -6,7 +6,7 @@ public class JobSchedulerCheckRunHistoryTaskBefore extends JobSchedulerCheckRunH
     public boolean spooler_task_before() throws Exception {
         try {
             doProcessing();
-            return continueWithProcessBefore;
+            return true;
         } catch (Exception e) {
             return false;
         }

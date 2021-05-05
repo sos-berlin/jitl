@@ -13,6 +13,7 @@ public class DBItemEvent {
 
     private Long id;
     private Long outConditionId;
+    private Long jobStreamHistoryId;
     private String session;
     private String event;
     private String jobStream;
@@ -70,6 +71,15 @@ public class DBItemEvent {
 
     public void setOutConditionId(Long outConditionId) {
         this.outConditionId = outConditionId;
+    }
+
+    @Column(name = "[JOBSTREAM_HISTORY_ID]", nullable = false)
+    public Long getJobStreamHistoryId() {
+        return jobStreamHistoryId;
+    }
+
+    public void setJobStreamHistoryId(Long jobStreamHistoryId) {
+        this.jobStreamHistoryId = jobStreamHistoryId;
     }
 
     @Column(name = "[GLOBAL_EVENT]", nullable = false)

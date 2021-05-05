@@ -252,7 +252,7 @@ public class JobSchedulerCheckRunHistoryOptionsSuperClass extends JSOptionsClass
     }
 
     public JobSchedulerCheckRunHistoryOptionsSuperClass() {
-        objParentClass = this.getClass();
+        currentClass = this.getClass();
     }
 
     public JobSchedulerCheckRunHistoryOptionsSuperClass(JSListener pobjListener) {
@@ -265,9 +265,8 @@ public class JobSchedulerCheckRunHistoryOptionsSuperClass extends JSOptionsClass
         this.setAllOptions(JSSettings);
     }
 
-    public void setAllOptions(HashMap<String, String> pobjJSSettings) {
-        objSettings = pobjJSSettings;
-        super.setAllOptions(pobjJSSettings);
+    public void setAllOptions(HashMap<String, String> settings) {
+        super.setAllOptions(settings);
     }
 
     @Override
@@ -282,7 +281,7 @@ public class JobSchedulerCheckRunHistoryOptionsSuperClass extends JSOptionsClass
     @Override
     public void commandLineArgs(String[] pstrArgs) {
         super.commandLineArgs(pstrArgs);
-        this.setAllOptions(super.objSettings);
+        this.setAllOptions(super.getSettings());
     }
 
 }

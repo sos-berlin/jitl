@@ -26,6 +26,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -581,7 +582,7 @@ public class InventoryModel {
             }
             NodeList orderNodes =
                     xPathAnswerXml.selectNodeList(
-                            "/spooler/answer/state/job_chains/job_chain/job_chain_node/order_queue/order[file_based/@file]");
+                            "/spooler/answer/state/job_chains/job_chain/job_chain_node/order_queue/order[file_based/@file or (@in_database_only='yes' and @order_source_type='Permanent')]");
             for (int i = 0; i < orderNodes.getLength(); i++) {
                 try {
                     processOrderFromNodes((Element)orderNodes.item(i));
@@ -623,10 +624,15 @@ public class InventoryModel {
         Date fileModified = null;
         Date fileLocalCreated = null;
         Date fileLocalModified = null;
-        String path = Latin1ToUtf8.convert(xPathAnswerXml.selectSingleNodeValue(element, "file_based/@file"));
-        BasicFileAttributes attrs = null;
+        Path path = null;
+        Element fileBasedElem = (Element) xPathAnswerXml.selectSingleNode(element, "file_based");
+        if (fileBasedElem.hasAttribute("file")) {
+            path = Paths.get(Latin1ToUtf8.convert(fileBasedElem.getAttribute("file")));
+        } else {
+            path = liveDirectory.resolve(fileName.substring(1));
+        }
         try {
-            attrs = Files.readAttributes(Paths.get(path), BasicFileAttributes.class);
+            BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
             fileCreated = ReportUtil.convertFileTime2UTC(attrs.creationTime());
             fileModified = ReportUtil.convertFileTime2UTC(attrs.lastModifiedTime());
             fileLocalCreated = ReportUtil.convertFileTime2Local(attrs.creationTime());
@@ -653,7 +659,7 @@ public class InventoryModel {
                     item.getFileDirectory(), item.getFileCreated(), item.getFileModified()));
             return item;
         } catch (IOException | IllegalArgumentException exception) {
-            LOGGER.debug(String.format("%s: cannot read file attributes. file = %s, exception = %s  ", method, path,
+            LOGGER.debug(String.format("%s: cannot read file attributes. file = %s, exception = %s  ", method, path.toString(),
                     exception.toString()));
             return null;
         }
@@ -1052,6 +1058,11 @@ public class InventoryModel {
 
     private void processOrderFromNodes(Element order) throws Exception {
         String method = "    processOrder";
+        // JITL-615 special for distributed orders
+        if (order.getAttribute("in_database_only").equals("yes") && order.getAttribute("order_source_type").equals("Permanent") && !order
+                .getAttribute("job_chain").isEmpty()) {
+            order.setAttribute("path", order.getAttribute("job_chain") + "," + order.getAttribute("order"));
+        }
         DBItemInventoryFile file = processFile(order, EConfigFileExtensions.ORDER, true);
         if (file != null) {
             countTotalOrders++;
@@ -1482,8 +1493,15 @@ public class InventoryModel {
     }
     
     private void updateDailyPlan (SOSHibernateSession session) throws Exception {
+        String pluginContext = MDC.get("plugin");
+        MDC.put("plugin", "dailyplan");
         Calendar2DB calendar2Db = Calendar2DBHelper.initCalendar2Db(inventoryDbLayer, inventoryInstance, httpHost, httpPort);
         calendar2Db.store();
+        if (pluginContext != null) {
+            MDC.put("plugin", pluginContext);
+        } else {
+            MDC.remove("plugin");
+        }
     }
     
     public void setLiveDirectory(Path liveDirectory) {
@@ -1508,79 +1526,78 @@ public class InventoryModel {
             List<DBItemSubmittedObject> submittedObjects = inventoryDbLayer.getUncommittedSubmittedObjects(submission.getSubmissionId());
             inventoryDbLayer.getSession().commit();
             if (submittedObjects != null) {
-            for (DBItemSubmittedObject submittedObject : submittedObjects) {
-                if (submittedObject.getPath() == null) {
-                    continue;
-                }
-                boolean isFolder = false;
-                if (submittedObject.getPath().endsWith("/")) {
-                    isFolder = true;
-                }
-                Path path = liveDirectory.resolve(submittedObject.getPath().substring(1));
-                LOGGER.info(String.format("***** processing submission for Object = %1$s *****", path.toString()));
-                if (Files.exists(path)) {
-                    if (submittedObject.getToDelete()) {
-                        if (isFolder) {
-                            LOGGER.info(String.format("***** delete folder: %1$s *****", path.toString()));
-                            for (Path p : Files.walk(path).sorted(Comparator.reverseOrder()).collect(Collectors.toSet())) {
-                                Files.delete(p);
+                for (DBItemSubmittedObject submittedObject : submittedObjects) {
+                    if (submittedObject.getPath() == null) {
+                        continue;
+                    }
+                    boolean isFolder = false;
+                    if (submittedObject.getPath().endsWith("/")) {
+                        isFolder = true;
+                    }
+                    Path path = liveDirectory.resolve(submittedObject.getPath().substring(1));
+                    LOGGER.info(String.format("***** processing submission for Object = %1$s *****", path.toString()));
+                    if (Files.exists(path)) {
+                        if (submittedObject.getToDelete()) {
+                            if (isFolder) {
+                                LOGGER.info(String.format("***** delete folder: %1$s *****", path.toString()));
+                                for (Path p : Files.walk(path).sorted(Comparator.reverseOrder()).collect(Collectors.toSet())) {
+                                    Files.delete(p);
+                                }
+                            } else {
+                                LOGGER.info(String.format("***** delete file for Object = %1$s *****", path.toString()));
+                                Files.delete(path);
                             }
                         } else {
-                            LOGGER.info(String.format("***** delete file for Object = %1$s *****", path.toString()));
-                            Files.delete(path);
+                            if (submittedObject.getContent() == null || submittedObject.getContent().isEmpty() || isFolder) {
+                                //
+                            } else {
+                                FileTime fileTime = Files.getLastModifiedTime(path);
+                                if (!(fileTime.compareTo(FileTime.fromMillis(submittedObject.getModified().getTime())) > 0)) {
+                                    LOGGER.debug(String.format("***** file date is older, overwriting file: %1$s *****", path.toString()));
+                                    writeFile(submittedObject.getContent(), path);
+                                } else {
+                                    LOGGER.debug(String.format("***** file date is younger, not overwriting file: %1$s *****", path.toString()));
+                                }
+                            }
                         }
                     } else {
-                        if (submittedObject.getContent() == null || submittedObject.getContent().isEmpty() || isFolder) {
+                        if (submittedObject.getToDelete()) {
                             //
                         } else {
-                            FileTime fileTime = Files.getLastModifiedTime(path);
-                            if (!(fileTime.compareTo(FileTime.fromMillis(submittedObject.getModified().getTime())) > 0)) {
-                                LOGGER.debug(String.format("***** file date is older, overwriting file: %1$s *****", path.toString()));
-                                writeFile(submittedObject.getContent(), path);
+                            if (isFolder) {
+                                LOGGER.debug(String.format("***** create folder: %1$s *****", path.toString()));
+                                Files.createDirectories(path);
                             } else {
-                                LOGGER.debug(String.format("***** file date is younger, not overwriting file: %1$s *****", path.toString()));
+                                LOGGER.debug(String.format("***** create file: %1$s *****", path.toString()));
+                                writeFile(submittedObject.getContent(), path);
                             }
                         }
                     }
-                } else {
-                    if (submittedObject.getToDelete()) {
-                        //
+                    inventoryDbLayer.getSession().beginTransaction();
+                    LOGGER.debug("***** delete processed submission *****");
+                    inventoryDbLayer.getSession().delete(submission);
+                    inventoryDbLayer.getSession().commit();
+                    Long count = inventoryDbLayer.getUncommitedInstanceCount(submission.getSubmissionId());
+                    if (count == 0) {
+                        LOGGER.debug("***** LAST ENTRY! delete submitted object, too *****");
+                        inventoryDbLayer.getSession().beginTransaction();
+                        inventoryDbLayer.getSession().delete(submittedObject);
+                        inventoryDbLayer.getSession().commit();
                     } else {
-                        if (isFolder) {
-                            LOGGER.debug(String.format("***** create folder: %1$s *****", path.toString()));
-                            Files.createDirectories(path);
-                        } else {
-                            LOGGER.debug(String.format("***** create file: %1$s *****", path.toString()));
-                            writeFile(submittedObject.getContent(), path);
-                        }
+                        LOGGER.debug(String.format("***** %1$d more submission found for this submitted object, not deleting submitted object. *****",
+                                count));
                     }
                 }
-                inventoryDbLayer.getSession().beginTransaction();
-                LOGGER.debug("***** delete processed submission *****");
-                inventoryDbLayer.getSession().delete(submission);
-                inventoryDbLayer.getSession().commit();
-                Long count = inventoryDbLayer.getUncommitedInstanceCount(submission.getSubmissionId());
-                if (count == 0) {
-                    LOGGER.debug("***** LAST ENTRY! delete submitted object, too *****");
-                    inventoryDbLayer.getSession().beginTransaction();
-                    inventoryDbLayer.getSession().delete(submittedObject);
-                    inventoryDbLayer.getSession().commit();
-                } else {
-                    LOGGER.debug(String.format("***** %1$d more submission found for this submitted object, not deleting submitted object. *****", 
-                            count));
-                }
-            }
             }
         }
     }
     
-    private void writeFile (String xml, Path path) {
-        if (Files.exists(path) && !xml.isEmpty()) {
+    private void writeFile(String xml, Path path) {
+        if (xml != null && !xml.isEmpty()) {
             try {
-                Files.write(path, xml.getBytes(StandardCharsets.ISO_8859_1));
+                Files.write(path, xml.getBytes(StandardCharsets.UTF_8));
             } catch (IOException e) {
-                LOGGER.debug(String.format("Error: %1$s - occurred during update of file %2$s, file not updated!",
-                        e.getMessage(), path));
+                LOGGER.error(String.format("Error: %1$s - occurred during update of file %2$s, file not updated!", e.getMessage(), path));
             }
         }
     }

@@ -9,7 +9,7 @@ public class ReportingCleanup {
     public static void showUsage() {
         System.out.println("Usage: hibernateFile range age");
 
-        System.out.println("- Remove entries older as n (14) days:");
+        System.out.println("- Remove entries older than n (14) days:");
         System.out.println("      hibernateFile all 14          Remove all entries (reporting, dailyplan, yade)");
         System.out.println("      hibernateFile reporting 14    Remove only reporting entries");
         System.out.println("      hibernateFile dailyplan 14    Remove only dailyplan entries");
@@ -44,7 +44,7 @@ public class ReportingCleanup {
         System.out.println("");
         System.out.print("Remove " + range + " entries");
         if (!age.equals("0")) {
-            System.out.print(" older as " + age + " days");
+            System.out.print(" older than " + age + " days");
         }
         System.out.println("");
 

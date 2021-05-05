@@ -1,13 +1,16 @@
 package com.sos.jitl.inventory.helper;
 
-import com.sos.jitl.dailyplan.db.Calendar2DB;
+ import com.sos.jitl.dailyplan.db.Calendar2DB;
 import com.sos.jitl.dailyplan.job.CreateDailyPlanOptions;
 import com.sos.jitl.inventory.db.DBLayerInventory;
 import com.sos.jitl.reporting.db.DBItemInventoryInstance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class Calendar2DBHelper {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Calendar2DB.class);
     private static final String WEBSERVICE_COMMAND_URL = "/jobscheduler/master/api/command";
 
     public static Calendar2DB initCalendar2Db (DBLayerInventory dbLayer, DBItemInventoryInstance instance, String httpHost
@@ -20,6 +23,8 @@ public class Calendar2DBHelper {
 //        createDaysScheduleOptionsMap.put("command_url", commandUrl);
         CreateDailyPlanOptions options = new CreateDailyPlanOptions();
         options.commandUrl.setValue(commandUrl);
+        LOGGER.debug("--> commandUrl: " + commandUrl);
+       
 //        options.setAllOptions(createDaysScheduleOptionsMap);
         calendar2Db.setOptions(options);
         calendar2Db.setSpooler(null);

@@ -103,6 +103,14 @@
         </note>
       </param>
 
+      <param name="scheduler_expires_timezone" required="false">
+        <note language="de">
+          <div xmlns="http://www.w3.org/1999/xhtml">Default: UTC. Timezone für scheduler_event_expires oder scheduler_event_expiration_cycle"</div>
+        </note>
+        <note language="en">
+          <div xmlns="http://www.w3.org/1999/xhtml">Default: UTC. Timezone for scheduler_event_expires or scheduler_even_expiration_cycle</div>
+        </note>
+      </param>
       <param name="scheduler_event_expires" required="false">
         <note language="de">
           <div xmlns="http://www.w3.org/1999/xhtml">Verfallsdatum des Events (ISO-Format yyyy-mm-dd hh:mm:ss) oder "never"</div>

@@ -45,6 +45,7 @@ import com.sos.jitl.reporting.job.report.FactJobOptions;
 import com.sos.jitl.reporting.model.IReportingModel;
 import com.sos.jitl.reporting.model.ReportingModel;
 import com.sos.jitl.reporting.plugin.FactNotificationPlugin;
+import com.sos.jitl.reporting.yade.TransferHistoryHandler;
 
 import sos.util.SOSString;
 
@@ -95,6 +96,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
     private Optional<Integer> largeResultFetchSizeReporting = Optional.empty();
     private Optional<Integer> largeResultFetchSizeScheduler = Optional.empty();
     private FactNotificationPlugin notificationPlugin;
+    private TransferHistoryHandler transferHistory;
     private HashMap<Long, DBItemReportTask> endedOrderTasks4notification;
 
     public FactModel(SOSHibernateSession reportingSess, SOSHibernateSession schedulerSess, FactJobOptions opt, JsonArray es) throws Exception {
@@ -111,6 +113,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
         orderHistoryMaxUncompletedAge = ReportUtil.resolveAge2Minutes(options.order_history_max_uncompleted_age.getValue());
         waitInterval = new Long(options.wait_interval.value());
         schedulerId = options.current_scheduler_id.getValue();
+        transferHistory = new TransferHistoryHandler();
         registerPlugin();
     }
 
@@ -177,13 +180,15 @@ public class FactModel extends ReportingModel implements IReportingModel {
             try {
                 if (!finisched && reportingVariable != null && !SOSString.isEmpty(reportingVariable.getTextValue())) {
                     String oldDateFrom = getWithoutLocked(reportingVariable.getTextValue());
-                    LOGGER.info(String.format("[%s][%s][%s]reset synchronizing on exception", method, reportingVariable.getTextValue(), oldDateFrom));
+                    LOGGER.info(String.format("[%s][%s][%s][reset synchronizing on exception]%s", method, reportingVariable.getTextValue(),
+                            oldDateFrom, e.toString()), e);
                     finishSynchronizing(reportingVariable, oldDateFrom);
                 } else {
-                    LOGGER.info(String.format("[%s][%s][%s][skip]reset synchronizing on exception", method, reportingVariable, finisched));
+                    LOGGER.info(String.format("[%s][%s][%s][skip][reset synchronizing on exception]%s", method, reportingVariable, finisched, e
+                            .toString()), e);
                 }
             } catch (Throwable ee) {
-                LOGGER.warn(String.format("error occured during reset synchronizing on exception: %s", method, ee.toString()));
+                LOGGER.warn(String.format("[%s][error occured during reset synchronizing on exception]%s", method, ee.toString()), ee);
             }
             Exception ex = SOSHibernate.findLockException(e);
             if (ex == null) {
@@ -479,13 +484,16 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 int counterUpdatedExecutions = 0;
                 int counterInsertedTasks = 0;
                 int counterUpdatedTasks = 0;
+                int counterTransferHistory = 0;
 
+                // copy and use subList from copy - because the uncompletedTaskHistoryIds will be modified/reduced in synchronizeTaskHistory
+                ArrayList<Long> copy = (ArrayList<Long>) uncompletedTaskHistoryIds.stream().collect(Collectors.toList());
                 for (int i = 0; i < size; i += SOSHibernate.LIMIT_IN_CLAUSE) {
                     List<Long> subList;
                     if (size > i + SOSHibernate.LIMIT_IN_CLAUSE) {
-                        subList = uncompletedTaskHistoryIds.subList(i, (i + SOSHibernate.LIMIT_IN_CLAUSE));
+                        subList = copy.subList(i, (i + SOSHibernate.LIMIT_IN_CLAUSE));
                     } else {
-                        subList = uncompletedTaskHistoryIds.subList(i, size);
+                        subList = copy.subList(i, size);
                     }
                     Query<DBItemSchedulerHistory> query = getDbLayer().getSchedulerHistoryTasksQuery(schedulerSession, largeResultFetchSizeScheduler,
                             schedulerId, subList);
@@ -498,6 +506,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                     counterUpdatedExecutions += counter.getUpdatedExecutions();
                     counterInsertedTasks += counter.getInsertedTasks();
                     counterUpdatedTasks += counter.getUpdatedTasks();
+                    counterTransferHistory += counter.getTransferHistory();
                 }
                 counterTaskSyncUncompleted.setTotal(counterTotal);
                 counterTaskSyncUncompleted.setSkip(counterSkip);
@@ -507,7 +516,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                 counterTaskSyncUncompleted.setUpdatedExecutions(counterUpdatedExecutions);
                 counterTaskSyncUncompleted.setInsertedTasks(counterInsertedTasks);
                 counterTaskSyncUncompleted.setUpdatedTasks(counterUpdatedTasks);
-
+                counterTaskSyncUncompleted.setTransferHistory(counterTransferHistory);
             } else {
                 Query<DBItemSchedulerHistory> query = getDbLayer().getSchedulerHistoryTasksQuery(schedulerSession, largeResultFetchSizeScheduler,
                         schedulerId, uncompletedTaskHistoryIds);
@@ -637,7 +646,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             task.setErrorCode(null);
                             task.setErrorText(null);
                             task.setAgentUrl(null);
-                            getDbLayer().insertTask(task, inventoryInfo, false, false);
+                            getDbLayer().insertTask(task, inventoryInfo, false, false, false);
                             counterTaskStartedEventsInserted++;
                         }
                     }
@@ -787,6 +796,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             int counterSkip = 0;
             int counterInserted = 0;
             int counterUpdated = 0;
+            int counterTransferHistory = 0;
             int totalSize = result.size();
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("[%s][scheduler]%s tasks", method, totalSize));
@@ -845,7 +855,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                 isOrder = true;
                             }
                         }
-                        reportTask = getDbLayer().insertTask(task, inventoryInfo, isOrder, syncCompleted);
+                        boolean transferHistory = processTransferHistory(task, counterTransferHistory);
+                        reportTask = getDbLayer().insertTask(task, inventoryInfo, isOrder, syncCompleted, transferHistory);
                         if (isDebugEnabled) {
                             LOGGER.debug(String.format("[%s][%s][inserted][%s][%s][%s]%s", method, counterTotal, reportTask.getId(), reportTask
                                     .getHistoryId(), reportTask.getName(), SOSString.toString(reportTask)));
@@ -856,6 +867,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
                         if (reportTask.getError() && (reportTask.getExitCode() == null || reportTask.getExitCode().equals(new Integer(0)))) {
                             updateExecutions = true;
                         }
+                        reportTask = processTransferHistory(reportTask, task, counterTransferHistory);
                         getDbLayer().updateTask(reportTask, task, syncCompleted);
                         if (isDebugEnabled) {
                             LOGGER.debug(String.format("[%s][%s][updated][%s][%s][%s]%s", method, counterTotal, reportTask.getId(), reportTask
@@ -896,6 +908,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             counter.setUpdatedExecutions(0);
             counter.setInsertedTasks(counterInserted);
             counter.setUpdatedTasks(counterUpdated);
+            counter.setTransferHistory(counterTransferHistory);
         } catch (Exception e) {
             try {
                 getDbLayer().getSession().rollback();
@@ -959,6 +972,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             int counterUpdatedExecutions = 0;
             int counterInsertedTasks = 0;
             int counterUpdatedTasks = 0;
+            int counterTransferHistory = 0;
             int totalSize = result.size();
             if (isDebugEnabled) {
                 LOGGER.debug(String.format("[%s][scheduler]%s order steps", method, totalSize));
@@ -1000,7 +1014,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             InventoryInfo taskInventoryInfo = getInventoryInfo(method, infos);
                             if (reportTask == null) {
                                 try {
-                                    reportTask = getDbLayer().insertTaskByOrderStep(step, taskInventoryInfo, false);
+                                    reportTask = getDbLayer().insertTaskByOrderStep(step, taskInventoryInfo, false, processTransferHistory(step,
+                                            counterTransferHistory));
                                     if (isDebugEnabled) {
                                         LOGGER.debug(String.format("[%s][%s][task][%s][%s][%s][inserted by order step]%s", method, counterTotal,
                                                 reportTask.getId(), reportTask.getHistoryId(), reportTask.getName(), SOSString.toString(reportTask)));
@@ -1021,6 +1036,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                     reportTask.setTitle(taskInventoryInfo.getTitle());
                                     reportTask.setCriticality(taskInventoryInfo.getCriticality());
                                     reportTask.setModified(ReportUtil.getCurrentDateTime());
+                                    reportTask = processTransferHistory(reportTask, step, counterTransferHistory);
+
                                     getDbLayer().getSession().update(reportTask);
                                     if (isDebugEnabled) {
                                         LOGGER.debug(String.format("[%s][%s][task][%s][%s][%s][updated from inventory]%s", method, counterTotal,
@@ -1192,7 +1209,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                                 boolean syncCompleted = calculateIsSyncCompleted(taskHistoryMaxUncompletedAge, step.getTaskStartTime(), step
                                         .getTaskEndTime(), dateToAsMinutes);
                                 try {
-                                    reportTask = getDbLayer().insertTaskByOrderStep(step, inventoryInfo, syncCompleted);
+                                    reportTask = getDbLayer().insertTaskByOrderStep(step, inventoryInfo, syncCompleted, processTransferHistory(step,
+                                            counterTransferHistory));
                                 } catch (Exception e) {
                                     throw new SOSReportingConcurrencyException(e);
                                 }
@@ -1264,6 +1282,8 @@ public class FactModel extends ReportingModel implements IReportingModel {
                             }
                             reportTask.setSyncCompleted(true);
                             reportTask.setModified(ReportUtil.getCurrentDateTime());
+                            reportTask = processTransferHistory(reportTask, step, counterTransferHistory);
+
                             getDbLayer().getSession().update(reportTask);
 
                             uncompletedTaskHistoryIds.remove(reportTask.getHistoryId());
@@ -1295,7 +1315,7 @@ public class FactModel extends ReportingModel implements IReportingModel {
             counter.setUpdatedExecutions(counterUpdatedExecutions);
             counter.setInsertedTasks(counterInsertedTasks);
             counter.setUpdatedTasks(counterUpdatedTasks);
-
+            counter.setTransferHistory(counterTransferHistory);
         } catch (Exception e) {
             try {
                 getDbLayer().getSession().rollback();
@@ -1683,11 +1703,12 @@ public class FactModel extends ReportingModel implements IReportingModel {
             String range = "task";
             if (isTasksChanged) {
                 LOGGER.info(String.format(
-                        "[%s to %s UTC][%s][new]history tasks=%s, tasks(inserted=%s, updated=%s), skip=%s [old]total=%s, tasks(inserted=%s, updated=%s), skip=%s [event TaskClose]total=%s, tasks(inserted=%s, updated=%s), skip=%s [event TaskStarted]inserted=%s [not founded]total=%s, tasks(updated=%s), skip=%s",
+                        "[%s to %s UTC][%s][new]tasks=%s,tasks(inserted=%s,updated=%s,transfer_history=%s),skip=%s[old]total=%s,tasks(inserted=%s,updated=%s,transfer_history=%s),skip=%s[event TaskClose]total=%s,tasks(inserted=%s,updated=%s),skip=%s[event TaskStarted]inserted=%s[not founded]total=%s,tasks(updated=%s),skip=%s",
                         from, to, range, counterTaskSync.getTotal(), counterTaskSync.getInsertedTasks(), counterTaskSync.getUpdatedTasks(),
-                        counterTaskSync.getSkip(), counterTaskSyncUncompleted.getTotal(), counterTaskSyncUncompleted.getInsertedTasks(),
-                        counterTaskSyncUncompleted.getUpdatedTasks(), counterTaskSyncUncompleted.getSkip(), counterTaskSyncEvent.getTotal(),
-                        counterTaskSyncEvent.getInsertedTasks(), counterTaskSyncEvent.getUpdatedTasks(), counterTaskSyncEvent.getSkip(),
+                        counterTaskSync.getTransferHistory(), counterTaskSync.getSkip(), counterTaskSyncUncompleted.getTotal(),
+                        counterTaskSyncUncompleted.getInsertedTasks(), counterTaskSyncUncompleted.getUpdatedTasks(), counterTaskSyncUncompleted
+                                .getTransferHistory(), counterTaskSyncUncompleted.getSkip(), counterTaskSyncEvent.getTotal(), counterTaskSyncEvent
+                                        .getInsertedTasks(), counterTaskSyncEvent.getUpdatedTasks(), counterTaskSyncEvent.getSkip(),
                         counterTaskStartedEventsInserted, counterTaskSyncNotFounded.getTotal(), counterTaskSyncNotFounded.getUpdatedTasks(),
                         counterTaskSyncNotFounded.getSkip()));
             } else {
@@ -1696,13 +1717,14 @@ public class FactModel extends ReportingModel implements IReportingModel {
             range = "order";
             if (isOrdersChanged) {
                 LOGGER.info(String.format(
-                        "[%s to %s UTC][%s][new]history steps=%s, triggers(inserted=%s, updated=%s), executions(inserted=%s, updated=%s), tasks(inserted=%s), skip=%s [old]total=%s, triggers(inserted=%s, updated=%s), executions(inserted=%s, updated=%s), tasks(inserted=%s), skip=%s",
+                        "[%s to %s UTC][%s][new]steps=%s,triggers(inserted=%s,updated=%s),executions(inserted=%s,updated=%s),tasks(inserted=%s,transfer_history=%s),skip=%s[old]total=%s,triggers(inserted=%s,updated=%s),executions(inserted=%s,updated=%s),tasks(inserted=%s,transfer_history=%s),skip=%s",
                         from, to, range, counterOrderSync.getTotal(), counterOrderSync.getInsertedTriggers(), counterOrderSync.getUpdatedTriggers(),
                         counterOrderSync.getInsertedExecutions(), counterOrderSync.getUpdatedExecutions(), counterOrderSync.getInsertedTasks(),
-                        counterOrderSync.getSkip(), counterOrderSyncUncompleted.getTotal(), counterOrderSyncUncompleted.getInsertedTriggers(),
-                        counterOrderSyncUncompleted.getUpdatedTriggers(), counterOrderSyncUncompleted.getInsertedExecutions(),
-                        counterOrderSyncUncompleted.getUpdatedExecutions(), counterOrderSyncUncompleted.getInsertedTasks(),
-                        counterOrderSyncUncompleted.getSkip()));
+                        counterOrderSync.getTransferHistory(), counterOrderSync.getSkip(), counterOrderSyncUncompleted.getTotal(),
+                        counterOrderSyncUncompleted.getInsertedTriggers(), counterOrderSyncUncompleted.getUpdatedTriggers(),
+                        counterOrderSyncUncompleted.getInsertedExecutions(), counterOrderSyncUncompleted.getUpdatedExecutions(),
+                        counterOrderSyncUncompleted.getInsertedTasks(), counterOrderSyncUncompleted.getTransferHistory(), counterOrderSyncUncompleted
+                                .getSkip()));
             } else {
                 LOGGER.info(String.format("[%s to %s UTC][%s] 0 changes", from, to, range));
             }
@@ -1761,6 +1783,52 @@ public class FactModel extends ReportingModel implements IReportingModel {
             }
         }
         return dateFrom;
+    }
+
+    private boolean processTransferHistory(DBItemSchedulerHistory task, int counter) throws SOSHibernateException {
+        boolean result = transferHistory.process(getDbLayer().getSession(), task);
+        if (result) {
+            counter++;
+        }
+        return result;
+    }
+
+    private DBItemReportTask processTransferHistory(DBItemReportTask reportTask, DBItemSchedulerHistory task, int counter)
+            throws SOSHibernateException {
+        if (reportTask.getTransferHistory()) {
+            return reportTask;
+        }
+        if (processTransferHistory(task, counter)) {
+            reportTask.setTransferHistory(true);
+        }
+        return reportTask;
+    }
+
+    private boolean processTransferHistory(DBItemSchedulerHistoryOrderStepReporting step, int counter) throws SOSHibernateException {
+        if (SOSString.isEmpty(step.getTaskTransferHistory())) {
+            return false;
+        }
+        DBItemSchedulerHistory tmp = new DBItemSchedulerHistory();
+        tmp.setSpoolerId(step.getOrderSchedulerId());
+        tmp.setJobName(step.getTaskJobName());
+        tmp.setId(step.getTaskId());
+        tmp.setTransferHistory(step.getTaskTransferHistory());
+        boolean result = transferHistory.process(getDbLayer().getSession(), tmp);
+        if (result) {
+            counter++;
+        }
+        return result;
+    }
+
+    private DBItemReportTask processTransferHistory(DBItemReportTask reportTask, DBItemSchedulerHistoryOrderStepReporting step, int counter)
+            throws SOSHibernateException {
+        if (reportTask.getTransferHistory()) {
+            return reportTask;
+        }
+        if (processTransferHistory(step, counter)) {
+            reportTask.setTransferHistory(true);
+        }
+        return reportTask;
     }
 
     private void registerPlugin() {
@@ -1877,6 +1945,10 @@ public class FactModel extends ReportingModel implements IReportingModel {
 
     public boolean isLocked() {
         return isLocked;
+    }
+
+    public TransferHistoryHandler getTransferHistory() {
+        return transferHistory;
     }
 
 }

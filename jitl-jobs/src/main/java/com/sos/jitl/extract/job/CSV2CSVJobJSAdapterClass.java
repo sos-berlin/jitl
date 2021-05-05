@@ -14,15 +14,15 @@ public class CSV2CSVJobJSAdapterClass extends JobSchedulerJobAdapter {
             super.spooler_process();
 
             CSV2CSVJobOptions options = job.getOptions();
-            options.setCurrentNodeName(this.getCurrentNodeName());
-            options.setAllOptions(getSchedulerParameterAsProperties(getParameters()));
+            options.setCurrentNodeName(getCurrentNodeName(getSpoolerProcess().getOrder(), false));
+            options.setAllOptions(getSchedulerParameterAsProperties(getSpoolerProcess().getOrder()));
             job.setJSJobUtilites(this);
             job.setJSCommands(this);
 
             job.execute();
+            return getSpoolerProcess().isOrderJob();
         } catch (Exception e) {
             throw new JobSchedulerException("Fatal Error:" + e.getMessage(), e);
         }
-        return signalSuccess();
     }
 }

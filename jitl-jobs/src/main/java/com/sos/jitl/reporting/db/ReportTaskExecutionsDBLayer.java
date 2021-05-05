@@ -36,7 +36,7 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
         this.filter.setDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
         this.filter.setOrderCriteria("startTime");
         this.filter.setSortMode("desc");
-    }
+     }
 
     public ReportExecutionFilter getFilter() {
         return filter;
@@ -81,21 +81,38 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
             where += and + " endTime < :endTime ";
             and = " and ";
         }
-
+       
         if (filter.getListOfJobs() != null && filter.getListOfJobs().size() > 0) {
             where += and + SearchStringHelper.getStringListPathSql(filter.getListOfJobs(), "name");
             and = " and ";
-        }
-        
-        if (filter.getCriticality() != null && filter.getCriticality().size() > 0) {
-            where += and + "(";
-            for (String criticality : filter.getCriticality()) {
-                where += "criticality='" + criticality + "' or ";
+        } else {
+            if (filter.getListOfExcludedJobs() != null && filter.getListOfExcludedJobs().size() > 0) {
+                where += and + "(";
+                for (String job : filter.getListOfExcludedJobs()) {
+                    where += " name <> '" + job + "' and";
+                }
+                where += " 1=1)";
+                and = " and ";
             }
-            where += "1=0)";
+            if (filter.getListOfFolders() != null && filter.getListOfFolders().size() > 0) {
+                where += and + "(";
+                for (Folder filterFolder : filter.getListOfFolders()) {
+                    if (filterFolder.getRecursive()) {
+                        String likeFolder = (filterFolder.getFolder() + "/%").replaceAll("//+", "/");
+                        where += " (folder = '" + filterFolder.getFolder() + "' or folder like '" + likeFolder + "')";
+                    } else {
+                        where += " folder = '" + filterFolder.getFolder() + "'";
+                    }
+                    where += " or ";
+                }
+                where += " 0=1)";
+                and = " and ";
+            }
+        }       
+        if (filter.getCriticality() != null && filter.getCriticality().size() > 0) {
+            where += and + " criticality in (:criticalities)";
             and = " and ";
         }
-
 
         if (filter.getStates() != null && filter.getStates().size() > 0) {
             where += and + "(";
@@ -147,12 +164,9 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
             and = " and ";
         }
 
+       
         if (filter.getCriticality() != null && filter.getCriticality().size() > 0) {
-            where += and + "(";
-            for (String criticality : filter.getCriticality()) {
-                where += "criticality='" + criticality + "' or ";
-            }
-            where += "1=0)";
+            where += and + " criticality in (:criticalities)";
             and = " and ";
         }
 
@@ -245,6 +259,9 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
         }
         if (filter.getExecutedTo() != null) {
             query.setParameter("startTimeTo", filter.getExecutedTo(), TemporalType.TIMESTAMP);
+        }
+        if (filter.getCriticality() != null && !filter.getCriticality().isEmpty()) {
+            query.setParameterList("criticalities", filter.getCriticality());
         }
         
         if (filter.getLimit() > 0) {
@@ -360,15 +377,18 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
         int limit = this.getFilter().getLimit();
         Query<DBItemReportTask> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s", DBLayer.DBITEM_REPORT_TASKS, getWhere(),
                 filter.getOrderCriteria(), filter.getSortMode()));
-
+ 
         if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
             query.setParameter("schedulerId", filter.getSchedulerId());
         }
         if (filter.getStartTime() != null) {
             query.setParameter("startTime", filter.getStartTime(), TemporalType.TIMESTAMP);
         }
-        if (filter.getEndTime() != null && !"".equals(filter.getEndTime())) {
+        if (filter.getEndTime() != null) {
             query.setParameter("endTime", filter.getEndTime(), TemporalType.TIMESTAMP);
+        }
+        if (filter.getTaskIds() != null && !filter.getTaskIds().isEmpty()) {
+            query.setParameterList("taskIds", filter.getTaskIds());
         }
         if (limit > 0) {
             query.setMaxResults(limit);
@@ -377,6 +397,28 @@ public class ReportTaskExecutionsDBLayer extends SOSHibernateIntervalDBLayer<DBI
         return historyList;
     }
 
+    public List<DBItemReportTask> getLastHistoryItems() throws SOSHibernateException {
+        int limit = this.getFilter().getLimit();
+        Query<DBItemReportTask> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s", 
+                DBLayer.DBITEM_REPORT_TASKS + " a ", getWhere() + " and historyId=(select max(historyId) from " + DBLayer.DBITEM_REPORT_TASKS + " b where a.name=b.name)",
+                filter.getOrderCriteria(), filter.getSortMode()));
+
+        if (filter.getSchedulerId() != null && !"".equals(filter.getSchedulerId())) {
+            query.setParameter("schedulerId", filter.getSchedulerId());
+        }
+        if (filter.getStartTime() != null) {
+            query.setParameter("startTime", filter.getStartTime(), TemporalType.TIMESTAMP);
+        }
+        if (filter.getEndTime() != null ) {
+            query.setParameter("endTime", filter.getEndTime(), TemporalType.TIMESTAMP);
+        }
+        if (limit > 0) {
+            query.setMaxResults(limit);
+        }
+        List<DBItemReportTask> historyList = sosHibernateSession.getResultList(query);
+        return historyList;
+    }
+    
     public DBItemReportTask getHistoryItem() throws SOSHibernateException {
         this.filter.setLimit(1);
         Query<DBItemReportTask> query = sosHibernateSession.createQuery(String.format("from %s %s %s %s", DBLayer.DBITEM_REPORT_TASKS, getWhere(),

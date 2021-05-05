@@ -69,7 +69,7 @@ public class JSBatchInstaller extends JSToolBox implements JSJobUtilities, IJSCo
     }
 
     @Override
-    public void setJSParam(final String pstrKey, final StringBuffer pstrValue) {
+    public void setJSParam(final String pstrKey, final StringBuilder pstrValue) {
     }
 
     @Override
@@ -82,13 +82,7 @@ public class JSBatchInstaller extends JSToolBox implements JSJobUtilities, IJSCo
         LOGGER.debug("objJSJobUtilities = " + objJSJobUtilities.getClass().getName());
     }
 
-    @Override
-    public String getCurrentNodeName() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public void setJSCommands(final IJSCommands pobjJSCommands) {
+   public void setJSCommands(final IJSCommands pobjJSCommands) {
         if (pobjJSCommands == null) {
             objJSCommands = this;
         } else {
@@ -113,7 +107,7 @@ public class JSBatchInstaller extends JSToolBox implements JSJobUtilities, IJSCo
     }
 
     @Override
-    public void setCC(final int pintCC) {
+    public void setExitCode(final int pintCC) {
         // TODO Auto-generated method stub
     }
 
