@@ -165,6 +165,19 @@ public class JSSmtpMailOptions extends SOSSmtpMailOptions {
         job_id = p_job_id;
     }
 
+    
+    @JSOptionDefinition(name = "enabled", description = "enable monitor", key = "enabled", type = "SOSOptionBoolean", mandatory = false)
+    public SOSOptionBoolean enabled = new SOSOptionBoolean(this, "enabled", "enable monitor", "true", "true", false);
+
+    public SOSOptionBoolean getenabled() {
+        return enabled;
+    }
+
+    public void setenabled(final SOSOptionBoolean enabled) {
+        this.enabled = enabled;
+    }
+    
+    
     @JSOptionDefinition(name = "scheduler_host", description = "jobscheduler hostname", key = "scheduler_host", type = "SOSOptionHostName", mandatory = false)
     public SOSOptionHostName scheduler_host = new SOSOptionHostName(this, "scheduler_host", "jobscheduler hostname", "localhost", "localhost", false);
 
