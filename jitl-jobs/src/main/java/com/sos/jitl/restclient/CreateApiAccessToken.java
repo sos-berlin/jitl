@@ -17,7 +17,9 @@ public class CreateApiAccessToken extends JobSchedulerJobAdapter implements IMon
         LOGGER.debug("Starting spooler_process_before");
         try {
         AccessTokenProvider accessTokenProvider = new AccessTokenProvider(null);
-        accessTokenProvider.getAccessToken(spooler);
+        WebserviceCredentials w = accessTokenProvider.getAccessToken(spooler);
+        spooler.variables().set_value("joc_user", w.getUser());
+
         }catch (Exception e) {
             LOGGER.error(e.getLocalizedMessage(),e);
         }
