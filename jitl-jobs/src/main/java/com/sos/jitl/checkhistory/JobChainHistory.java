@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.exception.SOSException;
 import com.sos.jitl.checkhistory.classes.HistoryDataSource;
-import com.sos.jitl.checkhistory.classes.HistoryDatabaseExecuter;
 import com.sos.jitl.checkhistory.classes.HistoryWebserviceExecuter;
 import com.sos.jitl.checkhistory.classes.JobSchedulerHistoryInfoEntry;
 import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistory;
@@ -44,17 +43,21 @@ public class JobChainHistory implements IJobSchedulerHistory {
         timeLimit = "";
     }
 
-    // For calling from javascript
+ // For calling from javascript
     public JobChainHistory(Spooler spooler) {
         super();
 
         jobHistoryHelper = new HistoryHelper();
         this.jocUrl = spooler.variables().value("joc_url");
         this.webserviceCredentials = new WebserviceCredentials();
-        this.webserviceCredentials.setAccessToken(spooler.variables().value("X-Access-Token"));
+
+        String jocUser = spooler.variables().value("joc_user");
+        this.webserviceCredentials.setAccessToken(spooler.variables().value(jocUser + "_X-Access-Token"));
+        this.webserviceCredentials.setUser(jocUser);
         this.webserviceCredentials.setSchedulerId(spooler.id());
         timeLimit = "";
     }
+
 
     public JobSchedulerHistoryInfo getJobChainInfo(String jobChainName) throws Exception {
         return (JobSchedulerHistoryInfo) getJobSchedulerHistoryInfo(jobChainName);
