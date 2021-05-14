@@ -12,16 +12,15 @@ public class CreateApiAccessToken extends JobSchedulerJobAdapter implements IMon
 
     @Override
     public boolean spooler_process_before() throws Exception {
-       
-        
+
         LOGGER.debug("Starting spooler_process_before");
         try {
-        AccessTokenProvider accessTokenProvider = new AccessTokenProvider(null);
-        WebserviceCredentials w = accessTokenProvider.getAccessToken(spooler);
-        spooler.variables().set_value("joc_user", w.getUser());
+            AccessTokenProvider accessTokenProvider = new AccessTokenProvider(null);
+            WebserviceCredentials w = accessTokenProvider.getAccessToken(spooler);
+            spooler.variables().set_value("joc_user", w.getUser());
 
-        }catch (Exception e) {
-            LOGGER.error(e.getLocalizedMessage(),e);
+        } catch (Exception e) {
+            LOGGER.error(e.getLocalizedMessage(), e);
         }
         return true;
     }
