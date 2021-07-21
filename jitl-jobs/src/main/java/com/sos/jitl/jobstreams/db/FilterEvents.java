@@ -113,6 +113,9 @@ public class FilterEvents {
         return listOfSession;
     }
 
+    public void setListOfSession(List<String> listOfSession) {
+         this.listOfSession = listOfSession;
+    }
     
     public String getJoin() {
         return join;

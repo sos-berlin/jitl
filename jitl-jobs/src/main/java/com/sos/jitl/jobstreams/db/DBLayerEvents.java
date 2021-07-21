@@ -1,13 +1,16 @@
 package com.sos.jitl.jobstreams.db;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.hibernate.query.Query;
 import org.hibernate.transform.Transformers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.hibernate.classes.SOSHibernate;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.jobstreams.classes.JSEvent;
@@ -38,13 +41,14 @@ public class DBLayerEvents {
 
     public String getContextListSql(List<String> list) {
         StringBuilder sql = new StringBuilder();
-
+        sql.append("e.session in (");
         for (String s : list) {
-            sql.append("e.session = '" + s + "'").append(" or ");
+            sql.append("'" + s + "',");
         }
-
         String s = sql.toString();
-        s = s.substring(0, s.length() - 4);
+        s = s.substring(0, s.length() - 1);
+        s = s + ")";
+
         return " (" + s + ") ";
     }
 
@@ -166,7 +170,7 @@ public class DBLayerEvents {
         return query;
     }
 
-    public List<DBItemOutConditionWithEvent> getEventsList(FilterEvents filter, final int limit) throws SOSHibernateException {
+    public List<DBItemOutConditionWithEvent> executeGetEventsList(FilterEvents filter, final int limit) throws SOSHibernateException {
         filter.setJoin("e.outConditionId=o.id");
         String q = "select e.id as eventId,e.outConditionId as outConditionId,"
                 + "e.jobStreamHistoryId as jobStreamHistoryId,e.session as session,e.event as event, e.created as created, "
@@ -182,6 +186,31 @@ public class DBLayerEvents {
         }
         return sosHibernateSession.getResultList(query);
     }
+
+    public List<DBItemOutConditionWithEvent> getEventsList(FilterEvents filter, final int limit) throws SOSHibernateException {
+        filter.setJoin("e.outConditionId=o.id");
+
+        if (filter.getListOfSession() != null) {
+            List<DBItemOutConditionWithEvent> resultList = new ArrayList<DBItemOutConditionWithEvent>();
+            int size = filter.getListOfSession().size();
+            if (size > SOSHibernate.LIMIT_IN_CLAUSE) {
+                ArrayList<String> copy = (ArrayList<String>) filter.getListOfSession().stream().collect(Collectors.toList());
+                for (int i = 0; i < size; i += SOSHibernate.LIMIT_IN_CLAUSE) {
+                    if (size > i + SOSHibernate.LIMIT_IN_CLAUSE) {
+                        filter.setListOfSession(copy.subList(i, (i + SOSHibernate.LIMIT_IN_CLAUSE)));
+                    } else {
+                        filter.setListOfSession(copy.subList(i, size));
+                    }
+                    resultList.addAll(executeGetEventsList(filter, limit));
+                }
+                return resultList;
+            } else {
+                return executeGetEventsList(filter, limit);
+            }
+        } else {
+            return executeGetEventsList(filter, limit);
+        }
+     }
 
     public Integer delete(FilterEvents filter) throws SOSHibernateException {
 
@@ -231,7 +260,7 @@ public class DBLayerEvents {
         row = sosHibernateSession.executeUpdate(query);
         return row;
     }
-    
+
     public int updateEventsWithJobStream(String oldJobStream, String newJobStream) throws SOSHibernateException {
         String hql = "update " + DBItemEvents + " set jobStream='" + newJobStream + "' where jobStream=:oldJobStream";
         int row = 0;
