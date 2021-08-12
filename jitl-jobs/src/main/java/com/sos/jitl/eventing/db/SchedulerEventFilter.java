@@ -457,6 +457,7 @@ public class SchedulerEventFilter extends SOSHibernateIntervalFilter implements 
 					Date now = format.parse(nowUtc);
 					setExpires(now);
 				} else {
+			        expires = expires.replaceAll("T"," ").replaceAll(".000","");
 					Date utcDate = SOSDate.getTime(expires, EXPIRES_DATE_FORMAT);
 					setExpires(utcDate);
 				}
