@@ -57,6 +57,7 @@
             <xi:include href="./params/param_simulate_shell_login_timeout.xml" parse="xml" />
             <xi:include href="./params/param_simulate_shell_prompt_trigger.xml" parse="xml" />
             <xi:include href="./params/param_user.xml" parse="xml" />
+            <xi:include href="./params/param_ssh_provider.xml" parse="xml" />
         </params>
         <params id="return_parameter">
             <xi:include href="./params/param_std_out_output.xml" parse="xml">

@@ -41,6 +41,7 @@
             <xi:include href="./params/param_port.xml" parse="xml" />
             <xi:include href="./params/param_password.xml" parse="xml" />
             <xi:include href="./params/param_user.xml" parse="xml" />
+            <xi:include href="./params/param_ssh_provider.xml" parse="xml" />
         </params>
         <params id="other">
             <param xmlns:xhtml="http://www.w3.org/1999/xhtml"

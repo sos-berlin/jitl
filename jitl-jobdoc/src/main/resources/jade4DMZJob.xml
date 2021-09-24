@@ -159,6 +159,7 @@
             <xi:include href="./params/param_profile.xml" parse="xml" />
 
             <xi:include href="./params/param_load_Class_name.sosdoc" parse="xml" />
+            <xi:include href="./params/param_ssh_provider.xml" parse="xml" />
 
         </params>
         <params id="return_parameter">
