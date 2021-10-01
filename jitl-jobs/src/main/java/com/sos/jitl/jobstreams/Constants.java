@@ -74,7 +74,7 @@ public class Constants {
     public static String baseUrl;
     public static String periodBegin;
     public static Integer testDelay=0;
-    public static Integer jobstreamCheckInterval=2;
+    public static Integer jobstreamCheckInterval=3;
 
     public static Calendar getSessionCalendar() {
         if (periodBegin == null) {
