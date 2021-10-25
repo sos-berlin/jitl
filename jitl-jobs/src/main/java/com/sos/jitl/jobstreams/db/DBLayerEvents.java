@@ -2,7 +2,6 @@ package com.sos.jitl.jobstreams.db;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hibernate.query.Query;
@@ -14,7 +13,6 @@ import com.sos.hibernate.classes.SOSHibernate;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateException;
 import com.sos.jitl.jobstreams.classes.JSEvent;
-import com.sos.jitl.jobstreams.classes.JSEventKey;
 
 public class DBLayerEvents {
 

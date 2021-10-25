@@ -46,12 +46,6 @@ public class JSStarter {
             jobStreamScheduler.schedule(from,to,runtime, false);
         }
     }
- 
-
-    public com.sos.joc.model.plan.RunTime getPlan() {
-        return jobStreamScheduler.getPlan();
-    }
-
   
     public JobStreamScheduler getJobStreamScheduler() {
         return jobStreamScheduler;
