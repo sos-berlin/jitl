@@ -2075,14 +2075,14 @@ public class InventoryEventUpdateUtil {
         
     private Long initOverviewRequest() throws SOSException {
         if (!closed) {
-            StringBuilder connectTo = new StringBuilder();
-            connectTo.append(webserviceUrl);
-            connectTo.append(WEBSERVICE_FILE_BASED_URL);
             URIBuilder uriBuilder;
             try {
-                uriBuilder = new URIBuilder();
-                uriBuilder.setPath(connectTo.toString());
-                uriBuilder.addParameter(WEBSERVICE_PARAM_KEY_RETURN, WEBSERVICE_PARAM_VALUE_FILEBASED_OVERVIEW);
+                uriBuilder = new URIBuilder()
+                		.setScheme("http")
+                		.setHost(hostFromHttpPort)
+                		.setPort(port)
+                		.setPath(WEBSERVICE_FILE_BASED_URL)
+                		.addParameter(WEBSERVICE_PARAM_KEY_RETURN, WEBSERVICE_PARAM_VALUE_FILEBASED_OVERVIEW);
                 JsonObject result = getJsonObjectFromResponse(uriBuilder.build(), true);
                 JsonNumber jsonEventId = result.getJsonNumber(EVENT_ID);
                 LOGGER.debug(String.format("[inventory] eventId received from Overview: %1$d", jsonEventId.longValue()));
