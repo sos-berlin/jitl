@@ -1,10 +1,5 @@
 package sos.scheduler.job;
 
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -40,7 +35,6 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
     private static final String EXPIRES_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     private String confFile;
-    private SOSHibernateSession session;
     private SchedulerEventDBLayer schedulerEventDBLayer;
     private SchedulerEventFilter filter;
     private String eventAction = "";
@@ -179,8 +173,8 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 
                 if (this.parameters.value("expires") != null && !this.parameters.value("expires").isEmpty()) {
 
-                    String expires = this.parameters.value("expires");  
- 
+                    String expires = this.parameters.value("expires");
+
                     if (this.parameters.value("expires_timezone") != null && !this.parameters.value("expires_timezone").isEmpty()) {
                         String timeZone = this.parameters.value("expires_timezone");
                         expires = UtcTimeHelper.convertTimeZoneToTimeZone(EXPIRES_DATE_FORMAT, timeZone, "UTC", expires);
@@ -209,12 +203,12 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 
                 if (this.parameters.value("expiration_cycle") != null && !this.parameters.value("expiration_cycle").isEmpty()) {
                     String expirationCycle = this.parameters.value("expiration_cycle") + ":00:00:00";
-                    expirationCycle = expirationCycle.substring(0,8);
+                    expirationCycle = expirationCycle.substring(0, 8);
                     if (this.parameters.value("expires_timezone") != null && !this.parameters.value("expires_timezone").isEmpty()) {
                         String timeZone = this.parameters.value("expires_timezone");
                         expirationCycle = UtcTimeHelper.convertTimeZoneToTimeZone(EXPIRATION_CYCLE_DATE_FORMAT, timeZone, "UTC", expirationCycle);
-                    } 
-                    
+                    }
+
                     filter.setExpirationCycle(expirationCycle);
                     LOGGER.debug(".. parameter [expiration_cycle]: " + this.parameters.value("expiration_cycle"));
                 } else {
@@ -256,10 +250,14 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
                 throw e;
             }
 
+            SOSHibernateFactory sosHibernateFactory = null;
+            SOSHibernateSession session = null;
+
             try {
 
                 try {
-                    session = getSession(confFile);
+                    sosHibernateFactory = getFactory(confFile);
+                    session = sosHibernateFactory.openStatelessSession();
                     schedulerEventDBLayer = new SchedulerEventDBLayer(session);
 
                 } catch (Exception e) {
@@ -284,6 +282,9 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
             } finally {
                 if (session != null) {
                     session.close();
+                }
+                if (sosHibernateFactory != null) {
+                    sosHibernateFactory.close();
                 }
             }
             return spooler_job.order_queue() != null ? rc : false;
@@ -317,11 +318,12 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
 
     }
 
-    private SOSHibernateSession getSession(String confFile) throws Exception {
+    private SOSHibernateFactory getFactory(String confFile) throws Exception {
         SOSHibernateFactory sosHibernateFactory = new SOSHibernateFactory(confFile);
         sosHibernateFactory.addClassMapping(DBLayer.getReportingClassMapping());
         sosHibernateFactory.build();
-        return sosHibernateFactory.openStatelessSession();
+
+        return sosHibernateFactory;
     }
 
     private void processSchedulerEvents() throws Exception {
@@ -360,6 +362,7 @@ public class JobSchedulerEventJob extends JobSchedulerJobAdapter {
                 filter.setEventClass(item.getEventClass());
                 filter.setEventId(item.getEventId());
                 filter.setExitCode(item.getExitCode());
+                LOGGER.debug("event_id --> " + filter.getEventId());
                 if (item.getExpires() == null) {
                     filter.setExpires(getDefaultExpires());
                 } else {
