@@ -468,8 +468,14 @@ public class InventoryEventUpdateUtil {
         String lastKey = null;
         for (String key : events.keySet()) {
             lastKey = key;
-            JsonObject event = getLastEvent(key, events.get(key));
-            eventId = processEvent(event);
+            if (WEBSERVICE_PARAM_VALUE_CALENDAR_EVENT_KEY.equals(key)) {
+            	for (JsonObject jsonObject : events.get(key)) {
+                    eventId = processEvent(jsonObject);
+            	}
+            } else {
+                JsonObject event = getLastEvent(key, events.get(key));
+                eventId = processEvent(event);
+            }
         }
         lastEventId = newEventId;
         LOGGER.debug("line 473: lastEventID set to newEventId: " + lastEventId);
