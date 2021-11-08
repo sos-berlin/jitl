@@ -10,6 +10,14 @@ public class WebserviceCredentials {
     private String accessToken = "";
 	private String userDecodedAccount="";
     private String jocUrl;
+    
+    private String keyStorePath;
+    private String keyStorePassword;
+    private String keyStoreType;
+
+    private String trustStorePath;
+    private String trustStorePassword;
+    private String trustStoreType;
 
     public String getUserDecodedAccount() {
 		return userDecodedAccount;
@@ -80,5 +88,70 @@ public class WebserviceCredentials {
 	public String getUser() {
 		return user;
 	}
+
+    
+    public String getKeyStorePath() {
+        return keyStorePath;
+    }
+
+    
+    public void setKeyStorePath(String keyStorePath) {
+        this.keyStorePath = keyStorePath;
+    }
+
+    
+    public String getKeyStorePassword() {
+        return keyStorePassword;
+    }
+
+    
+    public void setKeyStorePassword(String keyStorePassword) {
+        this.keyStorePassword = keyStorePassword;
+    }
+
+    
+    public String getKeyStoreType() {
+        return keyStoreType;
+    }
+
+    
+    public void setKeyStoreType(String keyStoreType) {
+        this.keyStoreType = keyStoreType;
+    }
+
+    
+    public String getTrustStorePath() {
+        return trustStorePath;
+    }
+
+    
+    public void setTrustStorePath(String trustStorePath) {
+        this.trustStorePath = trustStorePath;
+    }
+
+    
+    public String getTrustStorePassword() {
+        return trustStorePassword;
+    }
+
+    
+    public void setTrustStorePassword(String trustStorePassword) {
+        this.trustStorePassword = trustStorePassword;
+    }
+
+    
+    public String getTrustStoreType() {
+        return trustStoreType;
+    }
+
+    
+    public void setTrustStoreType(String trustStoreType) {
+        this.trustStoreType = trustStoreType;
+    }
+
+    
+    public String getPassword() {
+        return password;
+    }
  
 }

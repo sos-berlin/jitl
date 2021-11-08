@@ -11,11 +11,19 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.zip.GZIPOutputStream;
 
 import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
@@ -42,20 +50,24 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 
 import com.sos.exception.SOSBadRequestException;
 import com.sos.exception.SOSConnectionRefusedException;
 import com.sos.exception.SOSConnectionResetException;
 import com.sos.exception.SOSException;
+import com.sos.exception.SOSMissingDataException;
 import com.sos.exception.SOSNoResponseException;
+import com.sos.exception.SOSSSLException;
 
 public class JobSchedulerRestApiClient {
 
     private String accept = "application/json";
     private String basicAuthorization = null;
-    private HashMap<String, String> headers = new HashMap<String, String>();
-    private HashMap<String, String> responseHeaders = new HashMap<String, String>();
+    private Map<String, String> headers = new HashMap<String, String>();
+    private Map<String, String> responseHeaders = new HashMap<String, String>();
     private RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
     private CredentialsProvider credentialsProvider = null;
     private HostnameVerifier hostnameVerifier = NoopHostnameVerifier.INSTANCE;
@@ -64,6 +76,17 @@ public class JobSchedulerRestApiClient {
     private CloseableHttpClient httpClient = null;
     private boolean forcedClosingHttpClient = false;
     private boolean autoCloseHttpClient = true;
+    private String keystorePath = null;
+    private String keystorePass = null;
+    private String keystoreType = null; // e.g. "JKS" or "PKCS12"
+    private String keyPass = null;
+    private KeyStore keyStore = null;
+    private char[] clientCertificatePass = null;
+    private String trustStorePath = null;
+    private String trustStorePass = null;
+    private String trustStoreType = null; // e.g. "JKS" or "PKCS12"
+    private SSLContext sslContext = null;
+    private KeyStore trustStore;
 
     public HttpResponse getHttpResponse() {
         return httpResponse;
@@ -142,22 +165,141 @@ public class JobSchedulerRestApiClient {
         }
     }
 
+    public void setKeystorePath(String keystorePath) {
+        this.keystorePath = keystorePath;
+    }
+
+    public void setTrustStorePath(String trustStorePath) {
+        this.trustStorePath = trustStorePath;
+    }
+
+    private Path getKeystorePath() throws SOSMissingDataException {
+        String kStorePath = keystorePath;
+        if (kStorePath == null) {
+            kStorePath = System.getProperty("javax.net.ssl.keyStore");
+        }
+        if (kStorePath == null) {
+            throw new SOSMissingDataException("The keystore path is missing.");
+        }
+        return Paths.get(kStorePath);
+    }
+
+    private Path getTruststorePath() throws SOSMissingDataException {
+        String tStorePath = trustStorePath;
+        if (tStorePath == null) {
+            tStorePath = System.getProperty("javax.net.ssl.trustStore");
+        }
+        if (tStorePath == null) {
+            throw new SOSMissingDataException("The truststore path is missing.");
+        }
+        return Paths.get(tStorePath);
+    }
+
+    public void setKeystorePass(String keystorePass) {
+        this.keystorePass = keystorePass;
+    }
+
+    public void setTruststorePass(String trustStorePass) {
+        this.trustStorePass = trustStorePass;
+    }
+
+    private char[] getKeystorePass() {
+        String kStorePass = keystorePass;
+        if (kStorePass == null) {
+            kStorePass = System.getProperty("javax.net.ssl.keyStorePassword");
+        }
+        if (kStorePass != null) {
+            return kStorePass.toCharArray();
+        }
+        return null;
+    }
+
+    private char[] getTruststorePass() {
+        String tStorePass = trustStorePass;
+        if (tStorePass == null) {
+            tStorePass = System.getProperty("javax.net.ssl.trustStorePassword");
+        }
+        if (tStorePass != null) {
+            return tStorePass.toCharArray();
+        }
+        return null;
+    }
+
+    public void setKeystoreType(String keystoreType) {
+        this.keystoreType = keystoreType;
+    }
+
+    public void setTruststoreType(String trustStoreType) {
+        this.trustStoreType = trustStoreType;
+    }
+
+    private String getKeystoreType() {
+        String kStoreType = keystoreType;
+        if (kStoreType == null) {
+            kStoreType = System.getProperty("javax.net.ssl.keyStoreType");
+        }
+        if (kStoreType == null) {
+            kStoreType = "JKS";
+        }
+        return kStoreType;
+    }
+
+    private String getTruststoreType() {
+        String tStoreType = trustStoreType;
+        if (tStoreType == null) {
+            tStoreType = System.getProperty("javax.net.ssl.trustStoreType");
+        }
+        if (tStoreType == null) {
+            tStoreType = "JKS";
+        }
+        return tStoreType;
+    }
+
+    public void setKeyPass(String keyPass) {
+        this.keyPass = keyPass;
+    }
+
+    private char[] getKeyPass() {
+        String kPass = keyPass;
+        if (kPass == null) {
+            kPass = System.getProperty("javax.net.ssl.keyPassword");
+        }
+        if (kPass != null) {
+            return kPass.toCharArray();
+        }
+        return null;
+    }
+
     public void createHttpClient() {
+        createHttpClient(getDefaultHttpClientBuilder());
+    }
+
+    public void createHttpClient(HttpClientBuilder builder) {
         if (httpClient == null) {
-            HttpClientBuilder builder = HttpClientBuilder.create();
-            if (httpRequestRetryHandler != null) {
-                builder.setRetryHandler(httpRequestRetryHandler);
-            } else {
-                builder.setRetryHandler(new DefaultHttpRequestRetryHandler(0, false));
-            }
-            if (credentialsProvider != null) {
-                builder.setDefaultCredentialsProvider(credentialsProvider);
-            }
-            if (hostnameVerifier != null) {
-                builder.setSSLHostnameVerifier(hostnameVerifier);
+            if (builder == null) {
+                builder = getDefaultHttpClientBuilder();
             }
             httpClient = builder.setDefaultRequestConfig(requestConfigBuilder.build()).build();
         }
+    }
+
+    public HttpClientBuilder getDefaultHttpClientBuilder() {
+        HttpClientBuilder builder = HttpClientBuilder.create();
+        if (httpRequestRetryHandler != null) {
+            builder.setRetryHandler(httpRequestRetryHandler);
+        } else {
+            builder.setRetryHandler(new DefaultHttpRequestRetryHandler(0, false));
+        }
+        if (credentialsProvider != null) {
+            builder.setDefaultCredentialsProvider(credentialsProvider);
+        }
+        if (sslContext != null) {
+            builder.setSSLContext(sslContext);
+        }
+        if (hostnameVerifier != null) {
+            builder.setSSLHostnameVerifier(hostnameVerifier);
+        }
+        return builder;
     }
 
     public void setHttpClient(CloseableHttpClient httpClient) {
@@ -171,6 +313,7 @@ public class JobSchedulerRestApiClient {
     public void closeHttpClient() {
         try {
             if (httpClient != null) {
+                // forcedClosingHttpClient = false;
                 httpClient.close();
             }
         } catch (Exception e) {
@@ -180,9 +323,9 @@ public class JobSchedulerRestApiClient {
     }
 
     public void forcedClosingHttpClient() {
-        forcedClosingHttpClient = true;
         try {
             if (httpClient != null) {
+                forcedClosingHttpClient = true;
                 httpClient.close();
             }
         } catch (Exception e) {
@@ -203,7 +346,34 @@ public class JobSchedulerRestApiClient {
         this.autoCloseHttpClient = autoCloseHttpClient;
     }
 
-    public String executeRestServiceCommand(String restCommand, String urlParam) throws SOSException {
+    public void setSSLContext() throws SOSSSLException {
+        if (keyStore != null || trustStore != null) {
+            try {
+                SSLContextBuilder sslContextBuilder = SSLContexts.custom();
+                if (keyStore != null) {
+                    sslContextBuilder.loadKeyMaterial(keyStore, clientCertificatePass);
+                }
+                if (trustStore != null) {
+                    sslContextBuilder.loadTrustMaterial(trustStore, null);
+                }
+                sslContext = sslContextBuilder.build();
+            } catch (GeneralSecurityException e) {
+                throw new SOSSSLException(e);
+            }
+        }
+    }
+
+    public void setSSLContext(KeyStore keyStore, char[] clientCertificatePass, KeyStore truststore) throws SOSSSLException {
+        setKeystore(keyStore, clientCertificatePass);
+        setTruststore(truststore);
+        setSSLContext();
+    }
+
+    public void setSSLContext(SSLContext sslContext) {
+        this.sslContext = sslContext;
+    }
+
+    public String executeRestServiceCommand(String restCommand, String urlParam) throws SOSException, SocketException {
         String s = urlParam.replaceFirst("^([^:]*)://.*$", "$1");
         if (s.equals(urlParam)) {
             urlParam = "http://" + urlParam;
@@ -217,19 +387,26 @@ public class JobSchedulerRestApiClient {
         return executeRestServiceCommand(restCommand, url);
     }
 
-    public String executeRestServiceCommand(String restCommand, URL url) throws SOSException {
+    public String executeRestServiceCommand(String restCommand, URL url) throws SOSException, SocketException {
         return executeRestServiceCommand(restCommand, url, null);
     }
 
-    public String executeRestServiceCommand(String restCommand, URI uri) throws SOSException {
+    
+    private  static String getParameter(String p) {
+        String[] pParts = p.replaceFirst("\\)\\s*$", "").split("\\(", 2);
+        String s = (pParts.length == 2) ? pParts[1] : "";
+        return s.trim();
+    }
+    
+    public String executeRestServiceCommand(String restCommand, URI uri) throws SOSException, SocketException {
         return executeRestServiceCommand(restCommand, uri, null);
     }
 
-    public String executeRestServiceCommand(String restCommand, URL url, String body) throws SOSException {
+    public String executeRestServiceCommand(String restCommand, URL url, String body) throws SOSException, SocketException {
 
         String result = "";
         if (body == null) {
-            body = JobSchedulerRestClient.getParameter(restCommand);
+            body = getParameter(restCommand);
         }
         String path = url.getPath();
         String query = url.getQuery();
@@ -251,11 +428,11 @@ public class JobSchedulerRestApiClient {
         return result;
     }
 
-    public String executeRestServiceCommand(String restCommand, URI uri, String body) throws SOSException {
+    public String executeRestServiceCommand(String restCommand, URI uri, String body) throws SOSException, SocketException {
 
         String result = "";
         if (body == null) {
-            body = JobSchedulerRestClient.getParameter(restCommand);
+            body = getParameter(restCommand);
         }
         if (restCommand.toLowerCase().startsWith("post")) {
             result = postRestService(uri, body);
@@ -271,7 +448,7 @@ public class JobSchedulerRestApiClient {
         return result;
     }
 
-    public String executeRestService(String urlParam) throws SOSException {
+    public String executeRestService(String urlParam) throws SOSException, SocketException {
         return executeRestServiceCommand("get", urlParam);
     }
 
@@ -315,19 +492,19 @@ public class JobSchedulerRestApiClient {
         return getStringResponse(new HttpDelete(uri));
     }
 
-    public String getRestService(HttpHost target, String path) throws SOSException {
+    public String getRestService(HttpHost target, String path) throws SOSException, SocketException {
         return getStringResponse(target, new HttpGet(path));
     }
 
-    public String getRestService(URI uri) throws SOSException {
+    public String getRestService(URI uri) throws SOSException, SocketException {
         return getStringResponse(new HttpGet(uri));
     }
 
-    public byte[] getByteArrayByRestService(URI uri) throws SOSException {
+    public byte[] getByteArrayByRestService(URI uri) throws SOSException, SocketException {
         return getByteArrayResponse(new HttpGet(uri));
     }
 
-    public Path getFilePathByRestService(URI uri, String prefix, boolean withGzipEncoding) throws SOSException {
+    public Path getFilePathByRestService(URI uri, String prefix, boolean withGzipEncoding) throws SOSException, SocketException {
         return getFilePathResponse(new HttpGet(uri), prefix, withGzipEncoding);
     }
 
@@ -357,7 +534,7 @@ public class JobSchedulerRestApiClient {
         return getStringResponse(requestPost);
     }
 
-    public String putRestService(HttpHost target, String path, String body) throws SOSException {
+    public String putRestService(HttpHost target, String path, String body) throws SOSException, SocketException {
         HttpPut requestPut = new HttpPut(path);
         try {
             if (body != null && !body.isEmpty()) {
@@ -370,10 +547,10 @@ public class JobSchedulerRestApiClient {
         return getStringResponse(target, requestPut);
     }
 
-    public String putRestService(URI uri, String body) throws SOSException {
+    public String putRestService(URI uri, String body) throws SOSException, SocketException {
         HttpPut requestPut = new HttpPut(uri);
         try {
-            if (body != null && !body.isEmpty()) { //ByteArrayEntity
+            if (body != null && !body.isEmpty()) {
                 StringEntity entity = new StringEntity(body, StandardCharsets.UTF_8);
                 requestPut.setEntity(entity);
             }
@@ -382,7 +559,7 @@ public class JobSchedulerRestApiClient {
         }
         return getStringResponse(requestPut);
     }
-    
+
     public String putByteArrayRestService(URI uri, byte[] body) throws SOSException {
         HttpPut requestPut = new HttpPut(uri);
         try {
@@ -458,7 +635,7 @@ public class JobSchedulerRestApiClient {
         }
     }
 
-    private byte[] getByteArrayResponse(HttpUriRequest request) throws SOSException {
+    private byte[] getByteArrayResponse(HttpUriRequest request) throws SOSException, SocketException {
         httpResponse = null;
         createHttpClient();
         setHttpRequestHeaders(request);
@@ -489,7 +666,7 @@ public class JobSchedulerRestApiClient {
         }
     }
 
-    private Path getFilePathResponse(HttpUriRequest request, String prefix, boolean withGzipEncoding) throws SOSException {
+    private Path getFilePathResponse(HttpUriRequest request, String prefix, boolean withGzipEncoding) throws SOSException, SocketException {
         httpResponse = null;
         createHttpClient();
         setHttpRequestHeaders(request);
@@ -526,7 +703,7 @@ public class JobSchedulerRestApiClient {
             setHttpResponseHeaders();
             HttpEntity entity = httpResponse.getEntity();
             if (entity != null) {
-                s = EntityUtils.toString(entity, "UTF-8");
+                s = EntityUtils.toString(entity, StandardCharsets.UTF_8);
             }
             if (isAutoCloseHttpClient()) {
                 closeHttpClient();
@@ -627,9 +804,7 @@ public class JobSchedulerRestApiClient {
             request.setHeader("Authorization", "Basic " + basicAuthorization);
         }
         for (Entry<String, String> entry : headers.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            request.setHeader(key, value);
+            request.setHeader(entry.getKey(), entry.getValue());
         }
     }
 
@@ -661,12 +836,85 @@ public class JobSchedulerRestApiClient {
             user = s[0];
         }
         if (s.length > 1) {
-            for (int i=1;i<s.length;i++) {
-            	password = password + ":" + s[i];
+            for (int i = 1; i < s.length; i++) {
+                password = password + ":" + s[i];
             }
             password = password.substring(1);
         }
         addAuthorizationHeader(user, password);
         return user;
+    }
+
+    public void setKeyStore() throws SOSMissingDataException, KeyStoreException, NoSuchAlgorithmException, CertificateException,
+            IOException {
+        this.keyStore = readKeyStore();
+        this.clientCertificatePass = getKeyPass();
+    }
+
+    public void setKeystore(KeyStore keyStore, char[] clientCertificatePass) {
+        this.keyStore = keyStore;
+        this.clientCertificatePass = clientCertificatePass;
+    }
+
+    public void setKeyStore(String keystorePath, String keyPass, String keystoreType, String keystorePass) throws SOSMissingDataException,
+            KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        setKeystorePath(keystorePath);
+        setKeyPass(keyPass);
+        setKeystoreType(keystoreType);
+        setKeystorePass(keystorePass);
+        keyStore = readKeyStore();
+        clientCertificatePass = getKeyPass();
+    }
+
+    private KeyStore readKeyStore() throws SOSMissingDataException, IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
+        InputStream keyStoreStream = null;
+        try {
+            keyStoreStream = Files.newInputStream(getKeystorePath());
+            KeyStore keyStore = KeyStore.getInstance(getKeystoreType());
+            keyStore.load(keyStoreStream, getKeystorePass());
+            return keyStore;
+        } finally {
+            if (keyStoreStream != null) {
+                try {
+                    keyStoreStream.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+    }
+
+    private KeyStore readTrustStore() throws SOSMissingDataException, IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
+        InputStream trustStoreStream = null;
+        try {
+            trustStoreStream = Files.newInputStream(getTruststorePath());
+            KeyStore trustStore = KeyStore.getInstance(getTruststoreType());
+            trustStore.load(trustStoreStream, getTruststorePass());
+            return trustStore;
+        } finally {
+            if (trustStoreStream != null) {
+                try {
+                    trustStoreStream.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+    }
+    
+    public void setKeyStore(String keyStorePath) throws SOSMissingDataException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        this.setKeystorePath(keyStorePath);
+        this.keyStore = readKeyStore();
+    }
+    
+    public void setTrustStore() throws SOSMissingDataException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        this.trustStore = readTrustStore();
+    }
+
+    public void setTrustStore(String trustStorePath) throws SOSMissingDataException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        this.setTrustStorePath(trustStorePath);
+        this.trustStore = readTrustStore();
+    }
+
+    public void setTruststore(KeyStore trustStore) {
+        this.trustStore = trustStore;
     }
 }

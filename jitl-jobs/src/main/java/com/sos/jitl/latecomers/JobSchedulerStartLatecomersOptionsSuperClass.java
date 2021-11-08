@@ -214,6 +214,74 @@ public class JobSchedulerStartLatecomersOptionsSuperClass extends JSOptionsClass
 	public void setOrders(SOSOptionString orders) {
 		this.orders = orders;
 	}
+	
+	   @JSOptionDefinition(name = "keystore_password", description = "Password for the Keystore", key = "keystore_password", type = "SOSOptionString", mandatory = false)
+	    public SOSOptionString keystorePassword = new SOSOptionString(this, conClassName + ".keystore_password", "Password for the Keystore", "", "",
+	            false);
+
+	    public SOSOptionString getKeystorePassword() {
+	        return keystorePassword;
+	    }
+
+	    public void setKeystorePassword(SOSOptionString keystorePassword) {
+	        this.keystorePassword = keystorePassword;
+	    }
+
+	    @JSOptionDefinition(name = "keystore_path", description = "Path to the Keystore", key = "keystore_path", type = "SOSOptionString", mandatory = false)
+	    public SOSOptionString keystorePath = new SOSOptionString(this, conClassName + ".keystore_path", "Path to the Keystore", "", "", false);
+
+	    public SOSOptionString getKeystorePath() {
+	        return keystorePath;
+	    }
+
+	    public void setKeystorePath(SOSOptionString keystorePath) {
+	        this.keystorePath = keystorePath;
+	    }
+
+	    @JSOptionDefinition(name = "keystore_type", description = "Type of the Keystore", key = "keystore_type", type = "SOSOptionString", mandatory = false)
+	    public SOSOptionString keystoreType = new SOSOptionString(this, conClassName + ".keystore_type", "Path to the Keystore", "", "", false);
+
+	    public SOSOptionString getKeystoreType() {
+	        return keystoreType;
+	    }
+
+	    public void setKeystoreType(SOSOptionString keystoreType) {
+	        this.keystoreType = keystoreType;
+	    }
+
+	    @JSOptionDefinition(name = "truststore_password", description = "Password for the Truststore", key = "truststore_password", type = "SOSOptionString", mandatory = false)
+	    public SOSOptionString truststorePassword = new SOSOptionString(this, conClassName + ".truststore_password", "Password for the Truststore", "",
+	            "", false);
+
+	    public SOSOptionString getTruststorePassword() {
+	        return truststorePassword;
+	    }
+
+	    public void setTruststorePassword(SOSOptionString truststorePassword) {
+	        this.truststorePassword = truststorePassword;
+	    }
+
+	    @JSOptionDefinition(name = "truststore_path", description = "Path to the Truststore", key = "truststore_path", type = "SOSOptionString", mandatory = false)
+	    public SOSOptionString truststorePath = new SOSOptionString(this, conClassName + ".truststore_path", "Path to the Truststore", "", "", false);
+
+	    public SOSOptionString getTruststorePath() {
+	        return truststorePath;
+	    }
+
+	    public void setTruststorePath(SOSOptionString truststorePath) {
+	        this.truststorePath = truststorePath;
+	    }
+
+	    @JSOptionDefinition(name = "truststore_type", description = "Type of the Truststore", key = "truststore_type", type = "SOSOptionString", mandatory = false)
+	    public SOSOptionString truststoreType = new SOSOptionString(this, conClassName + ".truststore_type", "Path to the Truststore", "", "", false);
+
+	    public SOSOptionString getTruststoreType() {
+	        return truststoreType;
+	    }
+
+	    public void setTruststoreType(SOSOptionString truststoreType) {
+	        this.truststoreType = truststoreType;
+	    }
 
 	private String getAllOptionsAsString() {
 		final String METHODNAME = CLASSNAME + "::getAllOptionsAsString";

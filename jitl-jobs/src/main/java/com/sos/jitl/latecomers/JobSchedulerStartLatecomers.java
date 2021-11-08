@@ -61,6 +61,14 @@ public class JobSchedulerStartLatecomers extends JSJobUtilitiesClass<JobSchedule
     	jobSchedulerCredentialStoreJOCParameters.setJocUrl(jobSchedulerStartLatecomersOptions.jocUrl.getValue());
     	jobSchedulerCredentialStoreJOCParameters.setPassword(jobSchedulerStartLatecomersOptions.password.getValue());
     	jobSchedulerCredentialStoreJOCParameters.setUser(jobSchedulerStartLatecomersOptions.user.getValue());
+    	
+        jobSchedulerCredentialStoreJOCParameters.setKeyStorePassword(jobSchedulerStartLatecomersOptions.keystorePassword.getValue());
+        jobSchedulerCredentialStoreJOCParameters.setKeyStorePath(jobSchedulerStartLatecomersOptions.keystorePath.getValue());
+        jobSchedulerCredentialStoreJOCParameters.setKeyStoreType(jobSchedulerStartLatecomersOptions.keystoreType.getValue());
+        jobSchedulerCredentialStoreJOCParameters.setTrustStorePassword(jobSchedulerStartLatecomersOptions.truststorePassword.getValue());
+        jobSchedulerCredentialStoreJOCParameters.setTrustStorePath(jobSchedulerStartLatecomersOptions.truststorePath.getValue());
+        jobSchedulerCredentialStoreJOCParameters.setTrustStoreType(jobSchedulerStartLatecomersOptions.truststoreType.getValue());
+
 		
 		AccessTokenProvider accessTokenProvider = new AccessTokenProvider(jobSchedulerCredentialStoreJOCParameters);
 		WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
