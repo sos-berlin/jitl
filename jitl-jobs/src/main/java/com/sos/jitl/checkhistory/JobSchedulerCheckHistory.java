@@ -72,7 +72,7 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
   
         AccessTokenProvider accessTokenProvider = new AccessTokenProvider(jobSchedulerCredentialStoreJOCParameters);
         WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
-        webserviceCredentials.setJocUrl(accessTokenProvider.getJocUrl());
+         
         if (schedulerInstance != null) {
             webserviceCredentials = accessTokenProvider.getAccessToken(schedulerInstance);
          }
