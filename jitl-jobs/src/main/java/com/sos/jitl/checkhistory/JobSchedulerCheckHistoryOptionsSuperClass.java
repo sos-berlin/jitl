@@ -281,8 +281,16 @@ public class JobSchedulerCheckHistoryOptionsSuperClass extends JSOptionsClass {
         return keystorePassword;
     }
 
-    public void setKeystorePassword(SOSOptionString keystorePassword) {
-        this.keystorePassword = keystorePassword;
+    @JSOptionDefinition(name = "key_password", description = "Password for the private Key", key = "key_password", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString keyPassword = new SOSOptionString(this, conClassName + ".key_password", "Password for the private Key", "", "",
+            false);
+
+    public SOSOptionString getKeyPassword() {
+        return keyPassword;
+    }
+
+    public void setKeyPassword(SOSOptionString keyPassword) {
+        this.keyPassword = keyPassword;
     }
 
     @JSOptionDefinition(name = "keystore_path", description = "Path to the Keystore", key = "keystore_path", type = "SOSOptionString", mandatory = false)

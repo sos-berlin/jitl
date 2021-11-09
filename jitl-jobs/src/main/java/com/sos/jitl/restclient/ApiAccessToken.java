@@ -35,33 +35,32 @@ public class ApiAccessToken {
         this.jocUrl = jocUrl;
     }
 
-   
-
     private void addSSLContext(WebserviceCredentials webserviceCredentials) throws SOSSSLException, SOSMissingDataException, KeyStoreException,
             NoSuchAlgorithmException, CertificateException, IOException {
 
         LOGGER.debug("add SSLContext to REST api client");
-        jobSchedulerRestApiClient.setKeyPass(webserviceCredentials.getKeyStorePassword());
+        jobSchedulerRestApiClient.setKeyPass(webserviceCredentials.getKeyPassword());
         jobSchedulerRestApiClient.setKeystoreType(webserviceCredentials.getKeyStoreType());
+        jobSchedulerRestApiClient.setKeystorePass(webserviceCredentials.getKeyStorePassword());
         jobSchedulerRestApiClient.setTruststorePass(webserviceCredentials.getTrustStorePassword());
         jobSchedulerRestApiClient.setTruststoreType(webserviceCredentials.getTrustStoreType());
         jobSchedulerRestApiClient.setTrustStore(webserviceCredentials.getTrustStorePath());
         jobSchedulerRestApiClient.setKeyStore(webserviceCredentials.getKeyStorePath());
         jobSchedulerRestApiClient.setSSLContext();
- 
+
     }
 
     private void createRestApiClient(WebserviceCredentials webserviceCredentials) {
         if (jobSchedulerRestApiClient == null) {
             jobSchedulerRestApiClient = new JobSchedulerRestApiClient();
 
-          //  jobSchedulerRestApiClient.addHeader("Content-Type", "application/json");
-//  jobSchedulerRestApiClient.addHeader("Accept", "application/json");
+            jobSchedulerRestApiClient.addHeader("Content-Type", "application/json");
+            jobSchedulerRestApiClient.addHeader("Accept", "application/json");
             try {
                 addSSLContext(webserviceCredentials);
             } catch (SOSSSLException | SOSMissingDataException | KeyStoreException | NoSuchAlgorithmException | CertificateException
                     | IOException e) {
-                 e.printStackTrace();
+                e.printStackTrace();
             }
         }
     }
@@ -82,7 +81,7 @@ public class ApiAccessToken {
                 "accessToken")));
     }
 
-    public boolean isValidUserAccount(String userAccount,WebserviceCredentials webserviceCredentials) throws SOSException, URISyntaxException {
+    public boolean isValidUserAccount(String userAccount, WebserviceCredentials webserviceCredentials) throws SOSException, URISyntaxException {
         createRestApiClient(webserviceCredentials);
         String user = jobSchedulerRestApiClient.addAuthorizationHeader(userAccount);
 
@@ -129,7 +128,7 @@ public class ApiAccessToken {
 
     public String login(WebserviceCredentials webserviceCredentials) throws SOSException, URISyntaxException {
         createRestApiClient(webserviceCredentials);
-//        jobSchedulerRestApiClient.addAuthorizationHeader(webserviceCredentials.getUserDecodedAccount());
+        jobSchedulerRestApiClient.addAuthorizationHeader(webserviceCredentials.getUserDecodedAccount());
 
         String s = jocUrl + "/security/login";
         LOGGER.debug("uri:" + s);

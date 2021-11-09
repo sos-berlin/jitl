@@ -19,8 +19,9 @@ public class JobChainHistoryTest {
         webserviceCredentials.setPassword("api");
         webserviceCredentials.setUser("api_user");
         webserviceCredentials.setSchedulerId("scheduler_joc_cockpit");
+        webserviceCredentials.setJocUrl("http://localhost:8081/rest");
 
-        JobChainHistory jobChainHistory = new com.sos.jitl.checkhistory.JobChainHistory("http://localhost:8081/rest", webserviceCredentials);
+        JobChainHistory jobChainHistory = new com.sos.jitl.checkhistory.JobChainHistory(webserviceCredentials);
 
         JobSchedulerHistoryInfo jobChainHistoryInfo = jobChainHistory.getJobChainInfo("/job_chain1");
         report(jobChainHistoryInfo.getLastCompleted());

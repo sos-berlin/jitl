@@ -79,9 +79,8 @@ public class JobSchedulerRestApiClient {
     private String keystorePath = null;
     private String keystorePass = null;
     private String keystoreType = null; // e.g. "JKS" or "PKCS12"
-    private String keyPass = null;
+    private char[] keyPass = null;
     private KeyStore keyStore = null;
-    private char[] clientCertificatePass = null;
     private String trustStorePath = null;
     private String trustStorePass = null;
     private String trustStoreType = null; // e.g. "JKS" or "PKCS12"
@@ -256,18 +255,12 @@ public class JobSchedulerRestApiClient {
     }
 
     public void setKeyPass(String keyPass) {
-        this.keyPass = keyPass;
-    }
-
-    private char[] getKeyPass() {
-        String kPass = keyPass;
-        if (kPass == null) {
-            kPass = System.getProperty("javax.net.ssl.keyPassword");
+        if (keyPass == null) {
+            String k = System.getProperty("javax.net.ssl.keyPassword");
+            this.keyPass = k.toCharArray();
+        } else {
+            this.keyPass = keyPass.toCharArray();
         }
-        if (kPass != null) {
-            return kPass.toCharArray();
-        }
-        return null;
     }
 
     public void createHttpClient() {
@@ -349,9 +342,10 @@ public class JobSchedulerRestApiClient {
     public void setSSLContext() throws SOSSSLException {
         if (keyStore != null || trustStore != null) {
             try {
+
                 SSLContextBuilder sslContextBuilder = SSLContexts.custom();
                 if (keyStore != null) {
-                    sslContextBuilder.loadKeyMaterial(keyStore, clientCertificatePass);
+                    sslContextBuilder.loadKeyMaterial(keyStore, keyPass);
                 }
                 if (trustStore != null) {
                     sslContextBuilder.loadTrustMaterial(trustStore, null);
@@ -391,13 +385,12 @@ public class JobSchedulerRestApiClient {
         return executeRestServiceCommand(restCommand, url, null);
     }
 
-    
-    private  static String getParameter(String p) {
+    private static String getParameter(String p) {
         String[] pParts = p.replaceFirst("\\)\\s*$", "").split("\\(", 2);
         String s = (pParts.length == 2) ? pParts[1] : "";
         return s.trim();
     }
-    
+
     public String executeRestServiceCommand(String restCommand, URI uri) throws SOSException, SocketException {
         return executeRestServiceCommand(restCommand, uri, null);
     }
@@ -487,7 +480,7 @@ public class JobSchedulerRestApiClient {
             throw new SOSException(e);
         }
     }
-    
+
     public String deleteRestService(URI uri) throws SOSException {
         return getStringResponse(new HttpDelete(uri));
     }
@@ -845,15 +838,12 @@ public class JobSchedulerRestApiClient {
         return user;
     }
 
-    public void setKeyStore() throws SOSMissingDataException, KeyStoreException, NoSuchAlgorithmException, CertificateException,
-            IOException {
+    public void setKeyStore() throws SOSMissingDataException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         this.keyStore = readKeyStore();
-        this.clientCertificatePass = getKeyPass();
     }
 
     public void setKeystore(KeyStore keyStore, char[] clientCertificatePass) {
         this.keyStore = keyStore;
-        this.clientCertificatePass = clientCertificatePass;
     }
 
     public void setKeyStore(String keystorePath, String keyPass, String keystoreType, String keystorePass) throws SOSMissingDataException,
@@ -863,7 +853,6 @@ public class JobSchedulerRestApiClient {
         setKeystoreType(keystoreType);
         setKeystorePass(keystorePass);
         keyStore = readKeyStore();
-        clientCertificatePass = getKeyPass();
     }
 
     private KeyStore readKeyStore() throws SOSMissingDataException, IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
@@ -899,17 +888,19 @@ public class JobSchedulerRestApiClient {
             }
         }
     }
-    
-    public void setKeyStore(String keyStorePath) throws SOSMissingDataException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+
+    public void setKeyStore(String keyStorePath) throws SOSMissingDataException, KeyStoreException, NoSuchAlgorithmException, CertificateException,
+            IOException {
         this.setKeystorePath(keyStorePath);
         this.keyStore = readKeyStore();
     }
-    
+
     public void setTrustStore() throws SOSMissingDataException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         this.trustStore = readTrustStore();
     }
 
-    public void setTrustStore(String trustStorePath) throws SOSMissingDataException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+    public void setTrustStore(String trustStorePath) throws SOSMissingDataException, KeyStoreException, NoSuchAlgorithmException,
+            CertificateException, IOException {
         this.setTrustStorePath(trustStorePath);
         this.trustStore = readTrustStore();
     }

@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import javax.json.JsonObject;
 import com.sos.exception.SOSAccessDeniedException;
 import com.sos.exception.SOSException;
+import com.sos.jitl.restclient.WebserviceCredentials;
 import com.sos.jitl.restclient.WebserviceExecuter;
 
 import org.slf4j.Logger;
@@ -16,12 +17,9 @@ public class JobChainStartExecuter extends WebserviceExecuter {
 	private static final String JOB_CHAIN_ORDER_START_STRING_FOR_WEBSERVICE = "{'orders':[{'orderId':'%s','jobChain':'%s','at':'now'}],'jobschedulerId':'%s'}";
 	private static final Logger LOGGER = LoggerFactory.getLogger(JobStartExecuter.class);
  
-	public JobChainStartExecuter(String jocUrl, String jocAccount) {
-		super(jocUrl, jocAccount);
-	}
-
-	public JobChainStartExecuter(String jocUrl) {
-		super(jocUrl);
+	 
+	public JobChainStartExecuter(WebserviceCredentials webserviceCredentials) {
+		super(webserviceCredentials);
 	}
 
 	private boolean json2PlanList(String answer) throws SOSAccessDeniedException {
@@ -42,7 +40,7 @@ public class JobChainStartExecuter extends WebserviceExecuter {
 		String body = String.format(JOB_CHAIN_ORDER_START_STRING_FOR_WEBSERVICE, orderId, jobChain, schedulerId);
 		body = body.replace("'", "\"");
 
-		String answer = jobSchedulerRestApiClient.postRestService(new URI(jocUrl + API_CALL), body);
+		String answer = jobSchedulerRestApiClient.postRestService(new URI(webserviceCredentials.getJocUrl() + API_CALL), body);
 		boolean o = json2PlanList(answer);
 		return o;
 	}

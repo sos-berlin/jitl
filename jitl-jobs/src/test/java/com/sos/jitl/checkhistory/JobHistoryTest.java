@@ -33,9 +33,10 @@ public class JobHistoryTest {
         HistoryDatabaseExecuter historyDatabaseExecuter = new HistoryDatabaseExecuter(sosHibernateSession);
         WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
         webserviceCredentials.setSchedulerId("scheduler_joc_cockpit");
+        webserviceCredentials.setJocUrl("");
 
 
-        JobHistory jobHistory = new com.sos.jitl.checkhistory.JobHistory("", webserviceCredentials);
+        JobHistory jobHistory = new com.sos.jitl.checkhistory.JobHistory(webserviceCredentials);
         jobHistory.setHistoryDatasourceExecuter(historyDatabaseExecuter);
 
         JobSchedulerHistoryInfo jobHistoryInfo = jobHistory.getJobInfo("job5");
@@ -102,8 +103,9 @@ public class JobHistoryTest {
         webserviceCredentials.setPassword("root");
         webserviceCredentials.setUser("root");
         webserviceCredentials.setSchedulerId("scheduler_joc_cockpit");
+        webserviceCredentials.setJocUrl("http://localhost:4446/joc/api");
 
-        JobHistory jobHistory = new com.sos.jitl.checkhistory.JobHistory("http://localhost:4446/joc/api", webserviceCredentials);
+        JobHistory jobHistory = new com.sos.jitl.checkhistory.JobHistory(webserviceCredentials);
         JobSchedulerHistoryInfo jobHistoryInfo = jobHistory.getJobInfo("job1");
         report(jobHistoryInfo.getLastCompleted());
         report(jobHistoryInfo.getRunning());

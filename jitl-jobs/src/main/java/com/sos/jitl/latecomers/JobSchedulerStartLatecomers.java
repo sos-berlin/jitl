@@ -62,6 +62,7 @@ public class JobSchedulerStartLatecomers extends JSJobUtilitiesClass<JobSchedule
     	jobSchedulerCredentialStoreJOCParameters.setPassword(jobSchedulerStartLatecomersOptions.password.getValue());
     	jobSchedulerCredentialStoreJOCParameters.setUser(jobSchedulerStartLatecomersOptions.user.getValue());
     	
+        jobSchedulerCredentialStoreJOCParameters.setKeyPassword(jobSchedulerStartLatecomersOptions.keyPassword.getValue());
         jobSchedulerCredentialStoreJOCParameters.setKeyStorePassword(jobSchedulerStartLatecomersOptions.keystorePassword.getValue());
         jobSchedulerCredentialStoreJOCParameters.setKeyStorePath(jobSchedulerStartLatecomersOptions.keystorePath.getValue());
         jobSchedulerCredentialStoreJOCParameters.setKeyStoreType(jobSchedulerStartLatecomersOptions.keystoreType.getValue());
@@ -91,15 +92,24 @@ public class JobSchedulerStartLatecomers extends JSJobUtilitiesClass<JobSchedule
 		JobStartExecuter jobStartExecuter = null;
 		JobChainStartExecuter jobChainStartExecuter = null;
 
-		dailyPlanExecuter = new DailyPlanExecuter(jocUrl);
+		webserviceCredentials.setJocUrl(jocUrl);
+		webserviceCredentials.setKeyPassword(jobSchedulerCredentialStoreJOCParameters.getKeyPassword());
+		webserviceCredentials.setKeyStorePassword(jobSchedulerCredentialStoreJOCParameters.getKeyStorePassword());
+		webserviceCredentials.setKeyStorePath(jobSchedulerCredentialStoreJOCParameters.getKeyStorePath());
+		webserviceCredentials.setKeyStoreType(jobSchedulerCredentialStoreJOCParameters.getKeyStoreType());
+		webserviceCredentials.setTrustStorePassword(jobSchedulerCredentialStoreJOCParameters.getTrustStorePassword());
+		webserviceCredentials.setTrustStoreType(jobSchedulerCredentialStoreJOCParameters.getTrustStoreType());
+		webserviceCredentials.setTrustStorePath(jobSchedulerCredentialStoreJOCParameters.getTrustStorePath());
+		
+		dailyPlanExecuter = new DailyPlanExecuter(webserviceCredentials);
 		dailyPlanExecuter.setSchedulerId(webserviceCredentials.getSchedulerId());
 		dailyPlanExecuter.login(webserviceCredentials.getAccessToken());
 
-		jobStartExecuter = new JobStartExecuter(jocUrl);
+		jobStartExecuter = new JobStartExecuter(webserviceCredentials);
 		jobStartExecuter.setSchedulerId(webserviceCredentials.getSchedulerId());
 		jobStartExecuter.login(dailyPlanExecuter.getAccessToken());
 
-		jobChainStartExecuter = new JobChainStartExecuter(jocUrl);
+		jobChainStartExecuter = new JobChainStartExecuter(webserviceCredentials);
 		jobChainStartExecuter.setSchedulerId(webserviceCredentials.getSchedulerId());
 		jobChainStartExecuter.login(dailyPlanExecuter.getAccessToken());
 

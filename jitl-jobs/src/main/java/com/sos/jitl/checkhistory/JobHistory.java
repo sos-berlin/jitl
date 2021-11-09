@@ -20,8 +20,6 @@ public class JobHistory implements IJobSchedulerHistory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobHistory.class);
 
-    private String jocUrl;
-
     private HistoryEntry lastCompletedHistoryEntry = null;
     private HistoryEntry lastRunningHistoryEntry = null;
     private HistoryEntry lastCompletedSuccessfullHistoryEntry = null;
@@ -33,11 +31,10 @@ public class JobHistory implements IJobSchedulerHistory {
     private WebserviceCredentials webserviceCredentials;
     private HistoryDataSource historyDatasourceExecuter;
 
-    public JobHistory(String jocUrl, WebserviceCredentials webserviceCredentials) {
+    public JobHistory(WebserviceCredentials webserviceCredentials) {
         super();
 
         jobHistoryHelper = new HistoryHelper();
-        this.jocUrl = jocUrl;
         this.webserviceCredentials = webserviceCredentials;
         timeLimit = "";
     }
@@ -47,11 +44,18 @@ public class JobHistory implements IJobSchedulerHistory {
         super();
 
         jobHistoryHelper = new HistoryHelper();
-        this.jocUrl = spooler.variables().value("joc_url");
         this.webserviceCredentials = new WebserviceCredentials();
         String jocUser = spooler.variables().value("joc_user");
+        this.webserviceCredentials.setJocUrl(spooler.variables().value("joc_url"));
         this.webserviceCredentials.setAccessToken(spooler.variables().value(jocUser + "_X-Access-Token"));
         this.webserviceCredentials.setUser(jocUser);
+        this.webserviceCredentials.setKeyPassword(spooler.variables().value("key_password"));
+        this.webserviceCredentials.setKeyStorePassword(spooler.variables().value("keystore_password"));
+        this.webserviceCredentials.setKeyStorePath(spooler.variables().value("keystore_path"));
+        this.webserviceCredentials.setKeyStoreType(spooler.variables().value("keystore_type"));
+        this.webserviceCredentials.setTrustStorePassword(spooler.variables().value("truststore_password"));
+        this.webserviceCredentials.setTrustStorePath(spooler.variables().value("truststore_path"));
+        this.webserviceCredentials.setTrustStoreType(spooler.variables().value("truststore_type"));
 
         this.webserviceCredentials.setSchedulerId(spooler.id());
         timeLimit = "";
@@ -176,16 +180,12 @@ public class JobHistory implements IJobSchedulerHistory {
     private void createDatasource() throws SOSException, URISyntaxException {
 
         if (historyDatasourceExecuter == null) {
-            if (!this.webserviceCredentials.account().isEmpty()) {
-                historyDatasourceExecuter = new HistoryWebserviceExecuter(jocUrl, this.webserviceCredentials.account());
-            } else {
-                historyDatasourceExecuter = new HistoryWebserviceExecuter(jocUrl);
-            }
+            historyDatasourceExecuter = new HistoryWebserviceExecuter(this.webserviceCredentials);
             historyDatasourceExecuter.login(webserviceCredentials.getAccessToken());
         }
     }
-    
-    private void getHistoryByWebServiceCall(String jobName) throws Exception  {
+
+    private void getHistoryByWebServiceCall(String jobName) throws Exception {
         jobName = this.jobHistoryHelper.normalizePath(relativePath, jobName);
         actHistoryObjectName = jobName;
 
@@ -201,7 +201,6 @@ public class JobHistory implements IJobSchedulerHistory {
         lastRunningHistoryEntry = historyDatasourceExecuter.getLastRunningJobHistoryEntry();
     }
 
-   
     public String getTimeLimit() {
         return timeLimit;
     }
@@ -229,7 +228,6 @@ public class JobHistory implements IJobSchedulerHistory {
         return this.webserviceCredentials;
     }
 
-    
     public void setHistoryDatasourceExecuter(HistoryDataSource historyDatasourceExecuter) {
         this.historyDatasourceExecuter = historyDatasourceExecuter;
     }

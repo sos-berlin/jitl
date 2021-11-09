@@ -62,6 +62,7 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
     	jobSchedulerCredentialStoreJOCParameters.setPassword(jobSchedulerCheckHistoryOptions.password.getValue());
     	jobSchedulerCredentialStoreJOCParameters.setUser(jobSchedulerCheckHistoryOptions.user.getValue());
     	
+        jobSchedulerCredentialStoreJOCParameters.setKeyPassword(jobSchedulerCheckHistoryOptions.keyPassword.getValue());
         jobSchedulerCredentialStoreJOCParameters.setKeyStorePassword(jobSchedulerCheckHistoryOptions.keystorePassword.getValue());
         jobSchedulerCredentialStoreJOCParameters.setKeyStorePath(jobSchedulerCheckHistoryOptions.keystorePath.getValue());
         jobSchedulerCredentialStoreJOCParameters.setKeyStoreType(jobSchedulerCheckHistoryOptions.keystoreType.getValue());
@@ -71,6 +72,7 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
   
         AccessTokenProvider accessTokenProvider = new AccessTokenProvider(jobSchedulerCredentialStoreJOCParameters);
         WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
+        webserviceCredentials.setJocUrl(accessTokenProvider.getJocUrl());
         if (schedulerInstance != null) {
             webserviceCredentials = accessTokenProvider.getAccessToken(schedulerInstance);
          }
@@ -82,10 +84,10 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
         IJobSchedulerHistory jobSchedulerHistory;
         if (options().getJobChainName().getValue().isEmpty()) {
             historyObjectName = options().getJobName().getValue();
-            jobSchedulerHistory = new JobHistory(accessTokenProvider.getJocUrl(), webserviceCredentials);
+            jobSchedulerHistory = new JobHistory(webserviceCredentials);
         } else {
             historyObjectName = options().getJobChainName().getValue();
-            jobSchedulerHistory = new JobChainHistory(accessTokenProvider.getJocUrl(), webserviceCredentials);
+            jobSchedulerHistory = new JobChainHistory(webserviceCredentials);
         }
 
         jobSchedulerHistory.setRelativePath(pathOfJob);

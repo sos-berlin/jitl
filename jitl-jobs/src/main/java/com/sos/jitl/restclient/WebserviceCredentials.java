@@ -13,6 +13,7 @@ public class WebserviceCredentials {
     
     private String keyStorePath;
     private String keyStorePassword;
+    private String keyPassword;
     private String keyStoreType;
 
     private String trustStorePath;
@@ -152,6 +153,16 @@ public class WebserviceCredentials {
     
     public String getPassword() {
         return password;
+    }
+
+    
+    public String getKeyPassword() {
+        return keyPassword;
+    }
+
+    
+    public void setKeyPassword(String keyPassword) {
+        this.keyPassword = keyPassword;
     }
  
 }

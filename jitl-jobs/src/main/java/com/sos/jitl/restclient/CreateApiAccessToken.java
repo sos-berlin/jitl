@@ -33,6 +33,7 @@ public class CreateApiAccessToken extends JobSchedulerJobAdapter implements IMon
             options.setKeyStorePath(v.value("keystore_path"));
             options.setKeyStoreType(v.value("keystore_type"));
             options.setKeyStorePassword(v.value("keystore_password"));
+            options.setKeyPassword(v.value("key_password"));
             options.setTrustStorePassword(v.value("truststore_password"));
             options.setTrustStorePath(v.value("truststore_path"));
             options.setTrustStoreType(v.value("truststore_type"));

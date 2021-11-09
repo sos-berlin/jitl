@@ -5,7 +5,6 @@ import java.io.StringReader;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -30,41 +29,31 @@ public class WebserviceExecuter {
     protected String accessToken = "";
     protected JobSchedulerRestApiClient jobSchedulerRestApiClient;
     protected String schedulerId;
-    protected String jocUrl;
-    protected String jocAccount;
+    protected WebserviceCredentials webserviceCredentials;
 
-    public WebserviceExecuter(String jocUrl, String jocAccount) {
+    public WebserviceExecuter(WebserviceCredentials webserviceCredentials) {
         super();
         jobSchedulerRestApiClient = new JobSchedulerRestApiClient();
-        this.jocUrl = jocUrl;
-        this.jocAccount = jocAccount;
-        try {
-            addSSLContext();
-        } catch (SOSSSLException | SOSMissingDataException | KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public WebserviceExecuter(String jocUrl) {
-        super();
-        jobSchedulerRestApiClient = new JobSchedulerRestApiClient();
-        this.jocUrl = jocUrl;
+        this.webserviceCredentials = webserviceCredentials;
 
         try {
             addSSLContext();
         } catch (SOSSSLException | SOSMissingDataException | KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
             e.printStackTrace();
         }
-
     }
 
     private void addSSLContext() throws SOSSSLException, SOSMissingDataException, KeyStoreException, NoSuchAlgorithmException, CertificateException,
             IOException {
 
         LOGGER.debug("add SSLContext to REST api client");
-        jobSchedulerRestApiClient.setKeystorePath("keystorePath");
-        jobSchedulerRestApiClient.setKeyPass("");
-        jobSchedulerRestApiClient.setClientCertificate();
+        jobSchedulerRestApiClient.setKeyPass(webserviceCredentials.getKeyPassword());
+        jobSchedulerRestApiClient.setKeystoreType(webserviceCredentials.getKeyStoreType());
+        jobSchedulerRestApiClient.setKeystorePass(webserviceCredentials.getKeyStorePassword());
+        jobSchedulerRestApiClient.setTruststorePass(webserviceCredentials.getTrustStorePassword());
+        jobSchedulerRestApiClient.setTruststoreType(webserviceCredentials.getTrustStoreType());
+        jobSchedulerRestApiClient.setTrustStore(webserviceCredentials.getTrustStorePath());
+        jobSchedulerRestApiClient.setKeyStore(webserviceCredentials.getKeyStorePath());
         jobSchedulerRestApiClient.setSSLContext();
     }
 
@@ -106,9 +95,9 @@ public class WebserviceExecuter {
     public void login() throws SOSException, URISyntaxException {
         jobSchedulerRestApiClient.addHeader("Content-Type", "application/json");
         jobSchedulerRestApiClient.addHeader("Accept", "application/json");
-        jobSchedulerRestApiClient.addAuthorizationHeader(jocAccount);
+        jobSchedulerRestApiClient.addAuthorizationHeader(webserviceCredentials.getUserDecodedAccount());
 
-        String answer = jobSchedulerRestApiClient.postRestService(new URI(jocUrl + "/security/login"), "");
+        String answer = jobSchedulerRestApiClient.postRestService(new URI(webserviceCredentials.getJocUrl() + "/security/login"), "");
         JsonObject login = jsonFromString(answer);
         if (login.get("accessToken") != null) {
             accessToken = login.getString("accessToken");
