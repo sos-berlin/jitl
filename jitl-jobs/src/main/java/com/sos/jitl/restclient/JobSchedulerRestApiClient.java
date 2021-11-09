@@ -257,7 +257,9 @@ public class JobSchedulerRestApiClient {
     public void setKeyPass(String keyPass) {
         if (keyPass == null) {
             String k = System.getProperty("javax.net.ssl.keyPassword");
-            this.keyPass = k.toCharArray();
+            if (k != null) {
+                this.keyPass = k.toCharArray();
+            }
         } else {
             this.keyPass = keyPass.toCharArray();
         }
@@ -858,10 +860,15 @@ public class JobSchedulerRestApiClient {
     private KeyStore readKeyStore() throws SOSMissingDataException, IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
         InputStream keyStoreStream = null;
         try {
-            keyStoreStream = Files.newInputStream(getKeystorePath());
-            KeyStore keyStore = KeyStore.getInstance(getKeystoreType());
-            keyStore.load(keyStoreStream, getKeystorePass());
-            return keyStore;
+            Path kp = getKeystorePath();
+            if (kp != null) {
+                keyStoreStream = Files.newInputStream(getKeystorePath());
+                KeyStore keyStore = KeyStore.getInstance(getKeystoreType());
+                keyStore.load(keyStoreStream, getKeystorePass());
+                return keyStore;
+            } else {
+                return null;
+            }
         } finally {
             if (keyStoreStream != null) {
                 try {
@@ -875,10 +882,16 @@ public class JobSchedulerRestApiClient {
     private KeyStore readTrustStore() throws SOSMissingDataException, IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
         InputStream trustStoreStream = null;
         try {
-            trustStoreStream = Files.newInputStream(getTruststorePath());
-            KeyStore trustStore = KeyStore.getInstance(getTruststoreType());
-            trustStore.load(trustStoreStream, getTruststorePass());
-            return trustStore;
+            Path tp = getTruststorePath();
+            if (tp != null) {
+                trustStoreStream = Files.newInputStream(tp);
+                KeyStore trustStore = KeyStore.getInstance(getTruststoreType());
+                trustStore.load(trustStoreStream, getTruststorePass());
+                return trustStore;
+            } else {
+                return null;
+            }
+
         } finally {
             if (trustStoreStream != null) {
                 try {
@@ -891,8 +904,10 @@ public class JobSchedulerRestApiClient {
 
     public void setKeyStore(String keyStorePath) throws SOSMissingDataException, KeyStoreException, NoSuchAlgorithmException, CertificateException,
             IOException {
-        this.setKeystorePath(keyStorePath);
-        this.keyStore = readKeyStore();
+        if ((keyStorePath != null) && !keyStorePath.isEmpty()) {
+            this.setKeystorePath(keyStorePath);
+            this.keyStore = readKeyStore();
+        }
     }
 
     public void setTrustStore() throws SOSMissingDataException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
@@ -901,8 +916,10 @@ public class JobSchedulerRestApiClient {
 
     public void setTrustStore(String trustStorePath) throws SOSMissingDataException, KeyStoreException, NoSuchAlgorithmException,
             CertificateException, IOException {
-        this.setTrustStorePath(trustStorePath);
-        this.trustStore = readTrustStore();
+        if ((trustStorePath != null) && !trustStorePath.isEmpty()) {
+            this.setTrustStorePath(trustStorePath);
+            this.trustStore = readTrustStore();
+        }
     }
 
     public void setTruststore(KeyStore trustStore) {
