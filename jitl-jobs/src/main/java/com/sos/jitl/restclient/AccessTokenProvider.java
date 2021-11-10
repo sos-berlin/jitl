@@ -123,15 +123,13 @@ public class AccessTokenProvider {
 
         String keyStorePath = "";
         String keyStorePassword = "";
-        ;
+        String keyPassword = "";
+      
         String keyStoreType = "";
-        ;
 
         String trustStorePath = "";
         String trustStorePassword = "";
-        ;
         String trustStoreType = "";
-        ;
 
         WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
 
@@ -149,6 +147,7 @@ public class AccessTokenProvider {
                 jocApiPassword = r.resolve(jobSchedulerCredentialStoreParameters.getPassword());
 
                 keyStorePath = r.resolve(jobSchedulerCredentialStoreParameters.getKeyStorePath());
+                keyPassword = r.resolve(jobSchedulerCredentialStoreParameters.getKeyPassword());
                 keyStorePassword = r.resolve(jobSchedulerCredentialStoreParameters.getKeyStorePassword());
                 keyStoreType = r.resolve(jobSchedulerCredentialStoreParameters.getKeyStoreType());
 
@@ -168,6 +167,7 @@ public class AccessTokenProvider {
             LOGGER.debug("KeyStorePath: " + keyStorePath);
             LOGGER.debug("KeyStoreType: " + keyStoreType);
             LOGGER.debug("KeyStorePasswort: " + "********");
+            LOGGER.debug("KeyPassword: " + "********");
             LOGGER.debug("TrustStorePath: " + trustStorePath);
             LOGGER.debug("TrustStoreType: " + trustStoreType);
             LOGGER.debug("TrustStorePasswort: " + "********");
@@ -182,6 +182,7 @@ public class AccessTokenProvider {
 
                 keyStorePath = jobSchedulerCredentialStoreParameters.getKeyStorePath();
                 keyStorePassword = jobSchedulerCredentialStoreParameters.getKeyStorePassword();
+                keyPassword = jobSchedulerCredentialStoreParameters.getKeyStorePassword();
                 keyStoreType = jobSchedulerCredentialStoreParameters.getKeyStoreType();
 
                 trustStorePath = jobSchedulerCredentialStoreParameters.getTrustStorePath();
@@ -240,6 +241,17 @@ public class AccessTokenProvider {
             } catch (ConfigException e) {
                 try {
                     keyStorePassword = sosPrivateConf.getValue("joc.keystorepassword");
+                } catch (ConfigException ee) {
+                }
+            }
+        }
+
+        if (keyPassword.isEmpty()) {
+            try {
+                keyPassword = sosPrivateConf.getValue("joc.webservice.jitl", "joc.keypassword");
+            } catch (ConfigException e) {
+                try {
+                    keyPassword = sosPrivateConf.getValue("joc.keyPassword");
                 } catch (ConfigException ee) {
                 }
             }
