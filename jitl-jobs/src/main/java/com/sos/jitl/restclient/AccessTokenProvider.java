@@ -2,6 +2,7 @@ package com.sos.jitl.restclient;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,7 +125,7 @@ public class AccessTokenProvider {
         String keyStorePath = "";
         String keyStorePassword = "";
         String keyPassword = "";
-      
+
         String keyStoreType = "";
 
         String trustStorePath = "";
@@ -202,102 +203,86 @@ public class AccessTokenProvider {
         if (jocUrl == null || jocUrl.isEmpty()) {
             try {
                 jocUrl = sosPrivateConf.getValue("joc.webservice.jitl", "joc.url");
-            } catch (ConfigException e) {
+            } catch (ConfigException.Missing e) {
                 jocUrl = sosPrivateConf.getValue("joc.url");
             }
         }
 
         if (userDecodedAccount.isEmpty()) {
-            try {
-                userDecodedAccount = sosPrivateConf.getDecodedValue("joc.webservice.jitl", "joc.account");
-            } catch (ConfigException e) {
+            userDecodedAccount = sosPrivateConf.getDecodedValue("joc.webservice.jitl", "joc.account");
+            if (userDecodedAccount == null) {
                 userDecodedAccount = sosPrivateConf.getDecodedValue("joc.account");
             }
         }
-        String[] account = userDecodedAccount.split(":");
-        if (jocApiUser.isEmpty()) {
-            jocApiUser = account[0];
-        }
-        if (jocApiPassword.isEmpty()) {
-            if (account.length > 1) {
-                jocApiPassword = userDecodedAccount.split(":")[1];
+
+        if (userDecodedAccount != null) {
+            String[] account = userDecodedAccount.split(":");
+            if (account.length > 0) {
+
+                if (jocApiUser.isEmpty()) {
+                    jocApiUser = account[0];
+                }
+                if (jocApiPassword.isEmpty()) {
+                    if (account.length > 1) {
+                        jocApiPassword = userDecodedAccount.split(":")[1];
+                    }
+                }
             }
         }
 
         if (keyStorePath.isEmpty()) {
             try {
                 keyStorePath = sosPrivateConf.getValue("joc.webservice.jitl", "joc.keystorepath");
-            } catch (ConfigException e) {
-                try {
-                    keyStorePath = sosPrivateConf.getValue("joc.keystorepath");
-                } catch (ConfigException ee) {
-                }
+            } catch (ConfigException.Missing e) {
+                keyStorePath = sosPrivateConf.getValueDefaultEmpty("joc.keystorepath");
             }
         }
 
         if (keyStorePassword.isEmpty()) {
             try {
                 keyStorePassword = sosPrivateConf.getValue("joc.webservice.jitl", "joc.keystorepassword");
-            } catch (ConfigException e) {
-                try {
-                    keyStorePassword = sosPrivateConf.getValue("joc.keystorepassword");
-                } catch (ConfigException ee) {
-                }
+            } catch (ConfigException.Missing e) {
+                keyStorePassword = sosPrivateConf.getValueDefaultEmpty("joc.keystorepassword");
             }
         }
 
         if (keyPassword.isEmpty()) {
             try {
                 keyPassword = sosPrivateConf.getValue("joc.webservice.jitl", "joc.keypassword");
-            } catch (ConfigException e) {
-                try {
-                    keyPassword = sosPrivateConf.getValue("joc.keyPassword");
-                } catch (ConfigException ee) {
-                }
+            } catch (ConfigException.Missing e) {
+                keyPassword = sosPrivateConf.getValueDefaultEmpty("joc.keyPassword");
             }
         }
 
         if (keyStoreType.isEmpty()) {
             try {
                 keyStoreType = sosPrivateConf.getValue("joc.webservice.jitl", "joc.keystoretype");
-            } catch (ConfigException e) {
-                try {
-                    keyStoreType = sosPrivateConf.getValue("joc.keystoretype");
-                } catch (ConfigException ee) {
-                }
+            } catch (ConfigException.Missing e) {
+                keyStoreType = sosPrivateConf.getValueDefaultEmpty("joc.keystoretype");
             }
         }
 
         if (trustStorePath.isEmpty()) {
             try {
                 trustStorePath = sosPrivateConf.getValue("joc.webservice.jitl", "joc.truststorepath");
-            } catch (ConfigException e) {
-                try {
-                    trustStorePath = sosPrivateConf.getValue("joc.truststorepath");
-                } catch (ConfigException ee) {
-                }
+            } catch (ConfigException.Missing e) {
+                trustStorePath = sosPrivateConf.getValueDefaultEmpty("joc.truststorepath");
             }
         }
 
         if (trustStorePassword.isEmpty()) {
             try {
                 trustStorePassword = sosPrivateConf.getValue("joc.webservice.jitl", "joc.truststorepassword");
-            } catch (ConfigException e) {
-                try {
-                    trustStorePassword = sosPrivateConf.getValue("joc.truststorepassword");
-                } catch (ConfigException ee) {
-                }
+            } catch (ConfigException.Missing e) {
+                trustStorePassword = sosPrivateConf.getValueDefaultEmpty("joc.truststorepassword");
             }
         }
 
         if (trustStoreType.isEmpty()) {
             try {
                 trustStoreType = sosPrivateConf.getValue("joc.webservice.jitl", "joc.truststoretype");
-            } catch (ConfigException e) {
-                try {
-                    trustStoreType = sosPrivateConf.getValue("joc.truststoretype");
-                } catch (ConfigException ee) {
-                }
+            } catch (ConfigException.Missing e) {
+                trustStoreType = sosPrivateConf.getValueDefaultEmpty("joc.truststoretype");
             }
         }
 
@@ -327,15 +312,15 @@ public class AccessTokenProvider {
         LOGGER.debug("jocUrl: " + jocUrl);
 
         ApiAccessToken apiAccessToken = new ApiAccessToken(jocUrl);
-        boolean sessionIsValid;
+        boolean sessionIsValid = false;
         String xAccessToken = "";
 
         int cnt = 0;
-        while (cnt < MAX_WAIT_TIME_FOR_ACCESS_TOKEN && !apiAccessToken.isValidAccessToken(xAccessToken, webserviceCredentials)) {
+        while (cnt < MAX_WAIT_TIME_FOR_ACCESS_TOKEN && !sessionIsValid) {
             LOGGER.debug("check session");
 
             try {
-                sessionIsValid = apiAccessToken.isValidUserAccount(userDecodedAccount, webserviceCredentials);
+                sessionIsValid = apiAccessToken.isValidAccessToken(xAccessToken, webserviceCredentials);
             } catch (Exception e) {
                 sessionIsValid = false;
             }
@@ -345,8 +330,12 @@ public class AccessTokenProvider {
                     xAccessToken = apiAccessToken.login(webserviceCredentials);
                 } catch (Exception e) {
                     LOGGER.warn("... login failed with " + webserviceCredentials.getUserEncodedAccount() + " at " + jocUrl);
+                    try {
+                        TimeUnit.SECONDS.sleep(1);
+                    } catch (InterruptedException ei) {
+                    }
                 }
-
+                cnt = cnt + 1;
             }
         }
         if (cnt == MAX_WAIT_TIME_FOR_ACCESS_TOKEN) {

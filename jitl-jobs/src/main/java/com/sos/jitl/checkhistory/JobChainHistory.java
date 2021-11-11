@@ -186,16 +186,7 @@ public class JobChainHistory implements IJobSchedulerHistory {
         return jobChainHistoryInfo;
     }
 
-    private void createDataSource__() throws SOSException, URISyntaxException {
-        if (historyDatasourceExecuter == null) {
-            if (!this.webserviceCredentials.account().isEmpty()) {
-                // historyDatasourceExecuter = new HistoryWebserviceExecuter(jocUrl, this.webserviceCredentials.account());
-            } else {
-                // historyDatasourceExecuter = new HistoryWebserviceExecuter(jocUrl);
-            }
-            historyDatasourceExecuter.login(webserviceCredentials.getAccessToken());
-        }
-    }
+ 
 
     private void createDataSource() throws SOSException, URISyntaxException {
         if (historyDatasourceExecuter == null) {
