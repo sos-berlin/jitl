@@ -91,15 +91,6 @@ public class JobSchedulerStartLatecomers extends JSJobUtilitiesClass<JobSchedule
 		DailyPlanExecuter dailyPlanExecuter = null;
 		JobStartExecuter jobStartExecuter = null;
 		JobChainStartExecuter jobChainStartExecuter = null;
-
-		webserviceCredentials.setJocUrl(jocUrl);
-		webserviceCredentials.setKeyPassword(jobSchedulerCredentialStoreJOCParameters.getKeyPassword());
-		webserviceCredentials.setKeyStorePassword(jobSchedulerCredentialStoreJOCParameters.getKeyStorePassword());
-		webserviceCredentials.setKeyStorePath(jobSchedulerCredentialStoreJOCParameters.getKeyStorePath());
-		webserviceCredentials.setKeyStoreType(jobSchedulerCredentialStoreJOCParameters.getKeyStoreType());
-		webserviceCredentials.setTrustStorePassword(jobSchedulerCredentialStoreJOCParameters.getTrustStorePassword());
-		webserviceCredentials.setTrustStoreType(jobSchedulerCredentialStoreJOCParameters.getTrustStoreType());
-		webserviceCredentials.setTrustStorePath(jobSchedulerCredentialStoreJOCParameters.getTrustStorePath());
 		
 		dailyPlanExecuter = new DailyPlanExecuter(webserviceCredentials);
 		dailyPlanExecuter.setSchedulerId(webserviceCredentials.getSchedulerId());
