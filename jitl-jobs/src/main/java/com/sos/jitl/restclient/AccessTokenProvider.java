@@ -192,14 +192,14 @@ public class AccessTokenProvider {
             }
         }
 
-        if (!jocApiUser.isEmpty() && !jocApiPassword.isEmpty()) {
+        if (jocApiUser != null && jocApiPassword != null && !jocApiUser.isEmpty() && !jocApiPassword.isEmpty()) {
             userDecodedAccount = jocApiUser + ":" + jocApiPassword;
         }
 
         SOSPrivateConf sosPrivateConf;
         sosPrivateConf = new SOSPrivateConf(profileFileName);
 
-        if (jocUrl.isEmpty()) {
+        if (jocUrl == null || jocUrl.isEmpty()) {
             try {
                 jocUrl = sosPrivateConf.getValue("joc.webservice.jitl", "joc.url");
             } catch (ConfigException e) {
@@ -307,6 +307,7 @@ public class AccessTokenProvider {
         webserviceCredentials.setUserDecodedAccount(userDecodedAccount);
 
         webserviceCredentials.setKeyStorePassword(keyStorePassword);
+        webserviceCredentials.setKeyPassword(keyPassword);
         webserviceCredentials.setKeyStorePath(keyStorePath);
         webserviceCredentials.setKeyStoreType(keyStoreType);
         webserviceCredentials.setTrustStorePassword(trustStorePassword);

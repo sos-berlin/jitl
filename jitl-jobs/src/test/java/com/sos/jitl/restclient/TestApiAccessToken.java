@@ -24,9 +24,9 @@ public class TestApiAccessToken {
 
         userAccount = sosPrivateConf.getDecodedValue("joc.webservice.jitl", "joc.account");
         webserviceCredentials.setUserDecodedAccount(userAccount);
-        webserviceCredentials.setKeyStorePassword("");
+        webserviceCredentials.setKeyStorePassword("jobscheduler");
         webserviceCredentials.setKeyStoreType("PKCS12");
-        webserviceCredentials.setKeyPassword("");
+        webserviceCredentials.setKeyPassword("123456");
         webserviceCredentials.setTrustStoreType("PKCS12");
         webserviceCredentials.setKeyStorePath("C:/temp/laptop-7rsacscv.p12");
         webserviceCredentials.setTrustStorePassword("123456");    
@@ -38,5 +38,4 @@ public class TestApiAccessToken {
         assertEquals("Test testIsValidAccessToken failed...", true, x);
 
     }
-
 }

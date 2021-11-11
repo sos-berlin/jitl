@@ -2,23 +2,23 @@ package com.sos.jitl.restclient;
 
 public class JobSchedulerCredentialStoreJOCParameters {
 
-    private String credentialStoreFile;
-    private String credentialStorePassword;
-    private String credentialStoreKeyFile;
-    private String credentialStoreEntryPath;
+    private String credentialStoreFile="";
+    private String credentialStorePassword="";
+    private String credentialStoreKeyFile="";
+    private String credentialStoreEntryPath="";
+    
+    private String jocUrl="";
+    private String user="";
+    private String password="";
 
-    private String jocUrl;
-    private String user;
-    private String password;
+    private String keyStorePath="";
+    private String keyStorePassword="";
+    private String keyPassword="";
+    private String keyStoreType="";
 
-    private String keyStorePath;
-    private String keyStorePassword;
-    private String keyPassword;
-    private String keyStoreType;
-
-    private String trustStorePath;
-    private String trustStorePassword;
-    private String trustStoreType;
+    private String trustStorePath="";
+    private String trustStorePassword="";
+    private String trustStoreType="";
 
     public String getCredentialStoreFile() {
         return credentialStoreFile;
