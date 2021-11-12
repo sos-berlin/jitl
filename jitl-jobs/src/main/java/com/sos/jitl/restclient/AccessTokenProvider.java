@@ -250,7 +250,7 @@ public class AccessTokenProvider {
             try {
                 keyPassword = sosPrivateConf.getValue("joc.webservice.jitl", "joc.keypassword");
             } catch (ConfigException.Missing e) {
-                keyPassword = sosPrivateConf.getValueDefaultEmpty("joc.keyPassword");
+                keyPassword = sosPrivateConf.getValueDefaultEmpty("joc.keypassword");
             }
         }
 
