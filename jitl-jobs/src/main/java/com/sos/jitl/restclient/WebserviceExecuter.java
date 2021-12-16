@@ -46,15 +46,17 @@ public class WebserviceExecuter {
     private void addSSLContext() throws SOSSSLException, SOSMissingDataException, KeyStoreException, NoSuchAlgorithmException, CertificateException,
             IOException {
 
-        LOGGER.debug("add SSLContext to REST api client");
-        jobSchedulerRestApiClient.setKeyPass(webserviceCredentials.getKeyPassword());
-        jobSchedulerRestApiClient.setKeystoreType(webserviceCredentials.getKeyStoreType());
-        jobSchedulerRestApiClient.setKeystorePass(webserviceCredentials.getKeyStorePassword());
-        jobSchedulerRestApiClient.setTruststorePass(webserviceCredentials.getTrustStorePassword());
-        jobSchedulerRestApiClient.setTruststoreType(webserviceCredentials.getTrustStoreType());
-        jobSchedulerRestApiClient.setTrustStore(webserviceCredentials.getTrustStorePath());
-        jobSchedulerRestApiClient.setKeyStore(webserviceCredentials.getKeyStorePath());
-        jobSchedulerRestApiClient.setSSLContext();
+        if (webserviceCredentials != null) {
+            LOGGER.debug("add SSLContext to REST api client");
+            jobSchedulerRestApiClient.setKeyPass(webserviceCredentials.getKeyPassword());
+            jobSchedulerRestApiClient.setKeystoreType(webserviceCredentials.getKeyStoreType());
+            jobSchedulerRestApiClient.setKeystorePass(webserviceCredentials.getKeyStorePassword());
+            jobSchedulerRestApiClient.setTruststorePass(webserviceCredentials.getTrustStorePassword());
+            jobSchedulerRestApiClient.setTruststoreType(webserviceCredentials.getTrustStoreType());
+            jobSchedulerRestApiClient.setTrustStore(webserviceCredentials.getTrustStorePath());
+            jobSchedulerRestApiClient.setKeyStore(webserviceCredentials.getKeyStorePath());
+            jobSchedulerRestApiClient.setSSLContext();
+        }
     }
 
     protected BigInteger string2BigInteger(String s) {
