@@ -936,7 +936,7 @@ public class JobSchedulerRestApiClient {
     	return getRestService(masterAgentApiUrl.toURL(), socketTimeout, connectionTimeout);
     }
     
-    public String getRestService(URL masterAgentApiUrl, int socketTimeout, int connectionTimeout) throws IOException {
+    public String getRestService(URL masterAgentApiUrl, int socketTimeout, int connectionTimeout) throws IOException, SOSBadRequestException {
         HttpURLConnection connection = (HttpURLConnection) masterAgentApiUrl.openConnection();
         connection.setRequestProperty("Authorization", "Basic " + basicAuthorization);
         connection.setRequestMethod("GET");
@@ -946,9 +946,15 @@ public class JobSchedulerRestApiClient {
         connection.setConnectTimeout(connectionTimeout);
         connection.setReadTimeout(socketTimeout);
         // Send request
-        String fromInputStream = IOUtils.toString(connection.getInputStream(), Charsets.UTF_8);
+        int responseCode = connection.getResponseCode();
+        String response = null;
+        if (responseCode == 200) {
+        	response = IOUtils.toString(connection.getInputStream(), Charsets.UTF_8);
+        } else {
+        	throw new SOSBadRequestException("ResponseCode: " + responseCode + " " + connection.getResponseMessage());
+        }
         connection.disconnect();
-        return fromInputStream;
+        return response;
     }
 
     
