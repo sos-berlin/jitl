@@ -1,11 +1,9 @@
 package com.sos.jitl.restclient;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
@@ -25,7 +23,6 @@ import java.util.Map.Entry;
 import java.util.zip.GZIPOutputStream;
 
 import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 
 import org.apache.commons.codec.binary.Base64;
@@ -54,7 +51,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicHttpRequest;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
@@ -937,25 +933,49 @@ public class JobSchedulerRestApiClient {
     }
     
     public String getRestService(URL masterAgentApiUrl, int socketTimeout, int connectionTimeout) throws IOException, SOSBadRequestException {
+        HttpURLConnection connection = null;
+        try {
+            connection = (HttpURLConnection) masterAgentApiUrl.openConnection();
+            connection.setRequestMethod("GET");
+            if (basicAuthorization != null && !basicAuthorization.isEmpty()) {
+                connection.setRequestProperty("Authorization", "Basic " + basicAuthorization);
+            }
+            connection.setRequestProperty("Accept", "application/json");
+            connection.setUseCaches(false);
+            connection.setDoOutput(true);
+            connection.setConnectTimeout(connectionTimeout);
+            connection.setReadTimeout(socketTimeout);
+            // Send request
+            int responseCode = connection.getResponseCode();
+            String response = null;
+            if (responseCode == 200) {
+            	response = IOUtils.toString(connection.getInputStream(), Charsets.UTF_8);
+            } else if (responseCode == 400) {
+                response = IOUtils.toString(connection.getErrorStream(), Charsets.UTF_8);
+            } else {
+            	throw new SOSBadRequestException("ResponseCode: " + responseCode + " " + connection.getResponseMessage());
+            }
+            return response;
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    }
+    
+    public HttpURLConnection getHttpURLConnection(URL masterAgentApiUrl, int socketTimeout, int connectionTimeout) throws IOException,
+            SOSBadRequestException {
         HttpURLConnection connection = (HttpURLConnection) masterAgentApiUrl.openConnection();
-        connection.setRequestProperty("Authorization", "Basic " + basicAuthorization);
         connection.setRequestMethod("GET");
+        if (basicAuthorization != null && !basicAuthorization.isEmpty()) {
+            connection.setRequestProperty("Authorization", "Basic " + basicAuthorization);
+        }
         connection.setRequestProperty("Accept", "application/json");
         connection.setUseCaches(false);
         connection.setDoOutput(true);
         connection.setConnectTimeout(connectionTimeout);
         connection.setReadTimeout(socketTimeout);
-        // Send request
-        int responseCode = connection.getResponseCode();
-        String response = null;
-        if (responseCode == 200) {
-        	response = IOUtils.toString(connection.getInputStream(), Charsets.UTF_8);
-        } else {
-        	throw new SOSBadRequestException("ResponseCode: " + responseCode + " " + connection.getResponseMessage());
-        }
-        connection.disconnect();
-        return response;
+        return connection;
     }
-
     
 }
