@@ -1,9 +1,11 @@
 package com.sos.jitl.restclient;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
@@ -23,9 +25,11 @@ import java.util.Map.Entry;
 import java.util.zip.GZIPOutputStream;
 
 import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -50,10 +54,12 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicHttpRequest;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 
+import com.google.common.base.Charsets;
 import com.sos.exception.SOSBadRequestException;
 import com.sos.exception.SOSConnectionRefusedException;
 import com.sos.exception.SOSConnectionResetException;
@@ -925,4 +931,25 @@ public class JobSchedulerRestApiClient {
     public void setTruststore(KeyStore trustStore) {
         this.trustStore = trustStore;
     }
+    
+    public String getRestService(URI masterAgentApiUrl, int socketTimeout, int connectionTimeout) throws SOSException, IOException {
+    	return getRestService(masterAgentApiUrl.toURL(), socketTimeout, connectionTimeout);
+    }
+    
+    public String getRestService(URL masterAgentApiUrl, int socketTimeout, int connectionTimeout) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) masterAgentApiUrl.openConnection();
+        connection.setRequestProperty("Authorization", "Basic " + basicAuthorization);
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("Accept", "application/json");
+        connection.setUseCaches(false);
+        connection.setDoOutput(true);
+        connection.setConnectTimeout(connectionTimeout);
+        connection.setReadTimeout(socketTimeout);
+        // Send request
+        String fromInputStream = IOUtils.toString(connection.getInputStream(), Charsets.UTF_8);
+        connection.disconnect();
+        return fromInputStream;
+    }
+
+    
 }
