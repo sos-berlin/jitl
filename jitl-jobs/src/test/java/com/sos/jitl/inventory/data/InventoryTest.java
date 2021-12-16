@@ -9,7 +9,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
@@ -102,7 +101,7 @@ public class InventoryTest {
     }
 
     @Test
-//    @Ignore
+    @Ignore
     public void testInitialProcessingExecute() {
         try {
             SOSHibernateFactory factory = new SOSHibernateFactory(hibernateCfgFile);
@@ -331,7 +330,8 @@ public class InventoryTest {
     }
 
     @Test
-    public void testAgentApiUri () throws URISyntaxException, SocketException, SOSException {
+    @Ignore
+    public void testAgentApiUri () throws URISyntaxException, SOSException, IOException {
         String MASTER_WEBSERVICE_URL_APPEND = "/jobscheduler/master/api/agent/";
         String AGENT_WEBSERVICE_URL_APPEND = "/jobscheduler/agent/api";
         StringBuilder connectTo = new StringBuilder();
@@ -341,16 +341,11 @@ public class InventoryTest {
         connectTo.append("http://localhost:4413");
         connectTo.append(AGENT_WEBSERVICE_URL_APPEND);
         LOGGER.debug(connectTo.toString());
-        URIBuilder uriBuilder = new URIBuilder(connectTo.toString());
         JobSchedulerRestApiClient client = new JobSchedulerRestApiClient();
         client.addHeader(CONTENT_TYPE_HEADER, APPLICATION_HEADER_VALUE);
         client.addHeader(ACCEPT_HEADER, APPLICATION_HEADER_VALUE);
         client.setSocketTimeout(5000);
-
-        URI uri = new URI(connectTo.toString());
-//        String response = client.getRestService(uriBuilder.build());
-        String response = client.getRestService(uri);
-        LOGGER.info("status code: " + client.statusCode());
+        String response = client.getRestService(URI.create(connectTo.toString()), 1000, 1000);
         LOGGER.info(response);
     }
     

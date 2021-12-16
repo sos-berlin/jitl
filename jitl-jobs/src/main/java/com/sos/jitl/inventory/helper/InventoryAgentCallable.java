@@ -43,6 +43,7 @@ public class InventoryAgentCallable implements Callable<CallableAgent> {
             JsonObject result = getJsonObjectFromResponse(uriBuilder.build());
             ca.setAgent(agentInstance);
             ca.setResult(result);
+
             return ca;
         } catch (SOSNoResponseException|SOSBadRequestException e) {
             agentInstance.setHostname(null);
@@ -60,10 +61,8 @@ public class InventoryAgentCallable implements Callable<CallableAgent> {
 
     private JsonObject getJsonObjectFromResponse(URI uri) throws Exception {
         JobSchedulerRestApiClient client = new JobSchedulerRestApiClient();
-        client.addHeader(CONTENT_TYPE_HEADER, APPLICATION_HEADER_VALUE);
         client.addHeader(ACCEPT_HEADER, APPLICATION_HEADER_VALUE);
-        client.setSocketTimeout(5000);
-        String response = client.getRestService(uri);
+        String response = client.getRestService(uri, 5000, 5000);
         int httpReplyCode = client.statusCode();
         String contentType = client.getResponseHeader(CONTENT_TYPE_HEADER);
         JsonObject json = null;
