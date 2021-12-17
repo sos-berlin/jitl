@@ -81,10 +81,8 @@ public class InventoryAgentCallable implements Callable<CallableAgent> {
 			        json = rdr.readObject();
 			    }
 			    if (json != null) {
-			        client.closeHttpClient();
 			        return json;
 			    } else {
-			        client.closeHttpClient();
 			        throw new Exception("Unexpected content type '" + contentType + "'. Response: " + response);
 			    }
 			case 400:
@@ -94,14 +92,11 @@ public class InventoryAgentCallable implements Callable<CallableAgent> {
 			        json = rdr.readObject();
 			    }
 			    if (json != null) {
-			        client.closeHttpClient();
 			        throw new SOSBadRequestException(json.getString("message"));
 			    } else {
-			        client.closeHttpClient();
 			        throw new SOSBadRequestException("Unexpected content type '" + contentType + "'. Response: " + response);
 			    }
 			default:
-			    client.closeHttpClient();
 			    throw new SOSBadRequestException(responseCode + " " + client.getHttpResponse().getStatusLine().getReasonPhrase());
 			}
 		} finally {
