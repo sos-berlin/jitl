@@ -206,7 +206,23 @@
           </div>
         </note>
       </param>
-
+    <param name="credential_store_password" required="false">
+        <note language="de">
+        <title>Kennwort für die Keepass Datei</title>
+<p>
+	     Das Kennwort der Keepass Datei, 
+</p>
+        </note>
+        <note language="en">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+        
+        <title>Password for the Credential Store file</title>
+          <p>
+            The password for the keepass file.
+          </p>
+          </div>
+        </note>
+      </param>
 
       </params>
 

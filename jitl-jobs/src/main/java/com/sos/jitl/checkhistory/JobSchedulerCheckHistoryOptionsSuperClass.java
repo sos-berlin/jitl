@@ -44,11 +44,8 @@ public class JobSchedulerCheckHistoryOptionsSuperClass extends JSOptionsClass {
         this.result = result;
     }
 
-    
-    @JSOptionDefinition(name = "credential_store_file", description = "", key = "credential_store_file",
-            type = "SOSOptionString", mandatory = false)
-    public SOSOptionString credential_store_file = new SOSOptionString(this, conClassName + ".credential_store_file", "", "",
-            "", false);
+    @JSOptionDefinition(name = "credential_store_file", description = "", key = "credential_store_file", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString credential_store_file = new SOSOptionString(this, conClassName + ".credential_store_file", "", "", "", false);
 
     public SOSOptionString getcredential_store_file() {
         return credential_store_file;
@@ -57,11 +54,9 @@ public class JobSchedulerCheckHistoryOptionsSuperClass extends JSOptionsClass {
     public void setcredential_store_file(final SOSOptionString p_credential_store_file) {
         credential_store_file = p_credential_store_file;
     }
-    
-    @JSOptionDefinition(name = "credential_store_key_file", description = "", key = "credential_store_key_file",
-            type = "SOSOptionString", mandatory = false)
-    public SOSOptionString credential_store_key_file = new SOSOptionString(this, conClassName + ".credential_store_key_file", "", "",
-            "", false);
+
+    @JSOptionDefinition(name = "credential_store_key_file", description = "", key = "credential_store_key_file", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString credential_store_key_file = new SOSOptionString(this, conClassName + ".credential_store_key_file", "", "", "", false);
 
     public SOSOptionString getcredential_store_key_file() {
         return credential_store_key_file;
@@ -69,12 +64,10 @@ public class JobSchedulerCheckHistoryOptionsSuperClass extends JSOptionsClass {
 
     public void setcredential_store_key_file(final SOSOptionString p_credential_store_key_file) {
         credential_store_key_file = p_credential_store_key_file;
-    }    
-    
-    @JSOptionDefinition(name = "credential_store_password", description = "", key = "credential_store_password",
-            type = "SOSOptionString", mandatory = false)
-    public SOSOptionString credential_store_password = new SOSOptionString(this, conClassName + ".credential_store_password", "", "",
-            "", false);
+    }
+
+    @JSOptionDefinition(name = "credential_store_password", description = "", key = "credential_store_password", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString credential_store_password = new SOSOptionString(this, conClassName + ".credential_store_password", "", "", "", false);
 
     public SOSOptionString getcredential_store_password() {
         return credential_store_password;
@@ -82,12 +75,10 @@ public class JobSchedulerCheckHistoryOptionsSuperClass extends JSOptionsClass {
 
     public void setcredential_store_password(final SOSOptionString p_credential_store_password) {
         credential_store_password = p_credential_store_password;
-    }    
-        
-    @JSOptionDefinition(name = "credential_store_entry_path", description = "", key = "credential_store_entry_path",
-            type = "SOSOptionString", mandatory = false)
-    public SOSOptionString credential_store_entry_path = new SOSOptionString(this, conClassName + ".credential_store_entry_path", "", "",
-            "", false);
+    }
+
+    @JSOptionDefinition(name = "credential_store_entry_path", description = "", key = "credential_store_entry_path", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString credential_store_entry_path = new SOSOptionString(this, conClassName + ".credential_store_entry_path", "", "", "", false);
 
     public SOSOptionString getcredential_store_entry_path() {
         return credential_store_entry_path;
@@ -95,7 +86,7 @@ public class JobSchedulerCheckHistoryOptionsSuperClass extends JSOptionsClass {
 
     public void setcredential_store_entry_path(final SOSOptionString p_credential_store_entry_path) {
         credential_store_entry_path = p_credential_store_entry_path;
-    }    
+    }
 
     @JSOptionDefinition(name = "job_chain_name", description = "The name of a job chain.", key = "job_chain_name", type = "JSJobChainName", mandatory = false)
     public JSJobChainName jobChainName = new JSJobChainName(this, conClassName + ".job_chain_name", "The name of a job chain.", "", "", false);
@@ -131,18 +122,20 @@ public class JobSchedulerCheckHistoryOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "mail_bcc", description = "Email blind carbon copy address of the recipient, see ./c", key = "mail_bcc", type = "JSOptionMailOptions", mandatory = false)
-    public JSOptionMailOptions mail_bcc = new JSOptionMailOptions(this, conClassName + ".mail_bcc", "Email blind carbon copy address of the recipient", "", "", false);
+    public JSOptionMailOptions mail_bcc = new JSOptionMailOptions(this, conClassName + ".mail_bcc",
+            "Email blind carbon copy address of the recipient", "", "", false);
 
     public JSOptionMailOptions getMailBcc() {
         return mail_bcc;
     }
 
     public void setmail_bcc(JSOptionMailOptions mailBcc) {
-        this.mail_bcc =mailBcc;
+        this.mail_bcc = mailBcc;
     }
 
     @JSOptionDefinition(name = "mail_cc", description = "Email carbon copy address of the recipient, see ./config/", key = "mail_cc", type = "JSOptionMailOptions", mandatory = false)
-    public JSOptionMailOptions mailCC = new JSOptionMailOptions(this, conClassName + ".mail_cc", "Email carbon copy address of the recipient, see ./config/", "", "", false);
+    public JSOptionMailOptions mailCC = new JSOptionMailOptions(this, conClassName + ".mail_cc",
+            "Email carbon copy address of the recipient, see ./config/", "", "", false);
 
     public JSOptionMailOptions getMailCC() {
         return mailCC;
@@ -153,7 +146,8 @@ public class JobSchedulerCheckHistoryOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "mail_to", description = "Email address of the recipient, see ./config/factory.ini,", key = "mail_to", type = "JSOptionMailOptions", mandatory = false)
-    public JSOptionMailOptions mailTo = new JSOptionMailOptions(this, conClassName + ".mail_to", "Email address of the recipient, see ./config/factory.ini,", "", "", false);
+    public JSOptionMailOptions mailTo = new JSOptionMailOptions(this, conClassName + ".mail_to",
+            "Email address of the recipient, see ./config/factory.ini,", "", "", false);
 
     public JSOptionMailOptions getMailTo() {
         return mailTo;
@@ -209,7 +203,8 @@ public class JobSchedulerCheckHistoryOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "query", description = "Query to be executed", key = "query", type = "SOSOptionString", mandatory = true)
-    public SOSOptionString query = new SOSOptionString(this, conClassName + ".query", "Query to be executed", "isCompletedAfter", "isCompletedAfter", false);
+    public SOSOptionString query = new SOSOptionString(this, conClassName + ".query", "Query to be executed", "isCompletedAfter", "isCompletedAfter",
+            false);
 
     public SOSOptionString getquery() {
         return query;
@@ -220,7 +215,8 @@ public class JobSchedulerCheckHistoryOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "fail_on_query_result_false", description = "How to handle false", key = "fail_on_query_result_false", type = "SOSOptionBoolean", mandatory = false)
-    public SOSOptionBoolean failOnQueryResultFalse = new SOSOptionBoolean(this, conClassName + ".fail_on_query_result_false", "How to handle false", "true", "true", false);
+    public SOSOptionBoolean failOnQueryResultFalse = new SOSOptionBoolean(this, conClassName + ".fail_on_query_result_false", "How to handle false",
+            "true", "true", false);
 
     public SOSOptionBoolean getfailOnQueryResultFalse() {
         return failOnQueryResultFalse;
@@ -231,7 +227,8 @@ public class JobSchedulerCheckHistoryOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "fail_on_query_result_true", description = "How to handle true", key = "fail_on_query_result_true", type = "SOSOptionBoolean", mandatory = false)
-    public SOSOptionBoolean failOnQueryResultTrue = new SOSOptionBoolean(this, conClassName + ".fail_on_query_result_true", "How to handle true", "false", "false", false);
+    public SOSOptionBoolean failOnQueryResultTrue = new SOSOptionBoolean(this, conClassName + ".fail_on_query_result_true", "How to handle true",
+            "false", "false", false);
 
     public SOSOptionBoolean getfailOnQueryResultTrue() {
         return failOnQueryResultTrue;
@@ -253,8 +250,8 @@ public class JobSchedulerCheckHistoryOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "start_time", description = "The start time from which the parametrisized job is check", key = "start_time", type = "SOSOptionString", mandatory = false)
-    public SOSOptionTimeHorizon start_time = new SOSOptionTimeHorizon(this, conClassName + ".start_time", "The start time from which the parametrisized job is check", "0:00:00:00",
-            "0:00:00:00", false);
+    public SOSOptionTimeHorizon start_time = new SOSOptionTimeHorizon(this, conClassName + ".start_time",
+            "The start time from which the parametrisized job is check", "0:00:00:00", "0:00:00:00", false);
 
     public SOSOptionTimeHorizon getstart_time() {
         return start_time;
@@ -265,8 +262,8 @@ public class JobSchedulerCheckHistoryOptionsSuperClass extends JSOptionsClass {
     }
 
     @JSOptionDefinition(name = "end_time", description = "The end time from which the parametrisized job is check", key = "end_time", type = "SOSOptionString", mandatory = false)
-    public SOSOptionTimeHorizon end_time = new SOSOptionTimeHorizon(this, conClassName + ".end_time", "The end time from which the parametrisized job is check", "0:00:00:00",
-            "0:00:00:00", false);
+    public SOSOptionTimeHorizon end_time = new SOSOptionTimeHorizon(this, conClassName + ".end_time",
+            "The end time from which the parametrisized job is check", "0:00:00:00", "0:00:00:00", false);
 
     public SOSOptionTimeHorizon getend_time() {
         return end_time;
@@ -274,6 +271,82 @@ public class JobSchedulerCheckHistoryOptionsSuperClass extends JSOptionsClass {
 
     public void setend_time(SOSOptionTimeHorizon p_end_time) {
         this.end_time = p_end_time;
+    }
+
+    @JSOptionDefinition(name = "keystore_password", description = "Password for the Keystore", key = "keystore_password", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString keystorePassword = new SOSOptionString(this, conClassName + ".keystore_password", "Password for the Keystore", "", "",
+            false);
+
+    public SOSOptionString getKeystorePassword() {
+        return keystorePassword;
+    }
+
+    @JSOptionDefinition(name = "key_password", description = "Password for the private Key", key = "key_password", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString keyPassword = new SOSOptionString(this, conClassName + ".key_password", "Password for the private Key", "", "",
+            false);
+
+    public SOSOptionString getKeyPassword() {
+        return keyPassword;
+    }
+
+    public void setKeyPassword(SOSOptionString keyPassword) {
+        this.keyPassword = keyPassword;
+    }
+
+    @JSOptionDefinition(name = "keystore_path", description = "Path to the Keystore", key = "keystore_path", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString keystorePath = new SOSOptionString(this, conClassName + ".keystore_path", "Path to the Keystore", "", "", false);
+
+    public SOSOptionString getKeystorePath() {
+        return keystorePath;
+    }
+
+    public void setKeystorePath(SOSOptionString keystorePath) {
+        this.keystorePath = keystorePath;
+    }
+
+    @JSOptionDefinition(name = "keystore_type", description = "Type of the Keystore", key = "keystore_type", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString keystoreType = new SOSOptionString(this, conClassName + ".keystore_type", "Path to the Keystore", "", "", false);
+
+    public SOSOptionString getKeystoreType() {
+        return keystoreType;
+    }
+
+    public void setKeystoreType(SOSOptionString keystoreType) {
+        this.keystoreType = keystoreType;
+    }
+
+    @JSOptionDefinition(name = "truststore_password", description = "Password for the Truststore", key = "truststore_password", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString truststorePassword = new SOSOptionString(this, conClassName + ".truststore_password", "Password for the Truststore", "",
+            "", false);
+
+    public SOSOptionString getTruststorePassword() {
+        return truststorePassword;
+    }
+
+    public void setTruststorePassword(SOSOptionString truststorePassword) {
+        this.truststorePassword = truststorePassword;
+    }
+
+    @JSOptionDefinition(name = "truststore_path", description = "Path to the Truststore", key = "truststore_path", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString truststorePath = new SOSOptionString(this, conClassName + ".truststore_path", "Path to the Truststore", "", "", false);
+
+    public SOSOptionString getTruststorePath() {
+        return truststorePath;
+    }
+
+    public void setTruststorePath(SOSOptionString truststorePath) {
+        this.truststorePath = truststorePath;
+    }
+
+    @JSOptionDefinition(name = "truststore_type", description = "Type of the Truststore", key = "truststore_type", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString truststoreType = new SOSOptionString(this, conClassName + ".truststore_type", "Path to the Truststore", "", "", false);
+
+    public SOSOptionString getTruststoreType() {
+        return truststoreType;
+    }
+
+    public void setTruststoreType(SOSOptionString truststoreType) {
+        this.truststoreType = truststoreType;
     }
 
     public JobSchedulerCheckHistoryOptionsSuperClass() {

@@ -29,7 +29,7 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
 
     private final String conClassName = "JobSchedulerCheckRunHistory";
     private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCheckHistory.class);
-    protected JobSchedulerCheckHistoryOptions objOptions = null;
+    protected JobSchedulerCheckHistoryOptions jobSchedulerCheckHistoryOptions = null;
     private JSJobUtilities objJSJobUtilities = this;
     private IJSCommands objJSCommands = this;
     private String historyObjectName = "";
@@ -45,25 +45,34 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
     }
 
     public JobSchedulerCheckHistoryOptions options() {
-        if (objOptions == null) {
-            objOptions = new JobSchedulerCheckHistoryOptions();
+        if (jobSchedulerCheckHistoryOptions == null) {
+            jobSchedulerCheckHistoryOptions = new JobSchedulerCheckHistoryOptions();
         }
-        return objOptions;
+        return jobSchedulerCheckHistoryOptions;
     }
 
     private IJobSchedulerHistory getHistoryObject(Spooler schedulerInstance) throws UnsupportedEncodingException, InterruptedException, SOSException, URISyntaxException  {
     	
     	JobSchedulerCredentialStoreJOCParameters jobSchedulerCredentialStoreJOCParameters = new JobSchedulerCredentialStoreJOCParameters();
-    	jobSchedulerCredentialStoreJOCParameters.setCredentialStoreEntryPath(objOptions.credential_store_entry_path.getValue());
-    	jobSchedulerCredentialStoreJOCParameters.setCredentialStoreFile(objOptions.credential_store_file.getValue());
-    	jobSchedulerCredentialStoreJOCParameters.setCredentialStoreKeyFile(objOptions.credential_store_key_file.getValue());
-    	jobSchedulerCredentialStoreJOCParameters.setCredentialStorePassword(objOptions.credential_store_password.getValue());
-    	jobSchedulerCredentialStoreJOCParameters.setJocUrl(objOptions.jocUrl.getValue());
-    	jobSchedulerCredentialStoreJOCParameters.setPassword(objOptions.password.getValue());
-    	jobSchedulerCredentialStoreJOCParameters.setUser(objOptions.user.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setCredentialStoreEntryPath(jobSchedulerCheckHistoryOptions.credential_store_entry_path.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setCredentialStoreFile(jobSchedulerCheckHistoryOptions.credential_store_file.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setCredentialStoreKeyFile(jobSchedulerCheckHistoryOptions.credential_store_key_file.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setCredentialStorePassword(jobSchedulerCheckHistoryOptions.credential_store_password.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setJocUrl(jobSchedulerCheckHistoryOptions.jocUrl.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setPassword(jobSchedulerCheckHistoryOptions.password.getValue());
+    	jobSchedulerCredentialStoreJOCParameters.setUser(jobSchedulerCheckHistoryOptions.user.getValue());
+    	
+        jobSchedulerCredentialStoreJOCParameters.setKeyPassword(jobSchedulerCheckHistoryOptions.keyPassword.getValue());
+        jobSchedulerCredentialStoreJOCParameters.setKeyStorePassword(jobSchedulerCheckHistoryOptions.keystorePassword.getValue());
+        jobSchedulerCredentialStoreJOCParameters.setKeyStorePath(jobSchedulerCheckHistoryOptions.keystorePath.getValue());
+        jobSchedulerCredentialStoreJOCParameters.setKeyStoreType(jobSchedulerCheckHistoryOptions.keystoreType.getValue());
+        jobSchedulerCredentialStoreJOCParameters.setTrustStorePassword(jobSchedulerCheckHistoryOptions.truststorePassword.getValue());
+        jobSchedulerCredentialStoreJOCParameters.setTrustStorePath(jobSchedulerCheckHistoryOptions.truststorePath.getValue());
+        jobSchedulerCredentialStoreJOCParameters.setTrustStoreType(jobSchedulerCheckHistoryOptions.truststoreType.getValue());
   
         AccessTokenProvider accessTokenProvider = new AccessTokenProvider(jobSchedulerCredentialStoreJOCParameters);
         WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
+         
         if (schedulerInstance != null) {
             webserviceCredentials = accessTokenProvider.getAccessToken(schedulerInstance);
          }
@@ -75,10 +84,10 @@ public class JobSchedulerCheckHistory extends JSToolBox implements JSJobUtilitie
         IJobSchedulerHistory jobSchedulerHistory;
         if (options().getJobChainName().getValue().isEmpty()) {
             historyObjectName = options().getJobName().getValue();
-            jobSchedulerHistory = new JobHistory(accessTokenProvider.getJocUrl(), webserviceCredentials);
+            jobSchedulerHistory = new JobHistory(webserviceCredentials);
         } else {
             historyObjectName = options().getJobChainName().getValue();
-            jobSchedulerHistory = new JobChainHistory(accessTokenProvider.getJocUrl(), webserviceCredentials);
+            jobSchedulerHistory = new JobChainHistory(webserviceCredentials);
         }
 
         jobSchedulerHistory.setRelativePath(pathOfJob);

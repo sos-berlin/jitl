@@ -6,6 +6,7 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import com.sos.exception.SOSAccessDeniedException;
 import com.sos.exception.SOSException;
+import com.sos.jitl.restclient.WebserviceCredentials;
 import com.sos.jitl.restclient.WebserviceExecuter;
 
 import org.slf4j.Logger;
@@ -17,12 +18,9 @@ public class JobStartExecuter extends WebserviceExecuter {
 	private static final String JOB_START_STRING_FOR_WEBSERVICE = "{'jobs':[{'job':'%s','at':'now'}],'jobschedulerId':'%s'}";
 	private static final Logger LOGGER = LoggerFactory.getLogger(JobStartExecuter.class);
  
-	public JobStartExecuter(String jocUrl, String jocAccount) {
-		super(jocUrl, jocAccount);
-	}
-
-	public JobStartExecuter(String jocUrl) {
-		super(jocUrl);
+ 
+	public JobStartExecuter(WebserviceCredentials webserviceCredentials) {
+		super(webserviceCredentials);
 	}
 
 	private boolean json2PlanList(String answer) throws SOSAccessDeniedException {
@@ -52,7 +50,7 @@ public class JobStartExecuter extends WebserviceExecuter {
 		String body = String.format(JOB_START_STRING_FOR_WEBSERVICE, job,schedulerId);
 		body = body.replace("'", "\"");
 
-		String answer = jobSchedulerRestApiClient.postRestService(new URI(jocUrl + API_CALL), body);
+		String answer = jobSchedulerRestApiClient.postRestService(new URI(webserviceCredentials.getJocUrl() + API_CALL), body);
 		boolean o = json2PlanList(answer);
 		return o;
 	}

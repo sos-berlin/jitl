@@ -9,6 +9,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -36,6 +38,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.jitl.inventory.db.DBLayerInventory;
@@ -60,18 +63,18 @@ public class InventoryTest {
     private static final String APPLICATION_HEADER_VALUE = "application/xml";
     private static final String ACCEPT_HEADER = "Accept";
     private static final String MASTER_WEBSERVICE_URL_APPEND = "/jobscheduler/master/api/command";
-    private static final String HOST = "LAPTOP-7RSACSCV";
-    private static final String HTTP_PORT = "localhost:40444";
-    private static final String PORT = "40444";
+    private static final String HOST = "sp";
+    private static final String HTTP_PORT = "localhost:40113";
+    private static final String PORT = "40113";
     private static final String SHOW_STATE_COMMAND =
             "<show_state what=\"cluster source job_chains job_chain_orders schedules operations\" />";
     private static final String SHOW_JOB_COMMAND = "<show_job job=\"/shell_worker/shell_worker\" />";
     private String hibernateCfgFile =
-            "D:/documents/sos-berlin.com/scheduler_joc_cockpit/config/reporting.hibernate.cfg.xml";
-    private Path liveDirectory = Paths.get("D:/documents/sos-berlin.com/scheduler_joc_cockpit/config/live");
-    private Path configDirectory = Paths.get("D:/documents/sos-berlin.com/scheduler_joc_cockpit/config");
+    		"C:/ProgramData/sos-berlin.com/jobscheduler/sp_113/config/reporting.hibernate.cfg.xml";
+    private Path liveDirectory = Paths.get("C:/ProgramData/sos-berlin.com/jobscheduler/sp_113/config/live");
+    private Path configDirectory = Paths.get("C:/ProgramData/sos-berlin.com/jobscheduler/sp_113/config");
     private Path schedulerXmlPath = 
-            Paths.get("D:/documents/sos-berlin.com/scheduler_joc_cockpit/config/scheduler.xml");
+            Paths.get("C:/ProgramData/sos-berlin.com/jobscheduler/sp_113/config/scheduler.xml");
     private String supervisorHost = null;
     private String supervisorPort = null;
     
@@ -326,6 +329,26 @@ public class InventoryTest {
         return response;
     }
 
+    @Test
+    @Ignore
+    public void testAgentApiUri () throws URISyntaxException, SOSException, IOException {
+        String MASTER_WEBSERVICE_URL_APPEND = "/jobscheduler/master/api/agent/";
+        String AGENT_WEBSERVICE_URL_APPEND = "/jobscheduler/agent/api";
+        StringBuilder connectTo = new StringBuilder();
+        connectTo.append("http://localhost:");
+        connectTo.append(40113);
+        connectTo.append(MASTER_WEBSERVICE_URL_APPEND);
+        connectTo.append("http://localhost:4413");
+        connectTo.append(AGENT_WEBSERVICE_URL_APPEND);
+        LOGGER.debug(connectTo.toString());
+        JobSchedulerRestApiClient client = new JobSchedulerRestApiClient();
+        client.addHeader(CONTENT_TYPE_HEADER, APPLICATION_HEADER_VALUE);
+        client.addHeader(ACCEPT_HEADER, APPLICATION_HEADER_VALUE);
+        client.setSocketTimeout(5000);
+        String response = client.getRestService(URI.create(connectTo.toString()), 1000, 1000);
+        LOGGER.info(response);
+    }
+    
     @Test
     @Ignore
     public void testGetSupervisorFromSchedulerXml() throws Exception {

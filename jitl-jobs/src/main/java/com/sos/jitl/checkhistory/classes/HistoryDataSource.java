@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.net.URI;
 import javax.json.JsonObject;
 import com.sos.jitl.checkhistory.HistoryHelper;
+import com.sos.jitl.restclient.WebserviceCredentials;
 import com.sos.jitl.restclient.WebserviceExecuter;
 import com.sos.joc.model.common.HistoryState;
 import com.sos.joc.model.common.HistoryStateText;
@@ -30,15 +31,12 @@ public abstract class HistoryDataSource extends WebserviceExecuter {
          
 
 
-	public HistoryDataSource(String jocUrl, String jocAccount) {
-		super(jocUrl, jocAccount);
+	public HistoryDataSource(WebserviceCredentials webserviceCredentials) {
+		super(webserviceCredentials);
 		historyHelper = new HistoryHelper();
 	}
 
-	public HistoryDataSource(String jocUrl) {
-		super(jocUrl);
-		historyHelper = new HistoryHelper();
-	}
+ 
 
 	protected HistoryEntry json2HistoryEntry(String answer) throws Exception {
 		HistoryEntry historyEntry = new HistoryEntry();

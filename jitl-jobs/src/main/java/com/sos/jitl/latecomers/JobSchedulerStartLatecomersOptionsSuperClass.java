@@ -16,229 +16,303 @@ import com.sos.JSHelper.Options.SOSOptionString;
 
 @JSOptionClass(name = "JobSchedulerStartLatecomersOptionsSuperClass", description = "JobSchedulerStartLatecomersOptionsSuperClass")
 public class JobSchedulerStartLatecomersOptionsSuperClass extends JSOptionsClass {
-	private static final String CLASSNAME = "JobSchedulerStartLatecomersOptionsSuperClass";
-	private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerStartLatecomersOptionsSuperClass.class);
 
-	public JobSchedulerStartLatecomersOptionsSuperClass() {
-	    currentClass = this.getClass();
-	}
+    private static final String CLASSNAME = "JobSchedulerStartLatecomersOptionsSuperClass";
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerStartLatecomersOptionsSuperClass.class);
 
-	public JobSchedulerStartLatecomersOptionsSuperClass(JSListener pobjListener) {
-		this();
-		this.registerMessageListener(pobjListener);
-	}
+    public JobSchedulerStartLatecomersOptionsSuperClass() {
+        currentClass = this.getClass();
+    }
 
-	public JobSchedulerStartLatecomersOptionsSuperClass(HashMap<String, String> jsSettings) throws Exception {
-		this();
-		this.setAllOptions(jsSettings);
-	}
+    public JobSchedulerStartLatecomersOptionsSuperClass(JSListener pobjListener) {
+        this();
+        this.registerMessageListener(pobjListener);
+    }
 
-	@JSOptionDefinition(name = "credential_store_file", description = "", key = "credential_store_file", type = "SOSOptionString", mandatory = false)
-	public SOSOptionString credential_store_file = new SOSOptionString(this, conClassName + ".credential_store_file",
-			"", "", "", false);
+    public JobSchedulerStartLatecomersOptionsSuperClass(HashMap<String, String> jsSettings) throws Exception {
+        this();
+        this.setAllOptions(jsSettings);
+    }
 
-	public SOSOptionString getcredential_store_file() {
-		return credential_store_file;
-	}
+    @JSOptionDefinition(name = "credential_store_file", description = "", key = "credential_store_file", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString credential_store_file = new SOSOptionString(this, conClassName + ".credential_store_file", "", "", "", false);
 
-	public void setcredential_store_file(final SOSOptionString p_credential_store_file) {
-		credential_store_file = p_credential_store_file;
-	}
+    public SOSOptionString getcredential_store_file() {
+        return credential_store_file;
+    }
 
-	@JSOptionDefinition(name = "credential_store_key_file", description = "", key = "credential_store_key_file", type = "SOSOptionString", mandatory = false)
-	public SOSOptionString credential_store_key_file = new SOSOptionString(this,
-			conClassName + ".credential_store_key_file", "", "", "", false);
+    public void setcredential_store_file(final SOSOptionString p_credential_store_file) {
+        credential_store_file = p_credential_store_file;
+    }
 
-	public SOSOptionString getcredential_store_key_file() {
-		return credential_store_key_file;
-	}
+    @JSOptionDefinition(name = "credential_store_key_file", description = "", key = "credential_store_key_file", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString credential_store_key_file = new SOSOptionString(this, conClassName + ".credential_store_key_file", "", "", "", false);
 
-	public void setcredential_store_key_file(final SOSOptionString p_credential_store_key_file) {
-		credential_store_key_file = p_credential_store_key_file;
-	}
+    public SOSOptionString getcredential_store_key_file() {
+        return credential_store_key_file;
+    }
 
-	@JSOptionDefinition(name = "credential_store_password", description = "", key = "credential_store_password", type = "SOSOptionString", mandatory = false)
-	public SOSOptionString credential_store_password = new SOSOptionString(this,
-			conClassName + ".credential_store_password", "", "", "", false);
+    public void setcredential_store_key_file(final SOSOptionString p_credential_store_key_file) {
+        credential_store_key_file = p_credential_store_key_file;
+    }
 
-	public SOSOptionString getcredential_store_password() {
-		return credential_store_password;
-	}
+    @JSOptionDefinition(name = "credential_store_password", description = "", key = "credential_store_password", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString credential_store_password = new SOSOptionString(this, conClassName + ".credential_store_password", "", "", "", false);
 
-	public void setcredential_store_password(final SOSOptionString p_credential_store_password) {
-		credential_store_password = p_credential_store_password;
-	}
+    public SOSOptionString getcredential_store_password() {
+        return credential_store_password;
+    }
 
-	@JSOptionDefinition(name = "credential_store_entry_path", description = "", key = "credential_store_entry_path", type = "SOSOptionString", mandatory = false)
-	public SOSOptionString credential_store_entry_path = new SOSOptionString(this,
-			conClassName + ".credential_store_entry_path", "", "", "", false);
+    public void setcredential_store_password(final SOSOptionString p_credential_store_password) {
+        credential_store_password = p_credential_store_password;
+    }
 
-	public SOSOptionString getcredential_store_entry_path() {
-		return credential_store_entry_path;
-	}
+    @JSOptionDefinition(name = "credential_store_entry_path", description = "", key = "credential_store_entry_path", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString credential_store_entry_path = new SOSOptionString(this, conClassName + ".credential_store_entry_path", "", "", "", false);
 
-	public void setcredential_store_entry_path(final SOSOptionString p_credential_store_entry_path) {
-		credential_store_entry_path = p_credential_store_entry_path;
-	}
+    public SOSOptionString getcredential_store_entry_path() {
+        return credential_store_entry_path;
+    }
 
-	@JSOptionDefinition(name = "joc_url", description = "The url of JOC Webservices.", key = "joc_url", type = "SOSOptionString", mandatory = false)
-	public SOSOptionString jocUrl = new SOSOptionString(this, conClassName + ".joc_url", "The url of JOC Webservices.",
-			"", "", false);
+    public void setcredential_store_entry_path(final SOSOptionString p_credential_store_entry_path) {
+        credential_store_entry_path = p_credential_store_entry_path;
+    }
 
-	public SOSOptionString getJocUrl() {
-		return jocUrl;
-	}
+    @JSOptionDefinition(name = "joc_url", description = "The url of JOC Webservices.", key = "joc_url", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString jocUrl = new SOSOptionString(this, conClassName + ".joc_url", "The url of JOC Webservices.", "", "", false);
 
-	public void setJocUrl(SOSOptionString jocUrl) {
-		this.jocUrl = jocUrl;
-	}
+    public SOSOptionString getJocUrl() {
+        return jocUrl;
+    }
 
-	@JSOptionDefinition(name = "user", description = "User for the Webservice", key = "user", type = "SOSOptionString", mandatory = false)
-	public SOSOptionString user = new SOSOptionString(this, conClassName + ".user", "User for the Webservice", "", "",
-			false);
+    public void setJocUrl(SOSOptionString jocUrl) {
+        this.jocUrl = jocUrl;
+    }
 
-	public SOSOptionString getUser() {
-		return user;
-	}
+    @JSOptionDefinition(name = "user", description = "User for the Webservice", key = "user", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString user = new SOSOptionString(this, conClassName + ".user", "User for the Webservice", "", "", false);
 
-	public void setUser(SOSOptionString user) {
-		this.user = user;
-	}
+    public SOSOptionString getUser() {
+        return user;
+    }
 
-	@JSOptionDefinition(name = "password", description = "Password for the Webservice", key = "password", type = "SOSOptionString", mandatory = false)
-	public SOSOptionString password = new SOSOptionString(this, conClassName + ".password",
-			"Password for the Webservice", "", "", false);
+    public void setUser(SOSOptionString user) {
+        this.user = user;
+    }
 
-	public SOSOptionString getPassword() {
-		return password;
-	}
+    @JSOptionDefinition(name = "password", description = "Password for the Webservice", key = "password", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString password = new SOSOptionString(this, conClassName + ".password", "Password for the Webservice", "", "", false);
 
-	public void setPassword(SOSOptionString password) {
-		this.password = password;
-	}
+    public SOSOptionString getPassword() {
+        return password;
+    }
 
-	@JSOptionDefinition(name = "day_offset", description = "Specify the number of days to look in the past. Example: 10d looks te", key = "day_offset", type = "SOSOptionString", mandatory = false)
-	public SOSOptionString dayOffset = new SOSOptionString(this, CLASSNAME + ".day_offset",
-			"Specify the number of days to look in the past. Example: 10d looks te",
-			// InitValue, DefaultValue, isMandatory
-			"0d", "0d", false);
+    public void setPassword(SOSOptionString password) {
+        this.password = password;
+    }
 
-	public SOSOptionString getDayOffset() {
-		return dayOffset;
-	}
+    @JSOptionDefinition(name = "day_offset", description = "Specify the number of days to look in the past. Example: 10d looks te", key = "day_offset", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString dayOffset = new SOSOptionString(this, CLASSNAME + ".day_offset",
+            "Specify the number of days to look in the past. Example: 10d looks te",
+            // InitValue, DefaultValue, isMandatory
+            "0d", "0d", false);
 
-	public void setDayOffset(SOSOptionString dayOffset) {
-		this.dayOffset = dayOffset;
-	}
+    public SOSOptionString getDayOffset() {
+        return dayOffset;
+    }
 
-	@JSOptionDefinition(name = "ignore_folder_list", description = "A comma seperated list of folders. These folders will be ignored by t", key = "ignore_folder_list", type = "SOSOptionString", mandatory = false)
-	public SOSOptionString ignoreFolderList = new SOSOptionString(this, CLASSNAME + ".ignore_folder_list",
-			"A comma seperated list of folders. These folders will be ignored by t",
-			// InitValue, DefaultValue, isMandatory
-			" ", " ", false);
+    public void setDayOffset(SOSOptionString dayOffset) {
+        this.dayOffset = dayOffset;
+    }
 
-	public SOSOptionString getIgnoreFolderList() {
-		return ignoreFolderList;
-	}
+    @JSOptionDefinition(name = "ignore_folder_list", description = "A comma seperated list of folders. These folders will be ignored by t", key = "ignore_folder_list", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString ignoreFolderList = new SOSOptionString(this, CLASSNAME + ".ignore_folder_list",
+            "A comma seperated list of folders. These folders will be ignored by t",
+            // InitValue, DefaultValue, isMandatory
+            " ", " ", false);
 
-	public void setIgnoreFolderList(SOSOptionString ignoreFolderList) {
-		this.ignoreFolderList = ignoreFolderList;
-	}
+    public SOSOptionString getIgnoreFolderList() {
+        return ignoreFolderList;
+    }
 
-	@JSOptionDefinition(name = "ignore_job_list", description = "A comma seperated list of jobs. Then name can contain wildcards % whi", key = "ignore_job_list", type = "SOSOptionString", mandatory = false)
-	public SOSOptionString ignoreJobList = new SOSOptionString(this, CLASSNAME + ".ignore_job_list",
-			"A comma seperated list of jobs. Then name can contain wildcards % whi",
-			// InitValue, DefaultValue, isMandatory
-			" ", " ", false);
+    public void setIgnoreFolderList(SOSOptionString ignoreFolderList) {
+        this.ignoreFolderList = ignoreFolderList;
+    }
 
-	public SOSOptionString getIgnoreJobList() {
-		return ignoreJobList;
-	}
+    @JSOptionDefinition(name = "ignore_job_list", description = "A comma seperated list of jobs. Then name can contain wildcards % whi", key = "ignore_job_list", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString ignoreJobList = new SOSOptionString(this, CLASSNAME + ".ignore_job_list",
+            "A comma seperated list of jobs. Then name can contain wildcards % whi",
+            // InitValue, DefaultValue, isMandatory
+            " ", " ", false);
 
-	public void setIgnoreJobList(SOSOptionString ignoreJobList) {
-		this.ignoreJobList = ignoreJobList;
-	}
+    public SOSOptionString getIgnoreJobList() {
+        return ignoreJobList;
+    }
 
-	@JSOptionDefinition(name = "ignore_order_list", description = "A comma seperated list of orders. Then name can contain wildcards", key = "ignore_order_list", type = "SOSOptionString", mandatory = false)
-	public SOSOptionString ignoreOrderList = new SOSOptionString(this, CLASSNAME + ".ignore_order_list",
-			"A comma seperated list of orders. Then name can contain wildcards",
-			// InitValue, DefaultValue, isMandatory
-			" ", " ", false);
+    public void setIgnoreJobList(SOSOptionString ignoreJobList) {
+        this.ignoreJobList = ignoreJobList;
+    }
 
-	public SOSOptionString getIgnoreOrderList() {
-		return ignoreOrderList;
-	}
+    @JSOptionDefinition(name = "ignore_order_list", description = "A comma seperated list of orders. Then name can contain wildcards", key = "ignore_order_list", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString ignoreOrderList = new SOSOptionString(this, CLASSNAME + ".ignore_order_list",
+            "A comma seperated list of orders. Then name can contain wildcards",
+            // InitValue, DefaultValue, isMandatory
+            " ", " ", false);
 
-	public void setIgnoreOrderList(SOSOptionString ignoreOrderList) {
-		this.ignoreOrderList = ignoreOrderList;
-	}
+    public SOSOptionString getIgnoreOrderList() {
+        return ignoreOrderList;
+    }
 
-	@JSOptionDefinition(name = "jobs", description = "A comma seperated list of jobs. If this parameter is set, only those", key = "jobs", type = "SOSOptionString", mandatory = false)
-	public SOSOptionString jobs = new SOSOptionString(this, CLASSNAME + ".jobs",
-			"A comma seperated list of jobs. If this parameter is set, only those",
-			// InitValue, DefaultValue, isMandatory
-			" ", " ", false);
+    public void setIgnoreOrderList(SOSOptionString ignoreOrderList) {
+        this.ignoreOrderList = ignoreOrderList;
+    }
 
-	public SOSOptionString getJobs() {
-		return jobs;
-	}
+    @JSOptionDefinition(name = "jobs", description = "A comma seperated list of jobs. If this parameter is set, only those", key = "jobs", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString jobs = new SOSOptionString(this, CLASSNAME + ".jobs",
+            "A comma seperated list of jobs. If this parameter is set, only those",
+            // InitValue, DefaultValue, isMandatory
+            " ", " ", false);
 
-	public void setJobs(SOSOptionString jobs) {
-		this.jobs = jobs;
-	}
+    public SOSOptionString getJobs() {
+        return jobs;
+    }
 
-	@JSOptionDefinition(name = "only_report", description = "If true no job (orders) will be startet but just listed in the log.", key = "only_report", type = "SOSOptionString", mandatory = false)
-	public SOSOptionBoolean onlyReport = new SOSOptionBoolean(this, CLASSNAME + ".only_report",
-			"If true no job (orders) will be startet but just listed in the log.",
-			// InitValue, DefaultValue, isMandatory
-			"false", "false", false);
+    public void setJobs(SOSOptionString jobs) {
+        this.jobs = jobs;
+    }
 
-	public SOSOptionBoolean getOnlyReport() {
-		return onlyReport;
-	}
+    @JSOptionDefinition(name = "only_report", description = "If true no job (orders) will be startet but just listed in the log.", key = "only_report", type = "SOSOptionString", mandatory = false)
+    public SOSOptionBoolean onlyReport = new SOSOptionBoolean(this, CLASSNAME + ".only_report",
+            "If true no job (orders) will be startet but just listed in the log.",
+            // InitValue, DefaultValue, isMandatory
+            "false", "false", false);
 
-	public void SOSOptionBoolean(SOSOptionBoolean onlyReport) {
-		this.onlyReport = onlyReport;
-	}
+    public SOSOptionBoolean getOnlyReport() {
+        return onlyReport;
+    }
 
-	@JSOptionDefinition(name = "orders", description = "A comma seperated list of orders. If this parameter is set, only thos", key = "orders", type = "SOSOptionString", mandatory = false)
-	public SOSOptionString orders = new SOSOptionString(this, CLASSNAME + ".orders",
-			"A comma seperated list of orders. If this parameter is set, only thos",
-			// InitValue, DefaultValue, isMandatory
-			" ", " ", false);
+    public void SOSOptionBoolean(SOSOptionBoolean onlyReport) {
+        this.onlyReport = onlyReport;
+    }
 
-	public SOSOptionString getOrders() {
-		return orders;
-	}
+    @JSOptionDefinition(name = "orders", description = "A comma seperated list of orders. If this parameter is set, only thos", key = "orders", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString orders = new SOSOptionString(this, CLASSNAME + ".orders",
+            "A comma seperated list of orders. If this parameter is set, only thos",
+            // InitValue, DefaultValue, isMandatory
+            " ", " ", false);
 
-	public void setOrders(SOSOptionString orders) {
-		this.orders = orders;
-	}
+    public SOSOptionString getOrders() {
+        return orders;
+    }
 
-	private String getAllOptionsAsString() {
-		final String METHODNAME = CLASSNAME + "::getAllOptionsAsString";
-		String strT = CLASSNAME + "\n";
-		strT += this.toString();
-		return strT;
-	}
+    public void setOrders(SOSOptionString orders) {
+        this.orders = orders;
+    }
 
-	public void setAllOptions(HashMap<String, String> settings) {
+    @JSOptionDefinition(name = "key_password", description = "Password for the private Key", key = "key_password", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString keyPassword = new SOSOptionString(this, conClassName + ".key_password", "Password for the private Key", "", "",
+            false);
+
+    public SOSOptionString getKeyPassword() {
+        return keyPassword;
+    }
+
+    public void setKeyPassword(SOSOptionString keyPassword) {
+        this.keyPassword = keyPassword;
+    }
+
+    @JSOptionDefinition(name = "keystore_password", description = "Password for the Keystore", key = "keystore_password", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString keystorePassword = new SOSOptionString(this, conClassName + ".keystore_password", "Password for the Keystore", "", "",
+            false);
+
+    public SOSOptionString getKeystorePassword() {
+        return keystorePassword;
+    }
+
+    public void setKeystorePassword(SOSOptionString keystorePassword) {
+        this.keystorePassword = keystorePassword;
+    }
+
+    @JSOptionDefinition(name = "keystore_path", description = "Path to the Keystore", key = "keystore_path", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString keystorePath = new SOSOptionString(this, conClassName + ".keystore_path", "Path to the Keystore", "", "", false);
+
+    public SOSOptionString getKeystorePath() {
+        return keystorePath;
+    }
+
+    public void setKeystorePath(SOSOptionString keystorePath) {
+        this.keystorePath = keystorePath;
+    }
+
+    @JSOptionDefinition(name = "keystore_type", description = "Type of the Keystore", key = "keystore_type", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString keystoreType = new SOSOptionString(this, conClassName + ".keystore_type", "Path to the Keystore", "", "", false);
+
+    public SOSOptionString getKeystoreType() {
+        return keystoreType;
+    }
+
+    public void setKeystoreType(SOSOptionString keystoreType) {
+        this.keystoreType = keystoreType;
+    }
+
+    @JSOptionDefinition(name = "truststore_password", description = "Password for the Truststore", key = "truststore_password", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString truststorePassword = new SOSOptionString(this, conClassName + ".truststore_password", "Password for the Truststore", "",
+            "", false);
+
+    public SOSOptionString getTruststorePassword() {
+        return truststorePassword;
+    }
+
+    public void setTruststorePassword(SOSOptionString truststorePassword) {
+        this.truststorePassword = truststorePassword;
+    }
+
+    @JSOptionDefinition(name = "truststore_path", description = "Path to the Truststore", key = "truststore_path", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString truststorePath = new SOSOptionString(this, conClassName + ".truststore_path", "Path to the Truststore", "", "", false);
+
+    public SOSOptionString getTruststorePath() {
+        return truststorePath;
+    }
+
+    public void setTruststorePath(SOSOptionString truststorePath) {
+        this.truststorePath = truststorePath;
+    }
+
+    @JSOptionDefinition(name = "truststore_type", description = "Type of the Truststore", key = "truststore_type", type = "SOSOptionString", mandatory = false)
+    public SOSOptionString truststoreType = new SOSOptionString(this, conClassName + ".truststore_type", "Path to the Truststore", "", "", false);
+
+    public SOSOptionString getTruststoreType() {
+        return truststoreType;
+    }
+
+    public void setTruststoreType(SOSOptionString truststoreType) {
+        this.truststoreType = truststoreType;
+    }
+
+    private String getAllOptionsAsString() {
+        final String METHODNAME = CLASSNAME + "::getAllOptionsAsString";
+        String strT = CLASSNAME + "\n";
+        strT += this.toString();
+        return strT;
+    }
+
+    public void setAllOptions(HashMap<String, String> settings) {
         super.setAllOptions(settings);
     }
 
-	@Override
-	public void checkMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
-		try {
-			super.checkMandatory();
-		} catch (Exception e) {
-			throw new JSExceptionMandatoryOptionMissing(e.toString());
-		}
-	}
+    @Override
+    public void checkMandatory() throws JSExceptionMandatoryOptionMissing, Exception {
+        try {
+            super.checkMandatory();
+        } catch (Exception e) {
+            throw new JSExceptionMandatoryOptionMissing(e.toString());
+        }
+    }
 
-	@Override
-	public void commandLineArgs(String[] pstrArgs) {
-		super.commandLineArgs(pstrArgs);
-		this.setAllOptions(super.getSettings());
-	}
+    @Override
+    public void commandLineArgs(String[] pstrArgs) {
+        super.commandLineArgs(pstrArgs);
+        this.setAllOptions(super.getSettings());
+    }
 
 }

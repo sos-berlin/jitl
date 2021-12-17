@@ -28,7 +28,10 @@ public class JobHistoryWebserviceExecuterTest {
     @Test
     public void testExecute() throws Exception {
 
-        HistoryWebserviceExecuter jobHistoryWebserviceExecuter = new HistoryWebserviceExecuter("http://localhost:4446/joc/api","root:root");
+        WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
+        webserviceCredentials.setJocUrl("http://localhost:4446/joc/api");
+        webserviceCredentials.setUserDecodedAccount("root:root");
+        HistoryWebserviceExecuter jobHistoryWebserviceExecuter = new HistoryWebserviceExecuter(webserviceCredentials);
        
         jobHistoryWebserviceExecuter.login();
         jobHistoryWebserviceExecuter.setSchedulerId("scheduler_joc_cockpit");
@@ -53,8 +56,9 @@ public class JobHistoryWebserviceExecuterTest {
           webserviceCredentials.setPassword("api");
           webserviceCredentials.setUser("api_user");
           webserviceCredentials.setSchedulerId("scheduler_joc_cockpit");
-
-        HistoryWebserviceExecuter jobHistoryWebserviceExecuter = new HistoryWebserviceExecuter("http://localhost:4446/joc/api","root:r:oot");
+          webserviceCredentials.setJocUrl("http://localhost:4446/joc/api");
+          webserviceCredentials.setUserDecodedAccount("root:root");
+        HistoryWebserviceExecuter jobHistoryWebserviceExecuter = new HistoryWebserviceExecuter(webserviceCredentials);
        
         jobHistoryWebserviceExecuter.login();
         jobHistoryWebserviceExecuter.setSchedulerId("scheduler_joc_cockpit");

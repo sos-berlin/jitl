@@ -27,7 +27,7 @@ public class HistoryDatabaseExecuter extends HistoryDataSource {
     private static final Logger LOGGER = LoggerFactory.getLogger(HistoryDatabaseExecuter.class);
 
     public HistoryDatabaseExecuter(SOSHibernateSession sosHibernateSession) {
-        super("", "");
+        super(null);
         this.sosHibernateSession = sosHibernateSession;
     }
 

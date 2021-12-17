@@ -6,6 +6,7 @@ import java.net.URI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.jitl.restclient.WebserviceCredentials;
 import com.sos.joc.model.order.OrderHistoryItem;
 import com.sos.scheduler.model.answers.HistoryEntry;
 import com.sos.scheduler.model.answers.JobChain.OrderHistory.Order;
@@ -20,12 +21,9 @@ public class HistoryWebserviceExecuter extends HistoryDataSource {
 	private static final Logger LOGGER = LoggerFactory.getLogger(HistoryWebserviceExecuter.class);
  
 
-	public HistoryWebserviceExecuter(String jocUrl, String jocAccount) {
-		super(jocUrl, jocAccount);
-	}
-
-	public HistoryWebserviceExecuter(String jocUrl) {
-		super(jocUrl);
+ 
+	public HistoryWebserviceExecuter(WebserviceCredentials webserviceCredentials) {
+		super(webserviceCredentials);
 	}
  
 	public HistoryEntry getJobHistoryEntry(String state) throws Exception {
@@ -45,7 +43,7 @@ public class HistoryWebserviceExecuter extends HistoryDataSource {
 
 		body = body.replace("'", "\"");
 
-		String answer = jobSchedulerRestApiClient.postRestService(new URI(jocUrl + "/tasks/history"), body);
+		String answer = jobSchedulerRestApiClient.postRestService(new URI(webserviceCredentials.getJocUrl() + "/tasks/history"), body);
 		HistoryEntry h = json2HistoryEntry(answer);
 		if (h.getId() == null) {
 			return null;
@@ -84,7 +82,7 @@ public class HistoryWebserviceExecuter extends HistoryDataSource {
 
 		body = body.replace("'", "\"");
 
-		String answer = jobSchedulerRestApiClient.postRestService(new URI(jocUrl + "/orders/history"), body);
+		String answer = jobSchedulerRestApiClient.postRestService(new URI(webserviceCredentials.getJocUrl() + "/orders/history"), body);
 		Order o = json2JobChainHistoryEntry(answer);
 		if (o.getHistoryId() == null) {
 			return null;
@@ -101,7 +99,7 @@ public class HistoryWebserviceExecuter extends HistoryDataSource {
 		String body = String.format(JOB_CHAIN_ORDER_HISTORY_STRING_FOR_WEBSERVICE, schedulerId, orderHistoryId);
 		body = body.replace("'", "\"");
 
-		String answer = jobSchedulerRestApiClient.postRestService(new URI(jocUrl + "/orders/history"), body);
+		String answer = jobSchedulerRestApiClient.postRestService(new URI(webserviceCredentials.getJocUrl() + "/orders/history"), body);
 		OrderHistoryItem o = json2JobChainOrderHistoryEntry(answer);
 		if (o.getHistoryId() == null) {
 			return null;

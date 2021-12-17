@@ -44,9 +44,10 @@ public class JobSchedulerStartLatecomersJUnitTest extends JSToolBox {
 
 		jobSchedulerStartLatecomers.setSchedulerId(webserviceCredentials.getSchedulerId());
 		jobSchedulerStartLatecomers.setJocUrl(jocUrl);
-
+		webserviceCredentials.setJocUrl(jocUrl);
+		
 		WebserviceExecuter webServiceExecuter = null;
-		webServiceExecuter = new DailyPlanExecuter(jocUrl, webserviceCredentials.account()); 
+		webServiceExecuter = new DailyPlanExecuter(webserviceCredentials); 
 		webServiceExecuter.setSchedulerId(webserviceCredentials.getSchedulerId());
 		webServiceExecuter.login();
 		jobSchedulerStartLatecomers.setxAccessToken(webServiceExecuter.getAccessToken());

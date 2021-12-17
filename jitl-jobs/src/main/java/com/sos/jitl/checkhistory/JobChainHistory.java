@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import com.sos.exception.SOSException;
 import com.sos.jitl.checkhistory.classes.HistoryDataSource;
-import com.sos.jitl.checkhistory.classes.HistoryDatabaseExecuter;
 import com.sos.jitl.checkhistory.classes.HistoryWebserviceExecuter;
 import com.sos.jitl.checkhistory.classes.JobSchedulerHistoryInfoEntry;
 import com.sos.jitl.checkhistory.interfaces.IJobSchedulerHistory;
@@ -22,8 +21,6 @@ public class JobChainHistory implements IJobSchedulerHistory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobHistory.class);
 
-    private String jocUrl;
-
     private JobChain.OrderHistory.Order lastCompletedHistoryEntry = null;
     private JobChain.OrderHistory.Order lastRunningHistoryEntry = null;
     private JobChain.OrderHistory.Order lastCompletedSuccessfullHistoryEntry = null;
@@ -35,11 +32,10 @@ public class JobChainHistory implements IJobSchedulerHistory {
     private WebserviceCredentials webserviceCredentials;
     private HistoryDataSource historyDatasourceExecuter;
 
-    public JobChainHistory(String jocUrl, WebserviceCredentials webserviceCredentials) {
+    public JobChainHistory(WebserviceCredentials webserviceCredentials) {
         super();
 
         jobHistoryHelper = new HistoryHelper();
-        this.jocUrl = jocUrl;
         this.webserviceCredentials = webserviceCredentials;
         timeLimit = "";
     }
@@ -49,10 +45,21 @@ public class JobChainHistory implements IJobSchedulerHistory {
         super();
 
         jobHistoryHelper = new HistoryHelper();
-        this.jocUrl = spooler.variables().value("joc_url");
         this.webserviceCredentials = new WebserviceCredentials();
-        this.webserviceCredentials.setAccessToken(spooler.variables().value("X-Access-Token"));
+        this.webserviceCredentials.setJocUrl(spooler.variables().value("joc_url"));
+
+        String jocUser = spooler.variables().value("joc_user");
+        this.webserviceCredentials.setAccessToken(spooler.variables().value(jocUser + "_X-Access-Token"));
+        this.webserviceCredentials.setUser(jocUser);
         this.webserviceCredentials.setSchedulerId(spooler.id());
+        this.webserviceCredentials.setKeyPassword(spooler.variables().value("key_password"));
+        this.webserviceCredentials.setKeyStorePassword(spooler.variables().value("keystore_password"));
+        this.webserviceCredentials.setKeyStorePath(spooler.variables().value("keystore_path"));
+        this.webserviceCredentials.setKeyStoreType(spooler.variables().value("keystore_type"));
+        this.webserviceCredentials.setTrustStorePassword(spooler.variables().value("truststore_password"));
+        this.webserviceCredentials.setTrustStorePath(spooler.variables().value("truststore_path"));
+        this.webserviceCredentials.setTrustStoreType(spooler.variables().value("truststore_type"));
+             
         timeLimit = "";
     }
 
@@ -179,13 +186,12 @@ public class JobChainHistory implements IJobSchedulerHistory {
         return jobChainHistoryInfo;
     }
 
+ 
+
     private void createDataSource() throws SOSException, URISyntaxException {
         if (historyDatasourceExecuter == null) {
-            if (!this.webserviceCredentials.account().isEmpty()) {
-                historyDatasourceExecuter = new HistoryWebserviceExecuter(jocUrl, this.webserviceCredentials.account());
-            } else {
-                historyDatasourceExecuter = new HistoryWebserviceExecuter(jocUrl);
-            }
+            historyDatasourceExecuter = new HistoryWebserviceExecuter(this.webserviceCredentials);
+
             historyDatasourceExecuter.login(webserviceCredentials.getAccessToken());
         }
     }
@@ -237,7 +243,6 @@ public class JobChainHistory implements IJobSchedulerHistory {
         return this.webserviceCredentials;
     }
 
-    
     public void setHistoryDatasourceExecuter(HistoryDataSource historyDatasourceExecuter) {
         this.historyDatasourceExecuter = historyDatasourceExecuter;
     }

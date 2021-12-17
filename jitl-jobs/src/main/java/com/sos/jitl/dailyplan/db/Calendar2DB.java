@@ -178,96 +178,98 @@ public class Calendar2DB {
                 jsStarter.setItemJobStreamStarter(from, to, dbItemJobStreamStarter, timeZone.getID());
                 filterJobStreamStarterJobs.setJobStreamStarter(dbItemJobStreamStarter.getId());
                 String start;
-                for (com.sos.joc.model.calendar.Period period : jsStarter.getJobStreamScheduler().getPlan().getPeriods()) {
+                if (jsStarter.getJobStreamScheduler().getPlan() != null) {
+                    for (com.sos.joc.model.calendar.Period period : jsStarter.getJobStreamScheduler().getPlan().getPeriods()) {
 
-                    for (DBItemJobStreamStarterJob dbItemJobStreamStarterJob : dbLayerJobStreamsStarterJobs.getJobStreamStarterJobsList(
-                            filterJobStreamStarterJobs, 0)) {
-                        boolean isNew;
-                        dailyPlanInterval = new DailyPlanInterval(from, to);
-                        DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter = new DailyPlanCalender2DBFilter();
-                        dailyPlanCalender2DBFilter.setForJob(dbItemJobStreamStarterJob.getJob());
+                        for (DBItemJobStreamStarterJob dbItemJobStreamStarterJob : dbLayerJobStreamsStarterJobs.getJobStreamStarterJobsList(
+                                filterJobStreamStarterJobs, 0)) {
+                            boolean isNew;
+                            dailyPlanInterval = new DailyPlanInterval(from, to);
+                            DailyPlanCalender2DBFilter dailyPlanCalender2DBFilter = new DailyPlanCalender2DBFilter();
+                            dailyPlanCalender2DBFilter.setForJob(dbItemJobStreamStarterJob.getJob());
 
-                        if (period.getSingleStart() != null) {
-                            start = period.getSingleStart();
-                            LOGGER.debug("start jobstream: " + jsStarter.getItemJobStreamStarter().getJobStream() + " at " + start);
-                        } else {
-                            start = period.getBegin();
-                            LOGGER.debug("start jobstream: " + jsStarter.getItemJobStreamStarter().getJobStream() + " at " + start);
-                        }
-
-                        DailyPlanDBItem dailyPlanDBItem = null;
-                        dailyPlanDBLayer.resetFilter();
-                        dailyPlanDBLayer.getFilter().setJob(dbItemJobStreamStarterJob.getJob());
-                        DailyPlanDate dailyScheduleDate = new DailyPlanDate(dateFormat);
-                        dailyScheduleDate.setSchedule(start);
-                        dailyPlanDBLayer.getFilter().setPlannedStart(dailyScheduleDate.getSchedule());
-                        dailyPlanDBLayer.getFilter().setSchedulerId(this.schedulerId);
-                        List<DailyPlanDBItem> l = dailyPlanDBLayer.getDailyPlanList(0, true);
-
-                        if (l.size() > 0) {
-                            dailyPlanDBItem = l.get(0);
-                            isNew = false;
-                        } else {
-                            dailyPlanDBItem = new DailyPlanDBItem(this.dateFormat);
-                            isNew = true;
-                        }
-                        dailyPlanDBItem.setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-
-                        if (period.getSingleStart() != null) {
-                            LOGGER.debug("start jobstream: " + jsStarter.getItemJobStreamStarter().getJobStream() + " at " + start);
-                        } else {
-                            dailyPlanDBItem.setPeriodBegin(period.getBegin());
-                            dailyPlanDBItem.setPeriodEnd(period.getEnd());
-                            try {
-                                dailyPlanDBItem.setRepeatInterval(new BigInteger(period.getAbsoluteRepeat()), new BigInteger(period.getRepeat()));
-                            } catch (Exception e) {
+                            if (period.getSingleStart() != null) {
+                                start = period.getSingleStart();
+                                LOGGER.debug("start jobstream: " + jsStarter.getItemJobStreamStarter().getJobStream() + " at " + start);
+                            } else {
+                                start = period.getBegin();
+                                LOGGER.debug("start jobstream: " + jsStarter.getItemJobStreamStarter().getJobStream() + " at " + start);
                             }
-                            LOGGER.debug("start jobstream: " + jsStarter.getItemJobStreamStarter().getJobStream() + " at " + start);
-                        }
 
-                        dailyPlanDBItem.setSchedulerId(this.schedulerId);
-                        dailyPlanDBItem.setIsAssigned(false);
-                        dailyPlanDBItem.setIsLate(false);
-                        dailyPlanDBItem.setJobStreamStarterId(dbItemJobStreamStarter.getId());
-                        dailyPlanDBItem.setJob(dbItemJobStreamStarterJob.getJob());
-                        LOGGER.trace("map get jobstream: " + dbItemJobStreamStarter.getJobStream());
-                        if (mapOfJobStreams.get(dbItemJobStreamStarter.getJobStream()) != null) {
-                            dailyPlanDBItem.setJobStream(mapOfJobStreams.get(dbItemJobStreamStarter.getJobStream()).getJobStream());
-                        } else {
-                            LOGGER.debug("map jobstream does not contain: " + dbItemJobStreamStarter.getJobStream());
-                            dailyPlanDBItem.setJobStream(String.valueOf(dbItemJobStreamStarter.getJobStream()));
-                        }
+                            DailyPlanDBItem dailyPlanDBItem = null;
+                            dailyPlanDBLayer.resetFilter();
+                            dailyPlanDBLayer.getFilter().setJob(dbItemJobStreamStarterJob.getJob());
+                            DailyPlanDate dailyScheduleDate = new DailyPlanDate(dateFormat);
+                            dailyScheduleDate.setSchedule(start);
+                            dailyPlanDBLayer.getFilter().setPlannedStart(dailyScheduleDate.getSchedule());
+                            dailyPlanDBLayer.getFilter().setSchedulerId(this.schedulerId);
+                            List<DailyPlanDBItem> l = dailyPlanDBLayer.getDailyPlanList(0, true);
 
-                        dailyPlanDBItem.setJobChain(".");
-                        dailyPlanDBItem.setOrderId(".");
-                        dailyPlanDBItem.setPlannedStart(start);
-                        Long duration = getDuration(dbLayerReporting, dbItemJobStreamStarterJob.getJob(), null);
+                            if (l.size() > 0) {
+                                dailyPlanDBItem = l.get(0);
+                                isNew = false;
+                            } else {
+                                dailyPlanDBItem = new DailyPlanDBItem(this.dateFormat);
+                                isNew = true;
+                            }
+                            dailyPlanDBItem.setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
-                        if (dailyPlanDBItem.getPlannedStart() != null) {
-                            dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
-                        }
+                            if (period.getSingleStart() != null) {
+                                LOGGER.debug("start jobstream: " + jsStarter.getItemJobStreamStarter().getJobStream() + " at " + start);
+                            } else {
+                                dailyPlanDBItem.setPeriodBegin(period.getBegin());
+                                dailyPlanDBItem.setPeriodEnd(period.getEnd());
+                                try {
+                                    dailyPlanDBItem.setRepeatInterval(new BigInteger(period.getAbsoluteRepeat()), new BigInteger(period.getRepeat()));
+                                } catch (Exception e) {
+                                }
+                                LOGGER.debug("start jobstream: " + jsStarter.getItemJobStreamStarter().getJobStream() + " at " + start);
+                            }
 
-                        dailyPlanDBItem.setStartStart(true);
-                        dailyPlanDBItem.setState("PLANNED");
-                        dailyPlanDBItem.setReportTriggerId(null);
-                        dailyPlanDBItem.setReportExecutionId(null);
-                        dailyPlanDBItem.setDateFormat(this.dateFormat);
-                        dailyPlanDBItem.setModified(new Date());
+                            dailyPlanDBItem.setSchedulerId(this.schedulerId);
+                            dailyPlanDBItem.setIsAssigned(false);
+                            dailyPlanDBItem.setIsLate(false);
+                            dailyPlanDBItem.setJobStreamStarterId(dbItemJobStreamStarter.getId());
+                            dailyPlanDBItem.setJob(dbItemJobStreamStarterJob.getJob());
+                            LOGGER.trace("map get jobstream: " + dbItemJobStreamStarter.getJobStream());
+                            if (mapOfJobStreams.get(dbItemJobStreamStarter.getJobStream()) != null) {
+                                dailyPlanDBItem.setJobStream(mapOfJobStreams.get(dbItemJobStreamStarter.getJobStream()).getJobStream());
+                            } else {
+                                LOGGER.debug("map jobstream does not contain: " + dbItemJobStreamStarter.getJobStream());
+                                dailyPlanDBItem.setJobStream(String.valueOf(dbItemJobStreamStarter.getJobStream()));
+                            }
 
-                        if (isNew) {
-                            dailyPlanDBItem.setCreated(new Date());
-                            dailyPlanDBLayer.getSession().save(dailyPlanDBItem);
-                            LOGGER.debug("Store daily plan job stream item:" + dailyPlanDBItem.getId() + " at " + dailyPlanDBItem
-                                    .getPlannedStartFormated());
-                        } else {
-                            try {
-                                dailyPlanDBLayer.getSession().update(dailyPlanDBItem);
-                                LOGGER.debug("Update daily plan job stream item:" + dailyPlanDBItem.getId() + " at " + dailyPlanDBItem
-                                        .getPlannedStartFormated());
-                            } catch (SOSHibernateObjectOperationException e) {
+                            dailyPlanDBItem.setJobChain(".");
+                            dailyPlanDBItem.setOrderId(".");
+                            dailyPlanDBItem.setPlannedStart(start);
+                            Long duration = getDuration(dbLayerReporting, dbItemJobStreamStarterJob.getJob(), null);
+
+                            if (dailyPlanDBItem.getPlannedStart() != null) {
+                                dailyPlanDBItem.setExpectedEnd(new Date(dailyPlanDBItem.getPlannedStart().getTime() + duration));
+                            }
+
+                            dailyPlanDBItem.setStartStart(true);
+                            dailyPlanDBItem.setState("PLANNED");
+                            dailyPlanDBItem.setReportTriggerId(null);
+                            dailyPlanDBItem.setReportExecutionId(null);
+                            dailyPlanDBItem.setDateFormat(this.dateFormat);
+                            dailyPlanDBItem.setModified(new Date());
+
+                            if (isNew) {
+                                dailyPlanDBItem.setCreated(new Date());
                                 dailyPlanDBLayer.getSession().save(dailyPlanDBItem);
                                 LOGGER.debug("Store daily plan job stream item:" + dailyPlanDBItem.getId() + " at " + dailyPlanDBItem
                                         .getPlannedStartFormated());
+                            } else {
+                                try {
+                                    dailyPlanDBLayer.getSession().update(dailyPlanDBItem);
+                                    LOGGER.debug("Update daily plan job stream item:" + dailyPlanDBItem.getId() + " at " + dailyPlanDBItem
+                                            .getPlannedStartFormated());
+                                } catch (SOSHibernateObjectOperationException e) {
+                                    dailyPlanDBLayer.getSession().save(dailyPlanDBItem);
+                                    LOGGER.debug("Store daily plan job stream item:" + dailyPlanDBItem.getId() + " at " + dailyPlanDBItem
+                                            .getPlannedStartFormated());
+                                }
                             }
                         }
                     }

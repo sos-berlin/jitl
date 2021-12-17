@@ -1,9 +1,13 @@
 package com.sos.jitl.checkhistory;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sos.exception.SOSException;
 import com.sos.hibernate.classes.SOSHibernateFactory;
 import com.sos.hibernate.classes.SOSHibernateSession;
 import com.sos.hibernate.exceptions.SOSHibernateConfigurationException;
@@ -12,7 +16,11 @@ import com.sos.hibernate.exceptions.SOSHibernateOpenSessionException;
 import com.sos.jitl.checkhistory.classes.HistoryDatabaseExecuter;
 import com.sos.jitl.checkhistory.classes.JobSchedulerHistoryInfoEntry;
 import com.sos.jitl.reporting.db.DBLayer;
+import com.sos.jitl.restclient.AccessTokenProvider;
+import com.sos.jitl.restclient.JobSchedulerCredentialStoreJOCParameters;
 import com.sos.jitl.restclient.WebserviceCredentials;
+
+import sos.spooler.Spooler;
 
 public class JobHistoryTest {
 
@@ -33,9 +41,10 @@ public class JobHistoryTest {
         HistoryDatabaseExecuter historyDatabaseExecuter = new HistoryDatabaseExecuter(sosHibernateSession);
         WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
         webserviceCredentials.setSchedulerId("scheduler_joc_cockpit");
+        webserviceCredentials.setJocUrl("");
 
 
-        JobHistory jobHistory = new com.sos.jitl.checkhistory.JobHistory("", webserviceCredentials);
+        JobHistory jobHistory = new com.sos.jitl.checkhistory.JobHistory(webserviceCredentials);
         jobHistory.setHistoryDatasourceExecuter(historyDatabaseExecuter);
 
         JobSchedulerHistoryInfo jobHistoryInfo = jobHistory.getJobInfo("job5");
@@ -102,8 +111,9 @@ public class JobHistoryTest {
         webserviceCredentials.setPassword("root");
         webserviceCredentials.setUser("root");
         webserviceCredentials.setSchedulerId("scheduler_joc_cockpit");
+        webserviceCredentials.setJocUrl("http://localhost:4446/joc/api");
 
-        JobHistory jobHistory = new com.sos.jitl.checkhistory.JobHistory("http://localhost:4446/joc/api", webserviceCredentials);
+        JobHistory jobHistory = new com.sos.jitl.checkhistory.JobHistory(webserviceCredentials);
         JobSchedulerHistoryInfo jobHistoryInfo = jobHistory.getJobInfo("job1");
         report(jobHistoryInfo.getLastCompleted());
         report(jobHistoryInfo.getRunning());
@@ -161,6 +171,15 @@ public class JobHistoryTest {
         jobHistoryInfo = jobHistory.getJobInfo("job1", "-8:10:00:00..-4:14:00:00");
     }
 
+    @Test
+    public void testGetAccessToken() throws UnsupportedEncodingException, SOSException, URISyntaxException, InterruptedException {
+        JobSchedulerCredentialStoreJOCParameters jobSchedulerCredentialStoreJOCParameters = new JobSchedulerCredentialStoreJOCParameters();
+        AccessTokenProvider accessTokenProvider = new AccessTokenProvider(jobSchedulerCredentialStoreJOCParameters,"src/test/resources/private.conf");
+        WebserviceCredentials webserviceCredentials = new WebserviceCredentials();
+        webserviceCredentials = accessTokenProvider.getAccessToken(null);
+            
+
+    }
     private void report(JobSchedulerHistoryInfoEntry reportItem) {
         LOGGER.info("_____________________________");
         if (reportItem.found) {

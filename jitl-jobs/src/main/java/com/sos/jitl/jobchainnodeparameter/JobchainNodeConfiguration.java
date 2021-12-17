@@ -149,7 +149,7 @@ public class JobchainNodeConfiguration {
                     jobchainGlobalParameters.put(param.getName(), param.getValue());
                     jobchainParameters.put(param.getName(), param.getValue());
                 }
-            } 
+            }
         }
     }
 
@@ -166,15 +166,15 @@ public class JobchainNodeConfiguration {
                                     jobchainParameters.put(param.getName(), param.getValue());
                                     jobchainNodeParameters.put(param.getName(), param.getValue());
                                 }
-                            } 
+                            }
                         }
                     }
-                } 
-            } 
+                }
+            }
         }
     }
 
-    private void getParametersForNode(String node)  {
+    private void getParametersForNode(String node) {
         jobchainGlobalParameters = new HashMap<String, String>();
         jobchainNodeParameters = new HashMap<String, String>();
         jobchainParameters = new HashMap<String, String>();
@@ -229,14 +229,19 @@ public class JobchainNodeConfiguration {
         parameterSubstitutor.setOpenTag(openTag);
         parameterSubstitutor.setCloseTag(closeTag);
 
-        String replacedValue = parameterSubstitutor.replaceEnvVars(value);
-        replacedValue = parameterSubstitutor.replaceSystemProperties(replacedValue);
-        replacedValue = parameterSubstitutor.replace(replacedValue);
+        String replacedValue = value;
+
+        do {
+            value = replacedValue;
+            replacedValue = parameterSubstitutor.replaceEnvVars(value);
+            replacedValue = parameterSubstitutor.replaceSystemProperties(replacedValue);
+            replacedValue = parameterSubstitutor.replace(replacedValue);
+        } while (!value.equals(replacedValue));
         return replacedValue;
 
     }
 
-    public void substituteOrderParamters(String node)  {
+    public void substituteOrderParamters(String node) {
         getParametersForNode(node);
         addSubstituterValues(listOfSchedulerParameters);
         addSubstituterValues(listOfTaskParameters);
@@ -355,7 +360,6 @@ public class JobchainNodeConfiguration {
         this.listOfTaskParameters = listOfTaskParameters;
     }
 
-    
     public ParameterSubstitutor getParameterSubstitutor() {
         if (parameterSubstitutor == null) {
             parameterSubstitutor = new ParameterSubstitutor();

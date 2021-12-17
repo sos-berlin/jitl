@@ -10,6 +10,7 @@ import javax.json.JsonObject;
 
 import com.sos.exception.SOSAccessDeniedException;
 import com.sos.exception.SOSException;
+import com.sos.jitl.restclient.WebserviceCredentials;
 import com.sos.jitl.restclient.WebserviceExecuter;
 import com.sos.joc.model.plan.PlanItem;
 
@@ -21,13 +22,10 @@ public class DailyPlanExecuter extends WebserviceExecuter {
 	private static final String API_CALL = "/plan";
 	private static final String DAILY_PLAN_STRING_FOR_WEBSERVICE = "{'jobschedulerId':'%s','states':['PLANNED'],'late':true,'dateFrom':'%s','dateTo':'%s','timeZone':'%s'}";
 	private static final Logger LOGGER = LoggerFactory.getLogger(DailyPlanExecuter.class);
+ 
 
-	public DailyPlanExecuter(String jocUrl, String jocAccount) {
-		super(jocUrl, jocAccount);
-	}
-
-	public DailyPlanExecuter(String jocUrl) {
-		super(jocUrl);
+	public DailyPlanExecuter(WebserviceCredentials webserviceCredentials) {
+		super(webserviceCredentials);
 	}
 
 	private List<PlanItem> json2PlanList(String answer) throws SOSAccessDeniedException {
@@ -63,7 +61,7 @@ public class DailyPlanExecuter extends WebserviceExecuter {
 				"Europe/Berlin");
 		body = body.replace('\'', '"');
 
-		String answer = jobSchedulerRestApiClient.postRestService(new URI(jocUrl + API_CALL), body);
+		String answer = jobSchedulerRestApiClient.postRestService(new URI(webserviceCredentials.getJocUrl() + API_CALL), body);
 		List<PlanItem> o = json2PlanList(answer);
 		if (o.isEmpty()) {
 			return null;

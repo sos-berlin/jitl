@@ -164,7 +164,7 @@
             <xi:include href="./params/steadyState_Parameter.xml" parse="xml" />
          <!--xi:include href="./params/jumpserver_Parameter.xml" parse="xml" / --><!-- Belongs only in jade4DMZ Job -->
             <xi:include href="./params/param_load_Class_name.sosdoc" parse="xml" />
-
+			<xi:include href="./params/param_ssh_provider.xml" parse="xml" />
         </params>
         <params id="return_parameter">
             <xi:include href="./params/FileOrder_Parameter.xml" parse="xml" />

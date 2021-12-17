@@ -368,6 +368,7 @@
              </div>
                </note>
             </param>
+            <xi:include href="./params/param_ssh_provider.xml" parse="xml" />
         </params>
         <params id="return_parameter">
             <xi:include href="./params/param_exit_code.xml" parse="xml">
