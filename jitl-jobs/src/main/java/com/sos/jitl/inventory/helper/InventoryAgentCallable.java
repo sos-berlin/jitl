@@ -1,6 +1,9 @@
 package com.sos.jitl.inventory.helper;
 
+import java.io.IOException;
 import java.io.StringReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.concurrent.Callable;
 
@@ -8,8 +11,10 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.client.utils.URIBuilder;
 
+import com.google.common.base.Charsets;
 import com.sos.exception.SOSBadRequestException;
 import com.sos.exception.SOSNoResponseException;
 import com.sos.jitl.reporting.db.DBItemInventoryAgentInstance;
@@ -60,36 +65,49 @@ public class InventoryAgentCallable implements Callable<CallableAgent> {
     }
 
     private JsonObject getJsonObjectFromResponse(URI uri) throws Exception {
-        JobSchedulerRestApiClient client = new JobSchedulerRestApiClient();
-        client.addHeader(ACCEPT_HEADER, APPLICATION_HEADER_VALUE);
-        String response = client.getRestService(uri, 5000, 5000);
-        int httpReplyCode = client.statusCode();
-        String contentType = client.getResponseHeader(CONTENT_TYPE_HEADER);
-        JsonObject json = null;
-        if (contentType.contains(APPLICATION_HEADER_VALUE)) {
-            JsonReader rdr = Json.createReader(new StringReader(response));
-            json = rdr.readObject();
-        }
-        switch (httpReplyCode) {
-        case 200:
-            if (json != null) {
-                client.closeHttpClient();
-                return json;
-            } else {
-                client.closeHttpClient();
-                throw new Exception("Unexpected content type '" + contentType + "'. Response: " + response);
-            }
-        case 400:
-            if (json != null) {
-                client.closeHttpClient();
-                throw new SOSBadRequestException(json.getString("message"));
-            } else {
-                client.closeHttpClient();
-                throw new SOSBadRequestException("Unexpected content type '" + contentType + "'. Response: " + response);
-            }
-        default:
-            client.closeHttpClient();
-            throw new SOSBadRequestException(httpReplyCode + " " + client.getHttpResponse().getStatusLine().getReasonPhrase());
-        }
+    	HttpURLConnection connection = null;
+        try {
+            JobSchedulerRestApiClient client = new JobSchedulerRestApiClient();
+			connection = client.getHttpURLConnection(uri.toURL(), 5000, 5000);
+			int responseCode = connection.getResponseCode();
+			String contentType = connection.getContentType();
+			String response = null;
+			JsonObject json = null;
+			switch (responseCode) {
+			case 200:
+				response = IOUtils.toString(connection.getInputStream(), Charsets.UTF_8);
+			    if (contentType.contains(APPLICATION_HEADER_VALUE)) {
+			        JsonReader rdr = Json.createReader(new StringReader(response));
+			        json = rdr.readObject();
+			    }
+			    if (json != null) {
+			        client.closeHttpClient();
+			        return json;
+			    } else {
+			        client.closeHttpClient();
+			        throw new Exception("Unexpected content type '" + contentType + "'. Response: " + response);
+			    }
+			case 400:
+				response = IOUtils.toString(connection.getErrorStream(), Charsets.UTF_8);
+			    if (contentType.contains(APPLICATION_HEADER_VALUE)) {
+			        JsonReader rdr = Json.createReader(new StringReader(response));
+			        json = rdr.readObject();
+			    }
+			    if (json != null) {
+			        client.closeHttpClient();
+			        throw new SOSBadRequestException(json.getString("message"));
+			    } else {
+			        client.closeHttpClient();
+			        throw new SOSBadRequestException("Unexpected content type '" + contentType + "'. Response: " + response);
+			    }
+			default:
+			    client.closeHttpClient();
+			    throw new SOSBadRequestException(responseCode + " " + client.getHttpResponse().getStatusLine().getReasonPhrase());
+			}
+		} finally {
+			if (connection != null) {
+				connection.disconnect();
+			};
+		}
     }
 }
