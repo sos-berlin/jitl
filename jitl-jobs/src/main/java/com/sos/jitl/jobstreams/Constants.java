@@ -1,5 +1,8 @@
 package com.sos.jitl.jobstreams;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.TimeZone;
 
@@ -76,14 +79,14 @@ public class Constants {
     public static Calendar getSessionCalendar() {
         if (periodBegin == null) {
             periodBegin = "00:00";
-        } 
-        
+        }
+
         LOGGER.debug("Timezone for period is " + settings.getTimezone());
         TimeZone timeZone = TimeZone.getTimeZone(settings.getTimezone());
         Calendar calendar = Calendar.getInstance(timeZone);
-        
+
         String[] period = periodBegin.split(":");
-        int hours = 0; 
+        int hours = 0;
         int minutes = 0;
         if (period.length == 1) {
             try {
@@ -105,20 +108,20 @@ public class Constants {
                 minutes = 0;
                 periodBegin = "00:00";
             }
-        } 
+        }
 
-        calendar.add(Calendar.HOUR_OF_DAY, hours *-1);
-        calendar.add(Calendar.MINUTE, minutes *-1);
- 
+        calendar.add(Calendar.HOUR_OF_DAY, hours * -1);
+        calendar.add(Calendar.MINUTE, minutes * -1);
+
         return calendar;
     }
 
     public static String getSession() {
         Calendar calendar = getSessionCalendar();
- 
+
         int month = calendar.get(Calendar.MONTH) + 1;
         int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
- 
+
         LOGGER.debug("Period starts at  " + periodBegin + " " + settings.getTimezone());
         String result = String.valueOf(month) + "." + String.valueOf(dayOfMonth);
         LOGGER.debug("period session is: " + result);
@@ -143,4 +146,14 @@ public class Constants {
         cl.add(com.sos.jitl.jobstreams.db.DBItemJobStreamTaskContext.class);
         return cl;
     }
+
+    public static boolean isToday(LocalDate d) {
+        LocalDateTime today = LocalDateTime.now(ZoneId.of(settings.getTimezone()));
+        if (d == null) {
+            return false;
+        } else {
+            return ((today.getYear() == d.getYear()) && (today.getDayOfYear() == d.getDayOfYear()));
+        }
+    }
+
 }
