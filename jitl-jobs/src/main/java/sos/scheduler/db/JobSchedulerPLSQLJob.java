@@ -18,6 +18,8 @@ import com.sos.JSHelper.Exceptions.JobSchedulerException;
 import com.sos.keepass.SOSKeePassResolver;
 import com.sos.scheduler.messages.JSMessages;
 
+import sos.util.SOSString;
+
 public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJobOptions> {
 
     protected static final String conSettingDBMS_OUTPUT = "dbmsOutput";
@@ -39,30 +41,37 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
         objJSJobUtilities.setJSParam(conSettingSQL_ERROR, "");
         try {
             getOptions().checkMandatory();
-             DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
-            
-            SOSKeePassResolver r = new SOSKeePassResolver(objOptions.credential_store_file.getValue(), objOptions.credential_store_key_file.getValue(),objOptions.credential_store_password.getValue());
-            //objOptions.credential_store_password.getValue());
+            DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
+
+            SOSKeePassResolver r = new SOSKeePassResolver(objOptions.credential_store_file.getValue(), objOptions.credential_store_key_file
+                    .getValue(), objOptions.credential_store_password.getValue());
+            // objOptions.credential_store_password.getValue());
             r.setEntryPath(objOptions.credential_store_entry_path.getValue());
 
             String dbUrl = r.resolve(objOptions.db_url.getValue());
             String dbUser = r.resolve(objOptions.db_user.getValue());
             String dbPassword = r.resolve(objOptions.db_password.getValue());
-            
+
             LOGGER.debug(objOptions.credential_store_file.getValue());
             LOGGER.debug(objOptions.credential_store_key_file.getValue());
             LOGGER.debug(objOptions.credential_store_entry_path.getValue());
-             
+
             LOGGER.debug("dbUrl: " + dbUrl);
             LOGGER.debug("dbUser: " + dbUser);
             LOGGER.debug("dbPassword: " + "********");
-            
 
-            objConnection = DriverManager.getConnection(dbUrl, dbUser,dbPassword);
+            String s = dbUser.trim() + dbPassword.trim();
+            
+            if (s.isEmpty()) {
+                LOGGER.debug("Empty password");
+                objConnection = DriverManager.getConnection(dbUrl);
+            } else {
+                objConnection = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+            }
 
             String plsql = objOptions.command.unescapeXML().replace("\r\n", "\n");
             plsql = objJSJobUtilities.replaceSchedulerVars(plsql);
-            LOGGER.debug(String.format("substituted Statement: %s will be executed.",plsql));
+            LOGGER.debug(String.format("substituted Statement: %s will be executed.", plsql));
             dbmsOutput = new DbmsOutput(objConnection);
             dbmsOutput.enable(1000000);
             cs = objConnection.prepareCall(plsql);

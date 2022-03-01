@@ -16,7 +16,11 @@ public class SOSSQLPlusJobMain extends JSToolBox {
         try {
             SOSSQLPlusJob objM = new SOSSQLPlusJob();
             SOSSQLPlusJobOptions objO = objM.getOptions();
-            objO.commandLineArgs(pstrArgs);
+            objO.shell_command.setValue("sqlplus");
+            objO.command_script_file.setValue("c:\\temp\\1.sql");
+            objO.db_url.setValue("xe");
+            objO.db_password.setValue("scheduler");
+            objO.db_user.setValue("scheduler");
             objM.execute();
         } catch (Exception e) {
             LOGGER.error(methodName + ": " + "Error occured ..." + e.getMessage());

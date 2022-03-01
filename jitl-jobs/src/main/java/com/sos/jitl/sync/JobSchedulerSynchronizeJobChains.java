@@ -9,65 +9,48 @@ import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sos.JSHelper.Basics.JSJobUtilitiesClass;
 import com.sos.JSHelper.Exceptions.JobSchedulerException;
 
-public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSchedulerSynchronizeJobChainsOptions> {
+public class JobSchedulerSynchronizeJobChains {
 
     private final String conClassName = "JobSchedulerSynchronizeJobChains";
     private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerSynchronizeJobChains.class);
 
     protected SyncNodeContainer syncNodeContainer;
-    protected HashMap<String, String> SchedulerParameters = new HashMap<String, String>();
+    protected HashMap<String, String> schedulerParameters = new HashMap<String, String>();
 
     private String orderId = "";
     private String jobChain = "";
 
-    public JobSchedulerSynchronizeJobChains() {
-        super(new JobSchedulerSynchronizeJobChainsOptions());
-    }
-
-    @Override
-    public JobSchedulerSynchronizeJobChainsOptions getOptions() {
-
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::Options"; //$NON-NLS-1$
-
-        if (objOptions == null) {
-            objOptions = new JobSchedulerSynchronizeJobChainsOptions();
-        }
-        return objOptions;
-    }
-
-    public JobSchedulerSynchronizeJobChains Execute() throws Exception {
+    public JobSchedulerSynchronizeJobChains execute(JobSchedulerSynchronizeJobChainsOptions jobSchedulerSynchronizeJobChainsOptions) throws Exception {
         final String conMethodName = conClassName + "::Execute"; //$NON-NLS-1$
 
         JSJ_I_110.toLog(conMethodName);
 
         try {
-            getOptions().checkMandatory();
-            LOGGER.debug(getOptions().dirtyString());
+            jobSchedulerSynchronizeJobChainsOptions.checkMandatory();
+            LOGGER.debug(jobSchedulerSynchronizeJobChainsOptions.dirtyString());
 
             syncNodeContainer = new SyncNodeContainer();
 
-            syncNodeContainer.setIgnoreStoppedJobChains(getOptions().ignore_stopped_jobchains.value());
-            syncNodeContainer.setJobpath(getOptions().jobpath.getValue());
+            syncNodeContainer.setIgnoreStoppedJobChains(jobSchedulerSynchronizeJobChainsOptions.ignore_stopped_jobchains.value());
+            syncNodeContainer.setJobpath(jobSchedulerSynchronizeJobChainsOptions.jobpath.getValue());
 
-            if (getOptions().disable_sync_context.value()) {
+            if (jobSchedulerSynchronizeJobChainsOptions.disable_sync_context.value()) {
                 LOGGER.debug("Disable sync context");
                 syncNodeContainer.setSyncNodeContext("", "");
             } else {
-                LOGGER.debug(String.format("Set sync context: %s,%s", getOptions().job_chain_name2synchronize.getValue(),
-                        getOptions().job_chain_state2synchronize.getValue()));
-                syncNodeContainer.setSyncNodeContext(getOptions().job_chain_name2synchronize.getValue(),
-                        getOptions().job_chain_state2synchronize.getValue());
+                LOGGER.debug(String.format("Set sync context: %s,%s", jobSchedulerSynchronizeJobChainsOptions.job_chain_name2synchronize.getValue(),
+                        jobSchedulerSynchronizeJobChainsOptions.job_chain_state2synchronize.getValue()));
+                syncNodeContainer.setSyncNodeContext(jobSchedulerSynchronizeJobChainsOptions.job_chain_name2synchronize.getValue(),
+                        jobSchedulerSynchronizeJobChainsOptions.job_chain_state2synchronize.getValue());
             }
 
-            String syncId = getOptions().getsync_session_id().getValue();
-            syncNodeContainer.getNodes(getOptions().jobchains_answer.getValue());
+            String syncId = jobSchedulerSynchronizeJobChainsOptions.getsync_session_id().getValue();
+            syncNodeContainer.getNodes(jobSchedulerSynchronizeJobChainsOptions.jobchains_answer.getValue());
 
-            syncNodeContainer.getOrders(jobChain, orderId, syncId, getOptions().orders_answer.getValue());
-            syncNodeContainer.setRequiredOrders(SchedulerParameters);
+            syncNodeContainer.getOrders(jobChain, orderId, syncId, jobSchedulerSynchronizeJobChainsOptions.orders_answer.getValue());
+            syncNodeContainer.setRequiredOrders(schedulerParameters);
 
             if (syncNodeContainer.isReleased()) {
                 LOGGER.debug("Release all orders");
@@ -83,20 +66,7 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
         return this;
     }
 
-    public void init() throws RuntimeException, Exception {
-        @SuppressWarnings("unused")
-        final String conMethodName = conClassName + "::init"; //$NON-NLS-1$
-        doInitialize();
-    }
-
-    private void doInitialize() throws RuntimeException, Exception {
-
-    } // doInitialize
-
-    public void setSchedulerParameters(final HashMap<String, String> schedulerParameters) {
-        SchedulerParameters = schedulerParameters;
-    }
-
+   
     public void setOrderId(String orderId) {
         this.orderId = orderId;
     }
@@ -105,4 +75,4 @@ public class JobSchedulerSynchronizeJobChains extends JSJobUtilitiesClass<JobSch
         this.jobChain = jobChain;
     }
 
-} // class JobSchedulerSynchronizeJobChains
+}  
