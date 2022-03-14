@@ -140,6 +140,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
                         LOGGER.info(String.format("Error '%1$s' ignored due to settings", strStdoutLine));
                     }
                 } else {
+                    LOGGER.info(strStdoutLine);
                     objJSJobUtilities.setStateText("");
                 }
             }
@@ -198,6 +199,7 @@ public class SOSSQLPlusJob extends JSJobUtilitiesClass<SOSSQLPlusJobOptions> {
             command[indx++] = options.getShellCommand().getValue() + " " + options.getCommandLineOptions().getValue() + " " + options
                     .getShellCommandParameter().getValue();
         }
+
         return command;
     }
 
