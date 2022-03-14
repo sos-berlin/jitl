@@ -38,6 +38,8 @@ public class SOSSQLPlusJobOptions extends SOSSQLPlusJobOptionsSuperClass {
         String strT = "";
         if (db_user.isDirty()) {
             strT = db_user.getValue() + "/" + db_password.getValue() + "@" + db_url.getValue();
+        }else {
+            strT = "/@" + db_url.getValue();
         }
         return strT;
     }
