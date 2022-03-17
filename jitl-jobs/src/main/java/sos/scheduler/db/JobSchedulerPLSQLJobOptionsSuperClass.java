@@ -92,6 +92,19 @@ public class JobSchedulerPLSQLJobOptionsSuperClass extends JSOptionsClass implem
     }
     
     
+    @JSOptionDefinition(name = "hibernate_configuration_file", description = "", key = "hibernate_configuration_file",
+            type = "SOSOptionString", mandatory = false)
+    public SOSOptionString hibernate_configuration_file = new SOSOptionString(this, conClassName + ".hibernate_configuration_file", "", "",
+            "", false);
+
+    public SOSOptionString gethibernate_configuration_file() {
+        return hibernate_configuration_file;
+    }
+
+    public void sethibernate_configuration_file(final SOSOptionString p_hibernate_configuration_file) {
+        hibernate_configuration_file = p_hibernate_configuration_file;
+    }
+    
     @JSOptionDefinition(name = "credential_store_file", description = "", key = "credential_store_file",
             type = "SOSOptionString", mandatory = false)
     public SOSOptionString credential_store_file = new SOSOptionString(this, conClassName + ".credential_store_file", "", "",

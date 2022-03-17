@@ -16,7 +16,8 @@ public class JobSchedulerPLSQLJobMain extends JSToolBox {
         try {
             JobSchedulerPLSQLJob objM = new JobSchedulerPLSQLJob();
             JobSchedulerPLSQLJobOptions objO = objM.getOptions();
-            objO.commandLineArgs(pstrArgs);
+            //objO.commandLineArgs(pstrArgs);
+            objO.hibernate_configuration_file.setValue("c:/temp/hibernate.cfg.xml");
             objM.execute();
         } catch (Exception e) {
             LOGGER.error(methodName + ": " + "Error occured ..." + e.getMessage());
