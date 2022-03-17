@@ -3,20 +3,13 @@ package sos.scheduler.db;
 import static com.sos.scheduler.messages.JSMessages.JSJ_I_110;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.persistence.PersistenceException;
 
 import org.hibernate.cfg.Configuration;
 import org.slf4j.Logger;
@@ -28,8 +21,6 @@ import com.sos.hibernate.classes.SOSHibernate;
 import com.sos.hibernate.exceptions.SOSHibernateConfigurationException;
 import com.sos.keepass.SOSKeePassResolver;
 import com.sos.scheduler.messages.JSMessages;
-
-import sos.util.SOSString;
 
 public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJobOptions> {
 
@@ -55,7 +46,7 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
             getOptions().checkMandatory();
 
             if (objOptions.hibernate_configuration_file.isDirty()) {
-                configuration = new Configuration();
+//                configuration = new Configuration(); 
                 configure(objOptions.hibernate_configuration_file.getValue());
                 String s = configuration.getProperty(SOSHibernate.HIBERNATE_PROPERTY_CONNECTION_URL);
                 if (s != null) {
