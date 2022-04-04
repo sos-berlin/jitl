@@ -46,7 +46,7 @@ public class JobSchedulerPLSQLJob extends JSJobUtilitiesClass<JobSchedulerPLSQLJ
             getOptions().checkMandatory();
 
             if (objOptions.hibernate_configuration_file.isDirty()) {
-//                configuration = new Configuration(); 
+                configuration = new Configuration(); 
                 configure(objOptions.hibernate_configuration_file.getValue());
                 String s = configuration.getProperty(SOSHibernate.HIBERNATE_PROPERTY_CONNECTION_URL);
                 if (s != null) {
