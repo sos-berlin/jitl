@@ -207,7 +207,7 @@ public class InitializeInventoryInstancePlugin extends AbstractPlugin {
                 if (answerXml != null && !answerXml.isEmpty()) {
                     xPathAnswerXml = new SOSXMLXPath(new StringBuffer(answerXml));
                     String state = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@state");
-                    if ("running,waiting_for_activation,paused".contains(state)) {
+                    if ("running,waiting_for_activation,waiting_for_activation_paused,paused".contains(state)) {
                         schedulerXmlPathname = xPathAnswerXml.selectSingleNodeValue("/spooler/answer/state/@config_file");
                         break;
                     }

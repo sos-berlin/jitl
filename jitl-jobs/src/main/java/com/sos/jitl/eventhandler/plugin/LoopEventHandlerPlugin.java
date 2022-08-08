@@ -241,7 +241,7 @@ public class LoopEventHandlerPlugin extends AbstractPlugin {
                     if (isTraceEnabled) {
                         LOGGER.trace(String.format("%s[%s][state]%s", method, i, state));
                     }
-                    if ("loading,running,waiting_for_activation,paused".contains(state)) {
+                    if ("loading,running,waiting_for_activation,waiting_for_activation_paused,paused".contains(state)) {
                         break;
                     }
                 }
